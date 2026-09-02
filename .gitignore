@@ -1,0 +1,23 @@
+# Carpeta de compilación de Maven
+target/
+
+# Dependencias locales manuales (ya no se usan, Maven las gestiona)
+lib/
+
+# Archivos de IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+nbproject/
+*.class
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
