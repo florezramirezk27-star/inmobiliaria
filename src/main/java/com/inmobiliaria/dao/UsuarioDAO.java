@@ -8,132 +8,149 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UsuarioDAO {
 
-    public int crear(Usuario usuario) throws SQLException {
-        String sql = "INSERT INTO usuario (correo, password_hash, estado) "
-                + "VALUES (?, ?, ?)";
+    public Usuario buscarPorCorreo(String correo) {
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql,
-                     PreparedStatement.RETURN_GENERATED_KEYS)) {
+        String sql = """
+                SELECT
+                    id_usuario,
+                    correo,
+                    password_hash,
+                    estado,
+                    fecha_creacion,
+                    fecha_ultimo_acceso
+                FROM usuario
+                WHERE correo = ?
+                """;
 
-            ps.setString(1, usuario.getCorreo());
-            ps.setString(2, usuario.getPasswordHash());
-            ps.setString(3, usuario.getEstado() != null
-                    ? usuario.getEstado() : "ACTIVO");
+        try (
+                Connection connection = ConnectionFactory.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
 
-            ps.executeUpdate();
+            statement.setString(1, correo);
 
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                if (resultSet.next()) {
+
+                    Usuario usuario = new Usuario();
+
+                    usuario.setIdUsuario(
+                            resultSet.getInt("id_usuario")
+                    );
+
+                    usuario.setCorreo(
+                            resultSet.getString("correo")
+                    );
+
+                    usuario.setPasswordHash(
+                            resultSet.getString("password_hash")
+                    );
+
+                    usuario.setEstado(
+                            resultSet.getString("estado")
+                    );
+
+                    usuario.setFechaCreacion(
+                            resultSet.getTimestamp("fecha_creacion")
+                    );
+
+                    usuario.setFechaUltimoAcceso(
+                            resultSet.getTimestamp("fecha_ultimo_acceso")
+                    );
+
+                    return usuario;
                 }
             }
-            return 0;
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Error al buscar el usuario por correo",
+                    e
+            );
         }
-    }
 
-    public Usuario buscarPorCorreo(String correo) throws SQLException {
-        String sql = "SELECT * FROM usuario WHERE correo = ?";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, correo);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapear(rs);
-                }
-            }
-        }
         return null;
     }
 
-    public Usuario buscarPorId(int idUsuario) throws SQLException {
-        String sql = "SELECT * FROM usuario WHERE id_usuario = ?";
+    public int crearUsuario(Usuario usuario) {
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = """
+                INSERT INTO usuario (
+                    correo,
+                    password_hash,
+                    estado
+                )
+                VALUES (?, ?, ?)
+                """;
 
-            ps.setInt(1, idUsuario);
+        try (
+                Connection connection = ConnectionFactory.getConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        sql,
+                        java.sql.Statement.RETURN_GENERATED_KEYS
+                )
+        ) {
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapear(rs);
+            statement.setString(1, usuario.getCorreo());
+            statement.setString(2, usuario.getPasswordHash());
+            statement.setString(3, usuario.getEstado());
+
+            int filasAfectadas = statement.executeUpdate();
+
+            if (filasAfectadas == 0) {
+                throw new SQLException(
+                        "No se pudo crear el usuario."
+                );
+            }
+
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+
+                if (keys.next()) {
+                    return keys.getInt(1);
                 }
             }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Error al crear el usuario",
+                    e
+            );
         }
-        return null;
+
+        throw new RuntimeException(
+                "No se pudo obtener el ID del usuario creado."
+        );
     }
 
-    public List<Usuario> listar() throws SQLException {
-        String sql = "SELECT * FROM usuario ORDER BY id_usuario";
-        List<Usuario> usuarios = new ArrayList<>();
+    public boolean actualizarUltimoAcceso(int idUsuario) {
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        String sql = """
+                UPDATE usuario
+                SET fecha_ultimo_acceso = CURRENT_TIMESTAMP
+                WHERE id_usuario = ?
+                """;
 
-            while (rs.next()) {
-                usuarios.add(mapear(rs));
-            }
+        try (
+                Connection connection = ConnectionFactory.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            statement.setInt(1, idUsuario);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Error al actualizar el último acceso",
+                    e
+            );
         }
-        return usuarios;
-    }
-
-    public boolean actualizar(Usuario usuario) throws SQLException {
-        String sql = "UPDATE usuario SET correo = ?, password_hash = ?, "
-                + "estado = ? WHERE id_usuario = ?";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, usuario.getCorreo());
-            ps.setString(2, usuario.getPasswordHash());
-            ps.setString(3, usuario.getEstado());
-            ps.setInt(4, usuario.getIdUsuario());
-
-            return ps.executeUpdate() > 0;
-        }
-    }
-
-    public void actualizarUltimoAcceso(int idUsuario) throws SQLException {
-        String sql = "UPDATE usuario SET fecha_ultimo_acceso = ? "
-                + "WHERE id_usuario = ?";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-            ps.setInt(2, idUsuario);
-            ps.executeUpdate();
-        }
-    }
-
-    public boolean eliminar(int idUsuario) throws SQLException {
-        String sql = "DELETE FROM usuario WHERE id_usuario = ?";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, idUsuario);
-            return ps.executeUpdate() > 0;
-        }
-    }
-
-    private Usuario mapear(ResultSet rs) throws SQLException {
-        Usuario usuario = new Usuario();
-        usuario.setIdUsuario(rs.getInt("id_usuario"));
-        usuario.setCorreo(rs.getString("correo"));
-        usuario.setPasswordHash(rs.getString("password_hash"));
-        usuario.setEstado(rs.getString("estado"));
-        usuario.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
-        usuario.setFechaUltimoAcceso(rs.getTimestamp("fecha_ultimo_acceso"));
-        return usuario;
     }
 }

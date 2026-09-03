@@ -12,93 +12,59 @@ import java.util.List;
 
 public class RolDAO {
 
-    public int crear(Rol rol) throws SQLException {
-        String sql = "INSERT INTO rol (nombre) VALUES (?)";
+    public List<Rol> obtenerRolesPorUsuario(int idUsuario) {
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql,
-                     PreparedStatement.RETURN_GENERATED_KEYS)) {
+        String sql = """
+                SELECT
+                    r.id_rol,
+                    r.nombre,
+                    r.descripcion
+                FROM rol r
+                INNER JOIN usuario_rol ur
+                    ON r.id_rol = ur.id_rol
+                WHERE ur.id_usuario = ?
+                ORDER BY r.id_rol
+                """;
 
-            ps.setString(1, rol.getNombre());
-            ps.executeUpdate();
-
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-            return 0;
-        }
-    }
-
-    public Rol buscarPorId(int idRol) throws SQLException {
-        String sql = "SELECT * FROM rol WHERE id_rol = ?";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, idRol);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapear(rs);
-                }
-            }
-        }
-        return null;
-    }
-
-    public Rol buscarPorNombre(String nombre) throws SQLException {
-        String sql = "SELECT * FROM rol WHERE nombre = ?";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, nombre);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapear(rs);
-                }
-            }
-        }
-        return null;
-    }
-
-    public List<Rol> listar() throws SQLException {
-        String sql = "SELECT * FROM rol ORDER BY id_rol";
         List<Rol> roles = new ArrayList<>();
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (
+                Connection connection = ConnectionFactory.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
 
-            while (rs.next()) {
-                roles.add(mapear(rs));
+            statement.setInt(1, idUsuario);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+
+                    Rol rol = new Rol();
+
+                    rol.setIdRol(
+                            resultSet.getInt("id_rol")
+                    );
+
+                    rol.setNombre(
+                            resultSet.getString("nombre")
+                    );
+
+                    rol.setDescripcion(
+                            resultSet.getString("descripcion")
+                    );
+
+                    roles.add(rol);
+                }
             }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Error al obtener los roles del usuario",
+                    e
+            );
         }
+
         return roles;
-    }
-
-    public void asignarRolAUsuario(int idUsuario, int idRol)
-            throws SQLException {
-
-        String sql = "INSERT INTO usuario_rol (id_usuario, id_rol) "
-                + "VALUES (?, ?)";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, idUsuario);
-            ps.setInt(2, idRol);
-            ps.executeUpdate();
-        }
-    }
-
-    private Rol mapear(ResultSet rs) throws SQLException {
-        Rol rol = new Rol();
-        rol.setIdRol(rs.getInt("id_rol"));
-        rol.setNombre(rs.getString("nombre"));
-        return rol;
     }
 }
