@@ -1,21 +1,55 @@
 -- ============================================================
 --  INMOBILIARIA — DML
---  Datos de prueba del módulo de propiedades
+--  Datos de prueba (módulo de propiedades y autenticación)
 --
 --  Ejecutar después de ddl.sql.
 --
---  Nota: las propiedades usan usuario_id = 1. Mientras el
---  módulo de autenticación no exista, ese valor no se valida
---  porque la llave foránea hacia `usuario` sigue comentada en
---  la sección 9 del ddl.sql.
+--  Nota: el usuario de prueba se inserta PRIMERO (sección 1)
+--  porque las propiedades de la sección 5 usan usuario_id = 1
+--  y la llave foránea hacia `usuario` ya está activa.
 -- ============================================================
 
 USE inmobiliaria;
 
 
 -- ------------------------------------------------------------
--- Ciudades
+-- 1. Autenticación
+--
+--     Usuario de prueba.
+--     correo:    admin@inmobiliaria.com
+--     contraseña: admin123  (hash BCrypt)
 -- ------------------------------------------------------------
+INSERT INTO usuario (id_usuario, correo, password_hash, estado) VALUES
+    (1,
+     'admin@inmobiliaria.com',
+     '$2a$10$1abQAEwWSztTv0iATf4KJOOiev2BrcYu2evqfykcMQi8OJL4fTtvi',
+     'ACTIVO');
+
+
+-- Roles
+INSERT INTO rol (id_rol, nombre, descripcion) VALUES
+    (1, 'ADMIN',    'Administrador del sistema'),
+    (2, 'AGENTE',   'Usuario que publica y gestiona inmuebles'),
+    (3, 'CLIENTE',  'Usuario final que consulta y contacta');
+
+
+-- Asignación de rol al usuario de prueba
+INSERT INTO usuario_rol (id_usuario, id_rol) VALUES
+    (1, 1);
+
+
+-- Perfil del usuario de prueba
+INSERT INTO perfil
+    (id_usuario, nombres, apellidos, documento, telefono, direccion)
+VALUES
+    (1, 'Administrador', 'del Sistema', '1000000001',
+     '3000000000', 'Calle 45 # 20-10, Bucaramanga');
+
+
+-- ------------------------------------------------------------
+-- 2. Ciudades
+-- ------------------------------------------------------------
+
 INSERT INTO ciudad (id, nombre, departamento) VALUES
     (1, 'Bucaramanga',  'Santander'),
     (2, 'Floridablanca','Santander'),
@@ -24,7 +58,7 @@ INSERT INTO ciudad (id, nombre, departamento) VALUES
 
 
 -- ------------------------------------------------------------
--- Tipos de inmueble
+-- 3. Tipos de inmueble
 -- ------------------------------------------------------------
 INSERT INTO tipo_inmueble (id, nombre, slug) VALUES
     (1, 'Apartamento',     'apartamento'),
@@ -37,7 +71,7 @@ INSERT INTO tipo_inmueble (id, nombre, slug) VALUES
 
 
 -- ------------------------------------------------------------
--- Catálogo de características
+-- 4. Catálogo de características
 -- ------------------------------------------------------------
 INSERT INTO caracteristica (id, nombre, categoria) VALUES
     (1,  'Cocina integral',       'INTERIOR'),
@@ -60,7 +94,7 @@ INSERT INTO caracteristica (id, nombre, categoria) VALUES
 
 
 -- ------------------------------------------------------------
--- Propiedades
+-- 5. Propiedades
 -- ------------------------------------------------------------
 INSERT INTO propiedad
     (id, codigo, titulo, descripcion, operacion, estado,
@@ -134,7 +168,7 @@ VALUES
 
 
 -- ------------------------------------------------------------
--- Características por propiedad   (N : M)
+-- 6. Características por propiedad   (N : M)
 -- ------------------------------------------------------------
 INSERT INTO propiedad_caracteristica (propiedad_id, caracteristica_id) VALUES
     (1, 1), (1, 2), (1, 3), (1, 6), (1, 12), (1, 14), (1, 15),
@@ -146,7 +180,7 @@ INSERT INTO propiedad_caracteristica (propiedad_id, caracteristica_id) VALUES
 
 
 -- ------------------------------------------------------------
--- Imágenes
+-- 7. Imágenes
 --
 -- Las rutas apuntan a src/main/webapp/img/propiedades/.
 -- Mientras no existan los archivos, la JSP muestra el marcador
@@ -167,3 +201,8 @@ INSERT INTO imagen_propiedad (propiedad_id, ruta, texto_alt, es_portada, orden) 
 -- ------------------------------------------------------------
 -- SELECT COUNT(*) AS publicadas FROM v_propiedad_catalogo;   -- espera 6
 -- SELECT * FROM v_propiedad_catalogo ORDER BY creado_en DESC;
+-- SELECT u.correo, GROUP_CONCAT(r.nombre) AS roles
+-- FROM usuario u
+-- JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+-- JOIN rol r ON r.id_rol = ur.id_rol
+-- GROUP BY u.id_usuario;

@@ -1,15 +1,10 @@
 -- ============================================================
 --  INMOBILIARIA — DDL
---  Módulo de propiedades  (Sprints 1 y 2)
+--  Módulos de propiedades (Sprints 1 y 2) y autenticación.
 --
 --  Este archivo es la estructura oficial. Ninguna tabla se
 --  modifica directamente en MySQL: primero se cambia aquí y
 --  luego se ajusta el código de los DAO.
---
---  Dependencia: la tabla `usuario` la define el módulo de
---  autenticación. Las llaves foráneas que apuntan a ella están
---  al final, en la sección 9, para poder trabajar sin bloqueos
---  mientras ese módulo se termina.
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS inmobiliaria
@@ -225,20 +220,100 @@ WHERE p.estado = 'PUBLICADA';
 
 
 -- ============================================================
--- 9. Llaves foráneas hacia `usuario`
+-- 9. Módulo de autenticación
 --
---    Ejecutar SOLO después de que el módulo de autenticación
---    haya creado la tabla `usuario`. Si `usuario.id` no es
---    INT UNSIGNED, hay que igualar el tipo antes de correr
---    estos ALTER o MySQL rechaza la restricción.
+--    Tablas que dan soporte al login y al registro. Las usan
+--    UsuarioDAO, RolDAO y PerfilDAO. Deben crearse ANTES de
+--    las llaves foráneas de la sección 10.
 -- ============================================================
 
--- ALTER TABLE propiedad
---     ADD CONSTRAINT fk_propiedad_usuario
---     FOREIGN KEY (usuario_id) REFERENCES usuario (id)
---     ON DELETE RESTRICT ON UPDATE CASCADE;
+-- ------------------------------------------------------------
+-- 9.1 Usuario
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS usuario (
+    id_usuario          INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    correo              VARCHAR(180)      NOT NULL,
+    password_hash       VARCHAR(255)      NOT NULL,   -- hash BCrypt
+    estado              ENUM('ACTIVO','INACTIVO','BLOQUEADO')
+                        NOT NULL DEFAULT 'ACTIVO',
+    fecha_creacion      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_ultimo_acceso TIMESTAMP         NULL,
 
--- ALTER TABLE favorito
---     ADD CONSTRAINT fk_favorito_usuario
---     FOREIGN KEY (usuario_id) REFERENCES usuario (id)
---     ON DELETE CASCADE ON UPDATE CASCADE;
+    CONSTRAINT pk_usuario PRIMARY KEY (id_usuario),
+    CONSTRAINT uq_usuario_correo UNIQUE (correo)
+) ENGINE = InnoDB;
+
+
+-- ------------------------------------------------------------
+-- 9.2 Rol
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS rol (
+    id_rol       SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nombre       VARCHAR(60)       NOT NULL,
+    descripcion  VARCHAR(200)      NULL,
+
+    CONSTRAINT pk_rol PRIMARY KEY (id_rol),
+    CONSTRAINT uq_rol_nombre UNIQUE (nombre)
+) ENGINE = InnoDB;
+
+
+-- ------------------------------------------------------------
+-- 9.3 Usuario — Rol                 (N : M)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS usuario_rol (
+    id_usuario        INT UNSIGNED      NOT NULL,
+    id_rol            SMALLINT UNSIGNED NOT NULL,
+    fecha_asignacion  TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT pk_usuario_rol PRIMARY KEY (id_usuario, id_rol),
+
+    CONSTRAINT fk_ur_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_ur_rol
+        FOREIGN KEY (id_rol) REFERENCES rol (id_rol)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+CREATE INDEX ix_usuario_rol_rol ON usuario_rol (id_rol);
+
+
+-- ------------------------------------------------------------
+-- 9.4 Perfil                       (1 : 1 con usuario)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS perfil (
+    id_perfil   INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+    id_usuario  INT UNSIGNED    NOT NULL,
+    nombres     VARCHAR(80)     NOT NULL,
+    apellidos   VARCHAR(80)     NOT NULL,
+    documento   VARCHAR(30)     NOT NULL,
+    telefono    VARCHAR(30)     NULL,
+    direccion   VARCHAR(180)    NULL,
+    foto        VARCHAR(255)    NULL,
+
+    CONSTRAINT pk_perfil PRIMARY KEY (id_perfil),
+    CONSTRAINT uq_perfil_documento UNIQUE (documento),
+    CONSTRAINT uq_perfil_usuario UNIQUE (id_usuario),
+
+    CONSTRAINT fk_perfil_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+
+-- ============================================================
+-- 10. Llaves foráneas hacia `usuario`
+--
+--     Se ejecutan tras crear el módulo de autenticación.
+-- ============================================================
+
+ALTER TABLE propiedad
+    ADD CONSTRAINT fk_propiedad_usuario
+    FOREIGN KEY (usuario_id) REFERENCES usuario (id_usuario)
+    ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE favorito
+    ADD CONSTRAINT fk_favorito_usuario
+    FOREIGN KEY (usuario_id) REFERENCES usuario (id_usuario)
+    ON DELETE CASCADE ON UPDATE CASCADE;
