@@ -1,0 +1,315 @@
+/* ============================================================
+   Inmobiliaria — hoja de estilos base
+   Sobreescribe los tokens por defecto de Bootstrap 5.
+   ============================================================ */
+
+:root {
+    /* Paleta */
+    --tinta:        #13251E;   /* verde casi negro: navbar, hero, texto fuerte */
+    --verde:        #1F6F5C;   /* color de marca: botones, enlaces, acentos   */
+    --verde-hover:  #175547;
+    --verde-suave:  #E5EFEA;   /* fondos de etiquetas y chips                 */
+    --arena:        #F7F5F0;   /* fondo general de la página                  */
+    --ocre:         #C8843C;   /* acento cálido: precio de arriendo, detalles */
+    --gris:         #6B7570;   /* texto secundario                            */
+    --borde:        #E1DED6;
+
+    /* Tokens de Bootstrap reasignados */
+    --bs-primary: var(--verde);
+    --bs-body-bg: var(--arena);
+    --bs-body-color: var(--tinta);
+    --bs-body-font-family: "Karla", system-ui, sans-serif;
+    --bs-border-color: var(--borde);
+    --bs-link-color: var(--verde);
+    --bs-link-hover-color: var(--verde-hover);
+}
+
+/* ---------- Tipografía ---------- */
+
+body {
+    font-family: var(--bs-body-font-family);
+    background-color: var(--arena);
+    color: var(--tinta);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
+
+h1, h2, h3, .fuente-display {
+    font-family: "Bricolage Grotesque", "Karla", sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+/* Longitud de línea cómoda para párrafos largos */
+.medida { max-width: 58ch; }
+
+/* ---------- Navbar ---------- */
+
+.navbar-inmo {
+    background-color: var(--tinta);
+    padding-block: 0.9rem;
+}
+
+.navbar-inmo .navbar-brand {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #FFFFFF;
+    font-size: 1.35rem;
+}
+
+.navbar-inmo .nav-link {
+    color: #C9D6D0;
+    font-weight: 500;
+}
+
+.navbar-inmo .nav-link:hover,
+.navbar-inmo .nav-link:focus-visible,
+.navbar-inmo .nav-link.activo {
+    color: #FFFFFF;
+}
+
+/* ---------- Botones ---------- */
+
+.btn-marca {
+    background-color: var(--verde);
+    border: 1px solid var(--verde);
+    color: #FFFFFF;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 0.6rem 1.4rem;
+}
+
+.btn-marca:hover,
+.btn-marca:focus-visible {
+    background-color: var(--verde-hover);
+    border-color: var(--verde-hover);
+    color: #FFFFFF;
+}
+
+.btn-contorno {
+    background-color: transparent;
+    border: 1px solid #4A5C55;
+    color: #FFFFFF;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 0.6rem 1.4rem;
+}
+
+.btn-contorno:hover,
+.btn-contorno:focus-visible {
+    background-color: #FFFFFF;
+    border-color: #FFFFFF;
+    color: var(--tinta);
+}
+
+/* Foco visible para navegación por teclado */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid var(--ocre);
+    outline-offset: 2px;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+    background-color: var(--tinta);
+    background-image:
+        radial-gradient(ellipse at 78% 15%, rgba(31, 111, 92, 0.45), transparent 62%),
+        radial-gradient(ellipse at 12% 92%, rgba(200, 132, 60, 0.16), transparent 58%);
+    color: #FFFFFF;
+    padding-top: 5rem;
+    /* Espacio inferior para que el panel de búsqueda se superponga */
+    padding-bottom: 9rem;
+}
+
+.hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.25rem);
+    max-width: 15ch;
+    margin-bottom: 1.25rem;
+}
+
+.hero p {
+    color: #C9D6D0;
+    max-width: 48ch;
+    margin-bottom: 0;
+}
+
+/* ---------- Panel de búsqueda superpuesto ---------- */
+
+.buscador {
+    background-color: #FFFFFF;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    box-shadow: 0 18px 40px rgba(19, 37, 30, 0.14);
+    padding: 1.5rem;
+    /* Rompe el borde inferior del hero */
+    margin-top: -5.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.buscador label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gris);
+    margin-bottom: 0.35rem;
+}
+
+.buscador .form-control,
+.buscador .form-select {
+    border-color: var(--borde);
+    border-radius: 6px;
+    padding-block: 0.6rem;
+}
+
+.buscador .form-control:focus,
+.buscador .form-select:focus {
+    border-color: var(--verde);
+    box-shadow: 0 0 0 3px var(--verde-suave);
+}
+
+/* Selector Arriendo / Venta */
+.operacion .btn-check + .btn {
+    border: 1px solid var(--borde);
+    color: var(--gris);
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 0.4rem 1.1rem;
+}
+
+.operacion .btn-check:checked + .btn {
+    background-color: var(--verde-suave);
+    border-color: var(--verde);
+    color: var(--verde-hover);
+}
+
+/* ---------- Tarjetas de propiedad ---------- */
+
+.tarjeta-prop {
+    background-color: #FFFFFF;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    overflow: hidden;
+    height: 100%;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.tarjeta-prop:hover,
+.tarjeta-prop:focus-within {
+    border-color: var(--verde);
+    box-shadow: 0 10px 26px rgba(19, 37, 30, 0.10);
+}
+
+/* Marcador de imagen: se usa mientras no hay fotos reales en /img.
+   En el Sprint 2 se reemplaza por <img class="foto-prop" src="..."> */
+.foto-prop {
+    aspect-ratio: 4 / 3;
+    width: 100%;
+    object-fit: cover;
+    display: block;
+    background-color: #DDE4E0;
+    background-image: linear-gradient(135deg, #CBD8D2 0%, #E7EBE7 55%, #DCD5C8 100%);
+    position: relative;
+}
+
+.etiqueta-operacion {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background-color: #FFFFFF;
+    color: var(--tinta);
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 0.2rem 0.6rem;
+}
+
+.cuerpo-tarjeta { padding: 1.1rem 1.15rem 1.25rem; }
+
+.precio {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.15rem;
+}
+
+.precio .periodo {
+    font-family: var(--bs-body-font-family);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ocre);
+}
+
+.direccion {
+    font-weight: 600;
+    margin-bottom: 0.1rem;
+}
+
+.barrio {
+    color: var(--gris);
+    font-size: 0.92rem;
+    margin-bottom: 0.9rem;
+}
+
+.fichas {
+    display: flex;
+    gap: 1.1rem;
+    border-top: 1px solid var(--borde);
+    padding-top: 0.8rem;
+    color: var(--gris);
+    font-size: 0.9rem;
+}
+
+.ficha { display: flex; align-items: center; gap: 0.35rem; }
+.ficha svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--verde); }
+
+/* ---------- Bloque vacío del catálogo ---------- */
+
+.sin-resultados {
+    border: 1px dashed var(--borde);
+    border-radius: 10px;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--gris);
+}
+
+/* ---------- Pie de página ---------- */
+
+.pie {
+    background-color: var(--tinta);
+    color: #C9D6D0;
+    padding-block: 3rem 2rem;
+    margin-top: 4rem;
+}
+
+.pie h2 {
+    font-size: 1.2rem;
+    color: #FFFFFF;
+    margin-bottom: 0.75rem;
+}
+
+.pie a { color: #C9D6D0; text-decoration: none; }
+.pie a:hover, .pie a:focus-visible { color: #FFFFFF; text-decoration: underline; }
+
+.pie .legal {
+    border-top: 1px solid #2B3D36;
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    font-size: 0.88rem;
+}
+
+/* ---------- Accesibilidad ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+}
+
+@media (max-width: 767.98px) {
+    .hero { padding-top: 3rem; padding-bottom: 7rem; }
+    .buscador { margin-top: -4.5rem; }
+}
