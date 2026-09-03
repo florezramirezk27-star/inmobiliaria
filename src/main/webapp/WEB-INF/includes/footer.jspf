@@ -1,0 +1,43 @@
+<%--
+    footer.jspf — pie de página compartido.
+    Se incluye con: <%@ include file="/WEB-INF/includes/footer.jspf" %>
+--%>
+<footer class="pie">
+    <div class="container">
+
+        <div class="row g-4">
+
+            <div class="col-lg-5">
+                <h2 class="fuente-display">Inmobiliaria</h2>
+                <p class="medida mb-0">
+                    Proyecto académico del curso Programación en Java.
+                    Publicación y búsqueda de inmuebles en arriendo y venta.
+                </p>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <h2>Buscar</h2>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="${pageContext.request.contextPath}/propiedades?operacion=arriendo">Inmuebles en arriendo</a></li>
+                    <li class="mb-2"><a href="${pageContext.request.contextPath}/propiedades?operacion=venta">Inmuebles en venta</a></li>
+                    <li><a href="${pageContext.request.contextPath}/#catalogo">Destacados</a></li>
+                </ul>
+            </div>
+
+            <div class="col-6 col-lg-4">
+                <h2>Tu cuenta</h2>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="${pageContext.request.contextPath}/registro">Crear cuenta</a></li>
+                    <li class="mb-2"><a href="${pageContext.request.contextPath}/login">Ingresar</a></li>
+                    <li><a href="${pageContext.request.contextPath}/favoritos">Favoritos</a></li>
+                </ul>
+            </div>
+
+        </div>
+
+        <p class="legal mb-0">
+            Universidad — Programación en Java. Datos de muestra con fines académicos.
+        </p>
+
+    </div>
+</footer>
