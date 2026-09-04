@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-    Descriptor actualizado del DTD 2.3 al esquema 4.0.
+    Descriptor Servlet 3.1 — coincide exactamente con Tomcat 8.5.x,
+    que es lo que usa el equipo (confirmado: Tomcat/8.5.96).
 
-    Motivo: con el DOCTYPE de Servlet 2.3 el contenedor desactiva el
-    Expression Language en las JSP, por lo que ${...} se imprime como
-    texto literal en vez de evaluarse.
+    Historial: primero estaba en el DTD 2.3 (desactivaba el
+    Expression Language en las JSP: ${...} se imprimía literal en
+    vez de evaluarse). Se subió a 4.0 para arreglar eso, pero 4.0
+    es la versión de Servlet 4.0 (Tomcat 9), no la que corre este
+    equipo. Bajado a 3.1, que sí es exacto para Tomcat 8.5 y ya
+    soporta el-ignored (existe desde Servlet 2.4).
 -->
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-                             http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
-         version="4.0">
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
 
     <display-name>Inmobiliaria</display-name>
 
