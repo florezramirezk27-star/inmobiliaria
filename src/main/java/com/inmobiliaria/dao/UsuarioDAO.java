@@ -128,6 +128,43 @@ public class UsuarioDAO {
         );
     }
 
+    public int crearUsuario(Connection connection, Usuario usuario) throws SQLException {
+
+        String sql = """
+                INSERT INTO usuario (
+                    correo,
+                    password_hash,
+                    estado
+                )
+                VALUES (?, ?, ?)
+                """;
+
+        try (PreparedStatement statement = connection.prepareStatement(
+                sql,
+                java.sql.Statement.RETURN_GENERATED_KEYS
+        )) {
+
+            statement.setString(1, usuario.getCorreo());
+            statement.setString(2, usuario.getPasswordHash());
+            statement.setString(3, usuario.getEstado());
+
+            int filas = statement.executeUpdate();
+
+            if (filas == 0) {
+                throw new SQLException("No se pudo crear el usuario.");
+            }
+
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+
+                if (keys.next()) {
+                    return keys.getInt(1);
+                }
+            }
+        }
+
+        throw new SQLException("No se pudo obtener el ID del usuario.");
+    }
+
     public boolean actualizarUltimoAcceso(int idUsuario) {
 
         String sql = """
