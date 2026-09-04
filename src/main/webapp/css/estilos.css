@@ -278,6 +278,21 @@ select:focus-visible {
     color: var(--gris);
 }
 
+/* Marcador de imagen para la ficha de detalle cuando la propiedad no
+   tiene fotos cargadas todavía. A diferencia de .foto-prop (que se
+   ajusta al ancho de una tarjeta angosta en el catálogo), este va en
+   la columna principal de la ficha, mucho más ancha — por eso topa la
+   altura con clamp() en vez de depender solo de aspect-ratio: así
+   nunca crece más de lo razonable sin importar el ancho real del
+   contenedor en cada dispositivo. */
+.marcador-detalle {
+    width: 100%;
+    height: clamp(200px, 32vw, 380px);
+    border-radius: 10px;
+    background-color: #DDE4E0;
+    background-image: linear-gradient(135deg, #CBD8D2 0%, #E7EBE7 55%, #DCD5C8 100%);
+}
+
 /* ---------- Pie de página ---------- */
 
 .pie {
