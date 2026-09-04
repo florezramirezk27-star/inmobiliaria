@@ -29,6 +29,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="${pageContext.request.contextPath}/#catalogo">Catálogo</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/propiedades/formulario">Publicar propiedad</a>
+                </li>
             </ul>
 
             <div class="d-flex flex-column flex-lg-row gap-2">
