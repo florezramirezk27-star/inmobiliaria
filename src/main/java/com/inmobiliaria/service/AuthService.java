@@ -35,7 +35,7 @@ public class AuthService {
         usuario.setPasswordHash(hash);
         usuario.setEstado(estado != null ? estado : "ACTIVO");
 
-        int id = usuarioDAO.crear(usuario);
+        int id = usuarioDAO.crearUsuario(usuario);
         usuario.setIdUsuario(id);
         return usuario;
     }
