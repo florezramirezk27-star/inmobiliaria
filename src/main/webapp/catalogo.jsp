@@ -152,6 +152,8 @@
     <div class="row g-4">
         <c:forEach var="p" items="${propiedades}">
             <div class="col-12 col-sm-6 col-lg-4">
+                <a class="text-decoration-none" style="color: inherit;"
+                   href="${pageContext.request.contextPath}/propiedades/detalle?id=${p.id}">
                 <article class="tarjeta-prop">
 
                     <c:choose>
@@ -188,6 +190,7 @@
                         </div>
                     </div>
                 </article>
+                </a>
             </div>
         </c:forEach>
     </div>

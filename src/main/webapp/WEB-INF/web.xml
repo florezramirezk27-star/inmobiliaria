@@ -30,6 +30,22 @@
             <el-ignored>false</el-ignored>
             <trim-directive-whitespaces>true</trim-directive-whitespaces>
         </jsp-property-group>
+
+        <!--
+            Los fragmentos incluidos con <%@ include %> (navbar.jspf,
+            footer.jspf) NO coinciden con el patrón *.jsp de arriba, así
+            que sin este segundo grupo Tomcat los lee con la codificación
+            por defecto de la plataforma (no UTF-8). El síntoma es texto
+            como "ProgramaciÃ³n" en vez de "Programación": son los mismos
+            bytes UTF-8, mal interpretados uno por uno porque el archivo
+            se leyó como si fuera Latin-1. Este grupo cubre justo ese caso.
+        -->
+        <jsp-property-group>
+            <url-pattern>*.jspf</url-pattern>
+            <page-encoding>UTF-8</page-encoding>
+            <el-ignored>false</el-ignored>
+            <trim-directive-whitespaces>true</trim-directive-whitespaces>
+        </jsp-property-group>
     </jsp-config>
 
 </web-app>

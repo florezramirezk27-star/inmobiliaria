@@ -15,7 +15,7 @@
                 </p>
             </div>
 
-            <div class="col-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-lg-3">
                 <h2>Buscar</h2>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="${pageContext.request.contextPath}/propiedades?operacion=arriendo">Inmuebles en arriendo</a></li>
@@ -24,7 +24,7 @@
                 </ul>
             </div>
 
-            <div class="col-6 col-lg-4">
+            <div class="col-12 col-sm-6 col-lg-4">
                 <h2>Tu cuenta</h2>
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="${pageContext.request.contextPath}/registro">Crear cuenta</a></li>

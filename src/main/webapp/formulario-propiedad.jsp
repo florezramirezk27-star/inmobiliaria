@@ -72,6 +72,7 @@
     </c:if>
 
     <form method="post" action="${pageContext.request.contextPath}/propiedades/formulario"
+          enctype="multipart/form-data"
           class="tarjeta-prop p-4">
 
         <c:if test="${not empty propiedad}">
@@ -258,6 +259,88 @@
                        value="${not empty propiedad ? propiedad.barrio : param.barrio}">
             </div>
 
+        </div>
+
+        <%-- ---------- Características ---------- --%>
+        <c:if test="${not empty todasLasCaracteristicas}">
+            <hr class="my-4">
+            <h2 class="h5 mb-3">Características</h2>
+
+            <c:forEach var="categoria" items="${categoriasCaracteristica}">
+
+                <c:set var="hayEnCategoria" value="false"/>
+                <c:forEach var="car" items="${todasLasCaracteristicas}">
+                    <c:if test="${car.categoria == categoria}"><c:set var="hayEnCategoria" value="true"/></c:if>
+                </c:forEach>
+
+                <c:if test="${hayEnCategoria}">
+                    <p class="fw-bold mb-2" style="font-size: 0.85rem; color: var(--gris); text-transform: uppercase; letter-spacing: 0.03em;">
+                        <c:choose>
+                            <c:when test="${categoria == 'INTERIOR'}">Interior</c:when>
+                            <c:when test="${categoria == 'EXTERIOR'}">Exterior</c:when>
+                            <c:when test="${categoria == 'CONJUNTO'}">Conjunto</c:when>
+                            <c:otherwise>Seguridad</c:otherwise>
+                        </c:choose>
+                    </p>
+                    <div class="row row-cols-2 row-cols-md-3 g-2 mb-3">
+                        <c:forEach var="car" items="${todasLasCaracteristicas}">
+                            <c:if test="${car.categoria == categoria}">
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="idsCaracteristica" value="${car.id}"
+                                               id="car${car.id}"
+                                               ${caracteristicasAsignadas.contains(car.id) ? 'checked' : ''}>
+                                        <label class="form-check-label" for="car${car.id}">
+                                            ${car.nombre}
+                                        </label>
+                                    </div>
+                                </div>
+                            </c:if>
+                        </c:forEach>
+                    </div>
+                </c:if>
+            </c:forEach>
+        </c:if>
+
+        <%-- ---------- Imágenes ---------- --%>
+        <hr class="my-4">
+        <h2 class="h5 mb-3">Fotos</h2>
+
+        <c:if test="${not empty imagenesActuales}">
+            <p class="mb-2" style="font-size: 0.9rem; color: var(--gris);">
+                Marca la foto que quieres como portada. Para quitar una foto, marca "Eliminar" y guarda.
+            </p>
+            <div class="row g-3 mb-3">
+                <c:forEach var="img" items="${imagenesActuales}">
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="border rounded p-2" style="border-color: var(--borde) !important;">
+                            <img src="${pageContext.request.contextPath}/${img.ruta}"
+                                 alt="${img.textoAlt}"
+                                 class="w-100 rounded mb-2"
+                                 style="aspect-ratio: 4/3; object-fit: cover;">
+                            <div class="form-check" style="font-size: 0.85rem;">
+                                <input class="form-check-input" type="radio" name="imagenPortada"
+                                       value="${img.id}" id="portada${img.id}"
+                                       ${img.esPortada ? 'checked' : ''}>
+                                <label class="form-check-label" for="portada${img.id}">Portada</label>
+                            </div>
+                            <div class="form-check" style="font-size: 0.85rem;">
+                                <input class="form-check-input" type="checkbox" name="eliminarImagen"
+                                       value="${img.id}" id="eliminar${img.id}">
+                                <label class="form-check-label text-danger" for="eliminar${img.id}">Eliminar</label>
+                            </div>
+                        </div>
+                    </div>
+                </c:forEach>
+            </div>
+        </c:if>
+
+        <label class="form-label" for="imagenesNuevas">Agregar fotos nuevas</label>
+        <input type="file" class="form-control" id="imagenesNuevas" name="imagenesNuevas"
+               accept="image/png, image/jpeg, image/webp" multiple>
+        <div class="form-text">
+            JPG, PNG o WEBP, máximo 5 MB por foto. Puedes seleccionar varias a la vez.
         </div>
 
         <div class="d-flex gap-2 mt-4">
