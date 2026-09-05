@@ -491,4 +491,52 @@ public class PropiedadDAO {
         Timestamp ts = rs.getTimestamp(columna);
         return ts == null ? null : ts.toLocalDateTime();
     }
+
+    public List<Propiedad> listarPorInmobiliaria(int inmobiliariaId)
+            throws SQLException {
+
+        String sql = """
+                SELECT p.*, 
+                       t.nombre AS tipo_nombre,
+                       t.slug AS tipo_slug,
+                       c.nombre AS ciudad_nombre,
+                       c.departamento AS ciudad_departamento,
+                       im.nombre_comercial AS inmobiliaria_nombre,
+                       (
+                           SELECT img.ruta
+                           FROM imagen_propiedad img
+                           WHERE img.id_propiedad = p.id_propiedad
+                           ORDER BY img.es_portada DESC, img.orden ASC
+                           LIMIT 1
+                       ) AS ruta_portada
+                FROM propiedad p
+                JOIN tipo_propiedad t
+                  ON t.id_tipo_propiedad = p.id_tipo_propiedad
+                JOIN ciudad c
+                  ON c.id_ciudad = p.id_ciudad
+                JOIN inmobiliaria im
+                  ON im.id_inmobiliaria = p.id_inmobiliaria
+                WHERE p.id_inmobiliaria = ?
+                ORDER BY p.creado_en DESC
+                """;
+
+        List<Propiedad> propiedades = new ArrayList<>();
+
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, inmobiliariaId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+                    propiedades.add(mapearCompleta(rs));
+                }
+            }
+        }
+
+        return propiedades;
+    }
 }

@@ -20,6 +20,10 @@
 
 <p>Bienvenido al panel del agente.</p>
 
+<a href="${pageContext.request.contextPath}/inmobiliaria/solicitudes">
+    Gestionar solicitudes
+</a>
+
 <a href="${pageContext.request.contextPath}/logout">
     Cerrar sesión
 </a>

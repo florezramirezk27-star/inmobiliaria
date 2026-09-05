@@ -44,4 +44,58 @@ public class InmobiliariaDAO {
         }
         return inmobiliarias;
     }
+
+    public Inmobiliaria buscarPorUsuario(int usuarioId) throws SQLException {
+
+        String sql = """
+                SELECT
+                    id_inmobiliaria,
+                    nombre_comercial,
+                    nit,
+                    telefono,
+                    id_usuario
+                FROM inmobiliaria
+                WHERE id_usuario = ?
+                """;
+
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, usuarioId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                if (rs.next()) {
+
+                    Inmobiliaria inmobiliaria = new Inmobiliaria();
+
+                    inmobiliaria.setId(
+                            rs.getInt("id_inmobiliaria")
+                    );
+
+                    inmobiliaria.setNombreComercial(
+                            rs.getString("nombre_comercial")
+                    );
+
+                    inmobiliaria.setNit(
+                            rs.getString("nit")
+                    );
+
+                    inmobiliaria.setTelefono(
+                            rs.getString("telefono")
+                    );
+
+                    inmobiliaria.setUsuarioId(
+                            rs.getInt("id_usuario")
+                    );
+
+                    return inmobiliaria;
+                }
+            }
+        }
+
+        return null;
+    }
 }
