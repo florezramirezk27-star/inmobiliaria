@@ -29,7 +29,8 @@
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><a href="${pageContext.request.contextPath}/registro">Crear cuenta</a></li>
                     <li class="mb-2"><a href="${pageContext.request.contextPath}/login">Ingresar</a></li>
-                    <li><a href="${pageContext.request.contextPath}/favoritos">Favoritos</a></li>
+                    <li class="mb-2"><a href="${pageContext.request.contextPath}/favoritos">Favoritos</a></li>
+                    <li><a href="${pageContext.request.contextPath}/citas">Mis citas</a></li>
                 </ul>
             </div>
 
