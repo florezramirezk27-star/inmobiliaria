@@ -191,6 +191,32 @@ public class SolicitudDAO {
         }
     }
 
+    /** @return true si la solicitud pertenece al cliente indicado. */
+    public boolean perteneceACliente(int idSolicitud, int idCliente)
+            throws SQLException {
+
+        String sql = """
+                SELECT 1
+                FROM solicitud
+                WHERE id_solicitud = ?
+                  AND id_cliente = ?
+                LIMIT 1
+                """;
+
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, idSolicitud);
+            ps.setInt(2, idCliente);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     // ============================================================
     // Apoyo interno
     // ============================================================

@@ -1,6 +1,7 @@
 package com.inmobiliaria.web;
 
 import com.inmobiliaria.dao.DocumentoDAO;
+import com.inmobiliaria.dao.SolicitudDAO;
 import com.inmobiliaria.model.Documento;
 
 import javax.servlet.ServletException;
@@ -51,6 +52,7 @@ public class DocumentoServlet extends HttpServlet {
     );
 
     private final DocumentoDAO documentoDAO = new DocumentoDAO();
+    private final SolicitudDAO solicitudDAO = new SolicitudDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -78,6 +80,17 @@ public class DocumentoServlet extends HttpServlet {
 
         try {
             int idSolicitud = Integer.parseInt(solicitudId.trim());
+
+            int idCliente = (int) session.getAttribute("usuarioId");
+
+            if (!solicitudDAO.perteneceACliente(idSolicitud, idCliente)) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No tienes permiso para acceder a esta solicitud."
+                );
+                return;
+            }
+
             request.setAttribute("solicitudId", idSolicitud);
             request.setAttribute("documentos", documentoDAO.listarPorSolicitud(idSolicitud));
         } catch (SQLException e) {
@@ -117,6 +130,24 @@ public class DocumentoServlet extends HttpServlet {
             request.setAttribute("error", "El identificador de la solicitud no es válido.");
             request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
                     .forward(request, response);
+            return;
+        }
+
+        int idCliente = (int) session.getAttribute("usuarioId");
+
+        try {
+            if (!solicitudDAO.perteneceACliente(idSolicitud, idCliente)) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No tienes permiso para modificar esta solicitud."
+                );
+                return;
+            }
+        } catch (SQLException e) {
+            getServletContext().log("Error al validar la solicitud del documento", e);
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            );
             return;
         }
 
@@ -194,7 +225,33 @@ public class DocumentoServlet extends HttpServlet {
             Documento documento = documentoDAO.buscarPorId(idDocumento);
 
             if (documento == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "El documento no existe.");
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "El documento no existe."
+                );
+                return;
+            }
+
+            HttpSession session = request.getSession(false);
+
+            if (session == null || session.getAttribute("usuarioId") == null) {
+                response.sendRedirect(
+                        request.getContextPath() + "/login"
+                );
+                return;
+            }
+
+            int idCliente =
+                    (int) session.getAttribute("usuarioId");
+
+            if (!solicitudDAO.perteneceACliente(
+                    documento.getSolicitudId(),
+                    idCliente
+            )) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No tienes permiso para descargar este documento."
+                );
                 return;
             }
 
