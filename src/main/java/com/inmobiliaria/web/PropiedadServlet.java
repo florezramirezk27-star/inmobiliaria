@@ -1,5 +1,6 @@
 package com.inmobiliaria.web;
 
+import com.inmobiliaria.dao.FavoritoDAO;
 import com.inmobiliaria.dao.FiltroPropiedad;
 import com.inmobiliaria.dao.PropiedadDAO;
 import com.inmobiliaria.model.Operacion;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Sirve el catálogo público de propiedades: la landing lo usa para
@@ -27,11 +29,28 @@ import java.util.List;
 @WebServlet("/propiedades")
 public class PropiedadServlet extends HttpServlet {
 
+    // Ver el javadoc de FavoritoServlet: usuario de prueba fijo hasta
+    // que exista sesión real. Cuando eso pase, este catálogo debe
+    // tomar el id_usuario de la sesión (o simplemente no calcular
+    // favoritosIds en absoluto si nadie ha iniciado sesión).
+    private static final int USUARIO_PRUEBA_ID = 4;
+
     private final PropiedadDAO propiedadDAO = new PropiedadDAO();
+    private final FavoritoDAO favoritoDAO = new FavoritoDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Se calcula AQUÍ, antes del forward hacia catalogo.jsp: dentro de
+        // la JSP, request.getRequestURI() ya no devuelve esta URL sino la
+        // ruta del propio archivo JSP destino (comportamiento normal de
+        // forward() según la especificación Servlet) — usarlo allá había
+        // estado mandando el botón de favorito de vuelta a
+        // "/catalogo.jsp" en crudo, sin pasar por este controlador.
+        String urlActual = request.getRequestURI()
+                + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+        request.setAttribute("urlActual", urlActual);
 
         FiltroPropiedad filtro = construirFiltroDesde(request);
 
@@ -40,12 +59,16 @@ public class PropiedadServlet extends HttpServlet {
             request.setAttribute("propiedades", propiedades);
             request.setAttribute("filtro", filtro);
 
+            Set<Integer> favoritosIds = favoritoDAO.listarIdsPropiedadPorUsuario(USUARIO_PRUEBA_ID);
+            request.setAttribute("favoritosIds", favoritosIds);
+
         } catch (SQLException e) {
             // No se deja pasar la excepción cruda al usuario final:
             // se registra en el log del servidor y se muestra una
             // lista vacía con un mensaje entendible en la JSP.
             getServletContext().log("Error al consultar el catálogo de propiedades", e);
             request.setAttribute("propiedades", List.of());
+            request.setAttribute("favoritosIds", Set.of());
             request.setAttribute("errorConsulta",
                     "No fue posible cargar el catálogo en este momento. Intenta de nuevo en unos minutos.");
         }

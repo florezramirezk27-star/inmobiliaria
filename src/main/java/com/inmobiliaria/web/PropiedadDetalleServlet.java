@@ -1,6 +1,7 @@
 package com.inmobiliaria.web;
 
 import com.inmobiliaria.dao.CaracteristicaDAO;
+import com.inmobiliaria.dao.FavoritoDAO;
 import com.inmobiliaria.dao.ImagenPropiedadDAO;
 import com.inmobiliaria.dao.PropiedadDAO;
 import com.inmobiliaria.model.Caracteristica;
@@ -26,9 +27,13 @@ import java.util.List;
 @WebServlet("/propiedades/detalle")
 public class PropiedadDetalleServlet extends HttpServlet {
 
+    // Ver el javadoc de FavoritoServlet.
+    private static final int USUARIO_PRUEBA_ID = 4;
+
     private final PropiedadDAO propiedadDAO = new PropiedadDAO();
     private final ImagenPropiedadDAO imagenDAO = new ImagenPropiedadDAO();
     private final CaracteristicaDAO caracteristicaDAO = new CaracteristicaDAO();
+    private final FavoritoDAO favoritoDAO = new FavoritoDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -65,6 +70,8 @@ public class PropiedadDetalleServlet extends HttpServlet {
                 request.setAttribute("caracteristicas", caracteristicas);
                 request.setAttribute("categoriasCaracteristica",
                         List.of("INTERIOR", "EXTERIOR", "CONJUNTO", "SEGURIDAD"));
+                request.setAttribute("esFavorito",
+                        favoritoDAO.esFavorito(USUARIO_PRUEBA_ID, id));
             }
 
         } catch (SQLException e) {
