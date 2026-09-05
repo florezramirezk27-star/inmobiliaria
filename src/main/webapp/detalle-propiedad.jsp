@@ -62,6 +62,9 @@
         <rect x="3" y="3" width="18" height="18" rx="2"/>
         <path d="M9 16V8h4a3 3 0 0 1 0 6H9"/>
     </symbol>
+    <symbol id="ico-corazon" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20.5s-7-4.35-9.5-8.6C.9 8.9 2.4 5.5 5.9 5.5c2 0 3.4 1.1 4.4 2.5.9-1.4 2.3-2.5 4.4-2.5 3.5 0 5 3.4 3.4 6.4-2.5 4.25-9.1 8.6-9.1 8.6Z"/>
+    </symbol>
 </svg>
 
 <%@ include file="/WEB-INF/includes/navbar.jspf" %>
@@ -212,6 +215,20 @@
                     <hr>
 
                     <div class="d-grid gap-2">
+                        <form method="post" class="d-grid"
+                              action="${pageContext.request.contextPath}/propiedades/favorito">
+                            <input type="hidden" name="propiedadId" value="${propiedad.id}">
+                            <input type="hidden" name="volver"
+                                   value="${pageContext.request.contextPath}/propiedades/detalle?id=${propiedad.id}">
+                            <button type="submit" class="boton-favorito-grande ${esFavorito ? 'activo' : ''}">
+                                <svg><use href="#ico-corazon"/></svg>
+                                <c:choose>
+                                    <c:when test="${esFavorito}">Quitar de favoritos</c:when>
+                                    <c:otherwise>Agregar a favoritos</c:otherwise>
+                                </c:choose>
+                            </button>
+                        </form>
+
                         <a class="btn btn-marca"
                            href="${pageContext.request.contextPath}/propiedades/formulario?id=${propiedad.id}">
                             Editar propiedad

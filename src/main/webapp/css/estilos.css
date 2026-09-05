@@ -228,6 +228,76 @@ select:focus-visible {
     padding: 0.2rem 0.6rem;
 }
 
+/* Botón de favorito superpuesto sobre la tarjeta del catálogo.
+   Es un <form> HERMANO del <a> que envuelve la tarjeta, nunca
+   anidado dentro de él: un <button> dentro de un <a> hace que el
+   clic dispare a la vez la navegación del enlace y el envío del
+   formulario, en conflicto. Por eso en catalogo.jsp ambos quedan
+   dentro de un mismo contenedor position:relative, superpuestos
+   solo visualmente. */
+.boton-favorito-form {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 3;
+    margin: 0;
+}
+
+.boton-favorito {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gris);
+    box-shadow: 0 2px 6px rgba(19, 37, 30, 0.15);
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.boton-favorito:hover { transform: scale(1.08); }
+
+.boton-favorito svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+}
+
+.boton-favorito.activo { color: #C0392B; }
+.boton-favorito.activo svg { fill: currentColor; }
+
+/* Misma pieza, tamaño más grande, para la barra lateral de la ficha de detalle. */
+.boton-favorito-grande {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background-color: #FFFFFF;
+    color: var(--tinta);
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.boton-favorito-grande svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+}
+
+.boton-favorito-grande.activo { color: #C0392B; border-color: #EBC5C0; }
+.boton-favorito-grande.activo svg { fill: currentColor; }
+
 .cuerpo-tarjeta { padding: 1.1rem 1.15rem 1.25rem; }
 
 .precio {

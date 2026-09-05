@@ -57,6 +57,9 @@
         <rect x="4" y="4" width="16" height="16" rx="1.5"/>
         <path d="M8 4v4H4M16 20v-4h4"/>
     </symbol>
+    <symbol id="ico-corazon" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20.5s-7-4.35-9.5-8.6C.9 8.9 2.4 5.5 5.9 5.5c2 0 3.4 1.1 4.4 2.5.9-1.4 2.3-2.5 4.4-2.5 3.5 0 5 3.4 3.4 6.4-2.5 4.25-9.1 8.6-9.1 8.6Z"/>
+    </symbol>
 </svg>
 
 <%@ include file="/WEB-INF/includes/navbar.jspf" %>
@@ -152,9 +155,25 @@
     <div class="row g-4">
         <c:forEach var="p" items="${propiedades}">
             <div class="col-12 col-sm-6 col-lg-4">
-                <a class="text-decoration-none" style="color: inherit;"
-                   href="${pageContext.request.contextPath}/propiedades/detalle?id=${p.id}">
-                <article class="tarjeta-prop">
+                <div class="position-relative">
+
+                    <%-- El botón vive FUERA del <a> — ver el comentario en
+                         estilos.css sobre por qué no se anida un <button>
+                         dentro de un enlace. --%>
+                    <form method="post" class="boton-favorito-form"
+                          action="${pageContext.request.contextPath}/propiedades/favorito">
+                        <input type="hidden" name="propiedadId" value="${p.id}">
+                        <input type="hidden" name="volver" value="${urlActual}">
+                        <button type="submit"
+                                class="boton-favorito ${favoritosIds.contains(p.id) ? 'activo' : ''}"
+                                aria-label="${favoritosIds.contains(p.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}">
+                            <svg><use href="#ico-corazon"/></svg>
+                        </button>
+                    </form>
+
+                    <a class="text-decoration-none" style="color: inherit;"
+                       href="${pageContext.request.contextPath}/propiedades/detalle?id=${p.id}">
+                    <article class="tarjeta-prop">
 
                     <c:choose>
                         <c:when test="${p.tienePortada}">
@@ -190,7 +209,9 @@
                         </div>
                     </div>
                 </article>
-                </a>
+                    </a>
+
+                </div>
             </div>
         </c:forEach>
     </div>
