@@ -230,6 +230,11 @@
                         </form>
 
                         <a class="btn btn-marca"
+                           href="${pageContext.request.contextPath}/propiedades/citas?id=${propiedad.id}">
+                            Agendar visita
+                        </a>
+
+                        <a class="btn btn-contorno" style="color: var(--tinta); border-color: var(--borde);"
                            href="${pageContext.request.contextPath}/propiedades/formulario?id=${propiedad.id}">
                             Editar propiedad
                         </a>
