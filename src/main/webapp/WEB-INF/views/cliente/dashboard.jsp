@@ -14,6 +14,10 @@
 
 <p>Bienvenido al sistema inmobiliario.</p>
 
+<a href="${pageContext.request.contextPath}/cliente/perfil">
+    Mi perfil
+</a>
+
 <a href="${pageContext.request.contextPath}/logout">
     Cerrar sesión
 </a>
