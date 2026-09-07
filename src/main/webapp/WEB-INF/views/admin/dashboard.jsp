@@ -20,6 +20,21 @@
 
 <p>Bienvenido al panel administrativo.</p>
 
+<a href="${pageContext.request.contextPath}/admin/usuarios"
+   class="btn btn-primary">
+    Gestionar usuarios
+</a>
+
+<a href="${pageContext.request.contextPath}/admin/auditoria"
+   class="btn btn-dark">
+    Ver auditoría
+</a>
+
+<a href="${pageContext.request.contextPath}/admin/reportes"
+   class="btn btn-success">
+    Ver reportes
+</a>
+
 <a href="${pageContext.request.contextPath}/logout">
     Cerrar sesión
 </a>
