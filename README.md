@@ -37,7 +37,8 @@ Lo que llevamos hasta ahora:
 - **Catálogo de propiedades** con búsqueda, filtros y fichas de detalle, respaldado por
   una vista `v_propiedad_catalogo`.
 - **Formulario de propiedades** con creación/edición, asignación de características y
-  subida de imágenes (multipart).
+  subida de imágenes (multipart). Restringido al rol **AGENTE** y validación de
+  pertenencia: solo la inmobiliaria dueña de la propiedad puede editarla.
 - **Autenticación y sesiones** con BCrypt, roles (ADMIN / AGENTE / CLIENTE) y filtros
   de protección por URL.
 - **Módulo de solicitudes del agente**: una inmobiliaria consulta y aprueba/rechaza las
@@ -69,6 +70,14 @@ Lo que llevamos hasta ahora:
   `FavoritoServlet`.
 - **Vistas:** `index.jsp`, `catalogo.jsp`, `detalle-propiedad.jsp`,
   `formulario-propiedad.jsp`, `favoritos.jsp`.
+
+**Protección del formulario de propiedades:** el servlet `PropiedadFormServlet` está
+mapeado a `/inmobiliaria/propiedades/formulario`, por lo que `AuthFilter` exige siempre
+el rol **AGENTE** para crear/editarla. Además, el GET de edición valida pertenencia con
+`perteneceAlAgente(propiedadId, usuarioId)`: localiza la inmobiliaria del usuario
+autenticado (`InmobiliariaDAO.buscarPorUsuario()`) y comprueba que la propiedad esté
+entre las listadas para esa inmobiliaria (`PropiedadDAO.listarPorInmobiliaria()`). Si el
+usuario no es el agente dueño responde `403 Forbidden`.
 
 ### 3. Solicitudes y documentos (parcial)
 
@@ -276,7 +285,7 @@ Cada servlet es un controlador mapeado por anotación `@WebServlet`. Los princip
 | `/` | — | `index.jsp` → catálogo público |
 | `/propiedades` | `PropiedadServlet` | Búsqueda/listado del catálogo |
 | `/propiedades/detalle` | `PropiedadDetalleServlet` | Ficha de una propiedad |
-| `/propiedades/formulario` | `PropiedadFormServlet` | Crear/editar propiedad + imágenes |
+| `/inmobiliaria/propiedades/formulario` | `PropiedadFormServlet` | Crear/editar propiedad + imágenes |
 | `/login`, `/logout`, `/registro` | `Login`, `Logout`, `Registro` | Autenticación |
 | `/cliente/dashboard` | `ClienteDashboardServlet` | Panel del cliente |
 | `/cliente/favoritos` | `FavoritoServlet` | Favoritos del cliente |
@@ -297,6 +306,11 @@ El filtro `AuthFilter` exige sesión y rol según el prefijo de la URL:
 | `/agente/*`, `/inmobiliaria/*` | AGENTE |
 | `/cliente/*` | CLIENTE |
 | Otros | acceso público |
+
+Además del filtro, el servlet revalida autorización a nivel de recurso: el GET de
+edición de `PropiedadFormServlet` responde `403` si el agente autenticado no es dueño
+de la propiedad editada (por ejemplo, `agente.norte` no puede editar propiedades de la
+inmobiliaria 1). Esta validación es independiente del rol exigido por URL.
 
 ### Flujo del módulo de solicitudes (agente)
 
@@ -346,6 +360,10 @@ Para probar la conexión de forma aislada existe la clase `DatabaseTest`.
   parámetros de `PreparedStatement` (text blocks `"""..."""` para SQL); nunca se
   concatena entrada del usuario en la consulta.
 - **Contraseñas con BCrypt:** nunca en texto plano; se verifican con `BCrypt.checkpw()`.
+- **Autorización por recurso:** además de los roles por URL (`AuthFilter`), los
+  servlets revalidan la pertenencia del dato (p. ej. `PropiedadFormServlet`
+  comprueba con `perteneceAlAgente()` que la propiedad pertenezca a la inmobiliaria
+  del agente autenticado antes de dejarlo editar).
 - **Manejo de duplicados:** la excepción `DuplicidadException` traduce las violaciones
   UNIQUE de MySQL a mensajes claros para el usuario.
 - **Validación en servlets:** mensajes de error en español, sin exponer excepciones

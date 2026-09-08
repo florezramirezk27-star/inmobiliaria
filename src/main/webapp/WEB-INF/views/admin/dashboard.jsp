@@ -35,6 +35,11 @@
     Ver reportes
 </a>
 
+<a href="${pageContext.request.contextPath}/propiedades/citas?id=1"
+   class="btn btn-info">
+    Consultar citas
+</a>
+
 <a href="${pageContext.request.contextPath}/logout">
     Cerrar sesión
 </a>

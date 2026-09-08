@@ -21,6 +21,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
 import java.io.IOException;
@@ -42,14 +43,14 @@ import java.util.UUID;
  * la asignación de características (checkboxes) y la subida de
  * fotos, todo en un mismo envío.
  *
- * GET /propiedades/formulario           -> formulario en blanco (crear)
- * GET /propiedades/formulario?id=5      -> formulario con los datos, las
- *                                          características marcadas y las
- *                                          fotos ya cargadas de la
- *                                          propiedad 5 (editar)
- * POST /propiedades/formulario          -> guarda todo: datos,
- *                                          características e imágenes
- *                                          nuevas, en una sola pasada
+ * GET /inmobiliaria/propiedades/formulario           -> formulario en blanco (crear)
+ * GET /inmobiliaria/propiedades/formulario?id=5      -> formulario con los datos, las
+ *                                                     características marcadas y las
+ *                                                     fotos ya cargadas de la
+ *                                                     propiedad 5 (editar)
+ * POST /inmobiliaria/propiedades/formulario          -> guarda todo: datos,
+ *                                                      características e imágenes
+ *                                                      nuevas, en una sola pasada
  *
  * ADVERTENCIA IMPORTANTE sobre las imágenes subidas — probado y
  * confirmado en este mismo proyecto: las fotos se guardan con
@@ -70,7 +71,7 @@ import java.util.UUID;
  * control de acceso por rol. Ver el comentario original de esta
  * clase en el commit anterior para el detalle completo.
  */
-@WebServlet("/propiedades/formulario")
+@WebServlet("/inmobiliaria/propiedades/formulario")
 @MultipartConfig(
         maxFileSize = 5L * 1024 * 1024,       // 5 MB por archivo
         maxRequestSize = 25L * 1024 * 1024,   // 25 MB por envío completo
@@ -105,14 +106,45 @@ public class PropiedadFormServlet extends HttpServlet {
                 int id = Integer.parseInt(idParam.trim());
                 Propiedad existente = propiedadDAO.buscarPorId(id);
 
+                HttpSession session = request.getSession(false);
+
+                Integer usuarioId =
+                        session != null
+                                ? (Integer) session.getAttribute("usuarioId")
+                                : null;
+
                 if (existente == null) {
-                    request.setAttribute("error", "La propiedad solicitada no existe.");
+
+                    request.setAttribute(
+                            "error",
+                            "La propiedad solicitada no existe."
+                    );
+
+                } else if (
+                        usuarioId == null
+                        || !perteneceAlAgente(id, usuarioId)
+                ) {
+
+                    response.sendError(
+                            HttpServletResponse.SC_FORBIDDEN,
+                            "No tienes permiso para editar esta propiedad."
+                    );
+
+                    return;
+
                 } else {
+
                     request.setAttribute("propiedad", existente);
-                    request.setAttribute("caracteristicasAsignadas",
-                            idsDe(caracteristicaDAO.listarPorPropiedad(id)));
-                    request.setAttribute("imagenesActuales",
-                            imagenDAO.listarPorPropiedad(id));
+
+                    request.setAttribute(
+                            "caracteristicasAsignadas",
+                            idsDe(caracteristicaDAO.listarPorPropiedad(id))
+                    );
+
+                    request.setAttribute(
+                            "imagenesActuales",
+                            imagenDAO.listarPorPropiedad(id)
+                    );
                 }
             }
 
@@ -136,6 +168,27 @@ public class PropiedadFormServlet extends HttpServlet {
         // el javadoc de esa clase para el porqué era necesario.
         request.setAttribute("caracteristicasAsignadas", new HashSet<Integer>());
 
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            response.sendError(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Sesión no válida"
+            );
+            return;
+        }
+
+        Integer usuarioId =
+                (Integer) session.getAttribute("usuarioId");
+
+        if (usuarioId == null) {
+            response.sendError(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Sesión no válida"
+            );
+            return;
+        }
+
         try {
             cargarCatalogos(request);
         } catch (SQLException e) {
@@ -150,13 +203,49 @@ public class PropiedadFormServlet extends HttpServlet {
             return;
         }
 
+        Inmobiliaria inmobiliaria;
+        try {
+            inmobiliaria = inmobiliariaDAO.buscarPorUsuario(usuarioId);
+        } catch (SQLException e) {
+            getServletContext().log("Error al localizar la inmobiliaria del agente", e);
+            request.setAttribute("errores",
+                    List.of("No fue posible validar tu inmobiliaria en este momento. Intenta de nuevo en unos minutos."));
+            request.getRequestDispatcher("/formulario-propiedad.jsp").forward(request, response);
+            return;
+        }
+
+        if (inmobiliaria == null) {
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "El usuario no tiene una inmobiliaria asignada."
+            );
+            return;
+        }
+
         Propiedad p = construirDesde(request);
+
+        p.setInmobiliariaId(
+                inmobiliaria.getId()
+        );
+        p.setUsuarioId(usuarioId);
+
         String idParam = request.getParameter("idPropiedad");
         boolean esEdicion = idParam != null && !idParam.isBlank();
 
         try {
             if (esEdicion) {
                 p.setId(Integer.parseInt(idParam));
+
+                if (!perteneceAlAgente(p.getId(), usuarioId)) {
+
+                    response.sendError(
+                            HttpServletResponse.SC_FORBIDDEN,
+                            "No tienes permiso para modificar esta propiedad."
+                    );
+
+                    return;
+                }
+
                 propiedadDAO.actualizar(p);
             } else {
                 propiedadDAO.insertar(p);
@@ -494,6 +583,36 @@ public class PropiedadFormServlet extends HttpServlet {
             return new BigDecimal(valor.trim());
         } catch (NumberFormatException e) {
             return porDefecto;
+        }
+    }
+
+    private boolean perteneceAlAgente(
+            int propiedadId,
+            int usuarioId
+    ) {
+
+        try {
+
+            Inmobiliaria inmobiliaria =
+                    inmobiliariaDAO.buscarPorUsuario(usuarioId);
+
+            if (inmobiliaria == null) {
+                return false;
+            }
+
+            return propiedadDAO
+                    .listarPorInmobiliaria(inmobiliaria.getId())
+                    .stream()
+                    .anyMatch(propiedad ->
+                            propiedad.getId() == propiedadId
+                    );
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "No fue posible validar la propiedad del agente",
+                    e
+            );
         }
     }
 }

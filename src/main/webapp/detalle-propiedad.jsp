@@ -234,8 +234,13 @@
                             Agendar visita
                         </a>
 
+                        <a class="btn btn-contorno"
+                           href="${pageContext.request.contextPath}/cliente/solicitudes?accion=nueva&id=${propiedad.id}">
+                            Solicitar compra / arriendo
+                        </a>
+
                         <a class="btn btn-contorno" style="color: var(--tinta); border-color: var(--borde);"
-                           href="${pageContext.request.contextPath}/propiedades/formulario?id=${propiedad.id}">
+                           href="${pageContext.request.contextPath}/inmobiliaria/propiedades/formulario?id=${propiedad.id}">
                             Editar propiedad
                         </a>
                     </div>

@@ -71,17 +71,17 @@
 
                             <form
                                 method="post"
-                                action="${pageContext.request.contextPath}/cliente/favoritos">
+                                action="${pageContext.request.contextPath}/propiedades/favorito">
 
                                 <input
                                     type="hidden"
-                                    name="idPropiedad"
+                                    name="propiedadId"
                                     value="<%= favorito.getIdPropiedad() %>">
 
                                 <input
                                     type="hidden"
-                                    name="accion"
-                                    value="eliminar">
+                                    name="volver"
+                                    value="${pageContext.request.contextPath}/cliente/favoritos">
 
                                 <button
                                     type="submit"

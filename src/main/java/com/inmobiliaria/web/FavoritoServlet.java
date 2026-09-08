@@ -9,6 +9,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -25,21 +26,16 @@ import java.util.List;
  *                                       vuelve a la página desde la
  *                                       que se llamó
  *
- * ADVERTENCIA — igual que en PropiedadFormServlet: sin login
- * integrado todavía, no hay usuario autenticado real. Se usa un
- * usuario de prueba fijo (id_usuario = 4, "María Rojas" en el DML)
- * para poder construir y probar la funcionalidad completa ahora
- * mismo. Cuando el módulo de auth-security se integre, hay que
- * reemplazar USUARIO_PRUEBA_ID por el id_usuario real de la sesión
- * (típicamente algo como
- * ((Usuario) request.getSession().getAttribute("usuario")).getIdUsuario())
- * y proteger esta ruta para que solo usuarios autenticados puedan
- * marcar favoritos.
+ * El usuario se obtiene siempre de la sesión (usuarioId); nunca se
+ * acepta un id de usuario enviado por el cliente. Sin sesión válida
+ * se redirige al login.
  */
-@WebServlet({"/favoritos", "/propiedades/favorito"})
+@WebServlet({
+        "/favoritos",
+        "/cliente/favoritos",
+        "/propiedades/favorito"
+})
 public class FavoritoServlet extends HttpServlet {
-
-    private static final int USUARIO_PRUEBA_ID = 4;
 
     private final FavoritoDAO favoritoDAO = new FavoritoDAO();
     private final PropiedadDAO propiedadDAO = new PropiedadDAO();
@@ -48,8 +44,13 @@ public class FavoritoServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        Integer usuarioId = usuarioDeSesion(request, response);
+        if (usuarioId == null) {
+            return;
+        }
+
         try {
-            List<Integer> ids = favoritoDAO.listarIdsPropiedadPorUsuarioOrdenados(USUARIO_PRUEBA_ID);
+            List<Integer> ids = favoritoDAO.listarIdsPropiedadPorUsuarioOrdenados(usuarioId);
             List<Propiedad> propiedades = new ArrayList<>();
 
             for (Integer id : ids) {
@@ -83,16 +84,21 @@ public class FavoritoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        Integer usuarioId = usuarioDeSesion(request, response);
+        if (usuarioId == null) {
+            return;
+        }
+
         String idParam = request.getParameter("propiedadId");
 
         if (idParam != null && !idParam.isBlank()) {
             try {
                 int propiedadId = Integer.parseInt(idParam.trim());
 
-                if (favoritoDAO.esFavorito(USUARIO_PRUEBA_ID, propiedadId)) {
-                    favoritoDAO.quitar(USUARIO_PRUEBA_ID, propiedadId);
+                if (favoritoDAO.esFavorito(usuarioId, propiedadId)) {
+                    favoritoDAO.quitar(usuarioId, propiedadId);
                 } else {
-                    favoritoDAO.agregar(USUARIO_PRUEBA_ID, propiedadId);
+                    favoritoDAO.agregar(usuarioId, propiedadId);
                 }
 
             } catch (NumberFormatException | SQLException e) {
@@ -103,6 +109,35 @@ public class FavoritoServlet extends HttpServlet {
         }
 
         response.sendRedirect(destinoSeguro(request));
+    }
+
+    /**
+     * Obtiene el usuario autenticado de la sesión. Si no hay sesión o
+     * falta el usuario se redirige al login y devuelve null.
+     */
+    private Integer usuarioDeSesion(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+            return null;
+        }
+
+        Integer usuarioId =
+                (Integer) session.getAttribute("usuarioId");
+
+        if (usuarioId == null) {
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+            return null;
+        }
+
+        return usuarioId;
     }
 
     /**

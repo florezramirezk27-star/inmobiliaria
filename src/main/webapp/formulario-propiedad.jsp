@@ -5,7 +5,7 @@
     formulario-propiedad.jsp — crea o edita una propiedad.
 
     No se accede directamente: PropiedadFormServlet (mapeado a
-    /propiedades/formulario) hace el forward aquí, tanto en GET
+    /inmobiliaria/propiedades/formulario) hace el forward aquí, tanto en GET
     (formulario en blanco o precargado) como en POST cuando la
     validación falla (para volver a mostrar el formulario con el
     error y sin perder lo que el usuario ya había escrito).
@@ -71,7 +71,7 @@
         </div>
     </c:if>
 
-    <form method="post" action="${pageContext.request.contextPath}/propiedades/formulario"
+    <form method="post" action="${pageContext.request.contextPath}/inmobiliaria/propiedades/formulario"
           enctype="multipart/form-data"
           class="tarjeta-prop p-4">
 

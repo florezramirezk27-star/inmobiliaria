@@ -80,6 +80,7 @@
     <c:if test="${not empty propiedad}">
 
         <%-- ---------- Formulario para agendar una visita nueva ---------- --%>
+        <c:if test="${puedeCrearCita}">
         <form method="post" action="${pageContext.request.contextPath}/propiedades/citas"
               class="tarjeta-prop p-4 mb-4">
 
@@ -102,6 +103,7 @@
                 </div>
             </div>
         </form>
+        </c:if>
 
         <%-- ---------- Citas ya agendadas para esta propiedad ---------- --%>
         <h2 class="h5 mb-3">Visitas agendadas</h2>
@@ -132,7 +134,7 @@
                                 </span>
                             </div>
 
-                            <c:if test="${cita.pendienteDeGestion}">
+                            <c:if test="${puedeGestionarCitas && cita.pendienteDeGestion}">
                                 <div class="d-flex gap-2 mt-3">
                                     <form method="post" action="${pageContext.request.contextPath}/propiedades/citas/estado">
                                         <input type="hidden" name="citaId" value="${cita.id}">

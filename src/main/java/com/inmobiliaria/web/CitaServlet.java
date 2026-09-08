@@ -2,16 +2,20 @@ package com.inmobiliaria.web;
 
 import com.inmobiliaria.dao.CitaDAO;
 import com.inmobiliaria.dao.DuplicidadException;
+import com.inmobiliaria.dao.InmobiliariaDAO;
 import com.inmobiliaria.dao.PropiedadDAO;
 import com.inmobiliaria.model.Cita;
 import com.inmobiliaria.model.EstadoCita;
+import com.inmobiliaria.model.Inmobiliaria;
 import com.inmobiliaria.model.Propiedad;
+import com.inmobiliaria.model.Rol;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -29,31 +33,36 @@ import java.util.List;
  * POST /propiedades/citas/estado      -> confirma/rechaza/cancela/marca
  *                                        realizada una cita existente
  * GET  /citas                         -> "Mis citas": las del cliente
- *                                        de prueba, en todas las
+ *                                        autenticado, en todas las
  *                                        propiedades
  *
- * Mismo patrón temporal que FavoritoServlet y PropiedadFormServlet:
- * sin login integrado todavía, USUARIO_PRUEBA_ID hace de "cliente"
- * que agenda. La gestión de estado (confirmar/rechazar) debería
- * quedar restringida al rol INMOBILIARIA cuando el auth esté listo;
- * por ahora los botones están visibles para cualquiera.
+ * El id_cliente siempre sale de la sesión (usuarioId); nunca se acepta
+ * un clienteId enviado por el cliente. La gestión de estado
+ * (confirmar/rechazar) debería quedar restringida al rol INMOBILIARIA
+ * cuando el auth esté listo; por ahora los botones están visibles para
+ * cualquiera con sesión.
  */
 @WebServlet({"/propiedades/citas", "/propiedades/citas/estado", "/citas"})
 public class CitaServlet extends HttpServlet {
 
-    private static final int USUARIO_PRUEBA_ID = 4;
-
     private final CitaDAO citaDAO = new CitaDAO();
     private final PropiedadDAO propiedadDAO = new PropiedadDAO();
+    private final InmobiliariaDAO inmobiliariaDAO =
+            new InmobiliariaDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        Integer usuarioId = usuarioDeSesion(request, response);
+        if (usuarioId == null) {
+            return;
+        }
+
         String ruta = request.getServletPath();
 
         if ("/citas".equals(ruta)) {
-            mostrarMisCitas(request, response);
+            mostrarMisCitas(request, response, usuarioId);
         } else {
             mostrarCitasDeLaPropiedad(request, response);
         }
@@ -63,12 +72,17 @@ public class CitaServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        Integer usuarioId = usuarioDeSesion(request, response);
+        if (usuarioId == null) {
+            return;
+        }
+
         String ruta = request.getServletPath();
 
         if ("/propiedades/citas/estado".equals(ruta)) {
-            cambiarEstado(request, response);
+            cambiarEstado(request, response, usuarioId);
         } else {
-            agendarVisita(request, response);
+            agendarVisita(request, response, usuarioId);
         }
     }
 
@@ -96,6 +110,15 @@ public class CitaServlet extends HttpServlet {
             } else {
                 request.setAttribute("propiedad", propiedad);
                 request.setAttribute("citas", citaDAO.listarPorPropiedad(id));
+                request.setAttribute(
+                        "puedeCrearCita",
+                        tieneRol(request, "CLIENTE")
+                );
+
+                request.setAttribute(
+                        "puedeGestionarCitas",
+                        tieneRol(request, "AGENTE")
+                );
             }
 
         } catch (NumberFormatException e) {
@@ -113,11 +136,12 @@ public class CitaServlet extends HttpServlet {
     // GET /citas — "Mis citas"
     // ============================================================
 
-    private void mostrarMisCitas(HttpServletRequest request, HttpServletResponse response)
+    private void mostrarMisCitas(HttpServletRequest request, HttpServletResponse response,
+                                     int usuarioId)
             throws ServletException, IOException {
 
         try {
-            List<Cita> citas = citaDAO.listarPorCliente(USUARIO_PRUEBA_ID);
+            List<Cita> citas = citaDAO.listarPorCliente(usuarioId);
             request.setAttribute("citas", citas);
 
         } catch (SQLException e) {
@@ -134,8 +158,19 @@ public class CitaServlet extends HttpServlet {
     // POST /propiedades/citas — agendar
     // ============================================================
 
-    private void agendarVisita(HttpServletRequest request, HttpServletResponse response)
+    private void agendarVisita(HttpServletRequest request, HttpServletResponse response,
+                                   int usuarioId)
             throws ServletException, IOException {
+
+        if (!tieneRol(request, "CLIENTE")) {
+
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Solo los clientes pueden solicitar visitas."
+            );
+
+            return;
+        }
 
         String idPropiedadParam = request.getParameter("propiedadId");
         String fechaHoraParam = request.getParameter("fechaHora");
@@ -175,7 +210,7 @@ public class CitaServlet extends HttpServlet {
         try {
             Cita cita = new Cita();
             cita.setPropiedadId(propiedadId);
-            cita.setClienteId(USUARIO_PRUEBA_ID);
+            cita.setClienteId(usuarioId);
             cita.setFechaHora(fechaHora);
             cita.setEstado(EstadoCita.SOLICITADA);
             cita.setObservacion(vacioComoNulo(request.getParameter("observacion")));
@@ -215,25 +250,92 @@ public class CitaServlet extends HttpServlet {
     // POST /propiedades/citas/estado — confirmar/rechazar/etc.
     // ============================================================
 
-    private void cambiarEstado(HttpServletRequest request, HttpServletResponse response)
+    private void cambiarEstado(HttpServletRequest request, HttpServletResponse response,
+                                   int usuarioId)
             throws IOException {
 
         String idCitaParam = request.getParameter("citaId");
         String nuevoEstadoParam = request.getParameter("nuevoEstado");
         String volver = request.getParameter("volver");
 
-        try {
-            int idCita = Integer.parseInt(idCitaParam.trim());
-            EstadoCita nuevoEstado = EstadoCita.desde(nuevoEstadoParam);
+        if (!tieneRol(request, "AGENTE")) {
 
-            if (nuevoEstado != null) {
-                citaDAO.cambiarEstado(idCita, nuevoEstado);
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Solo un agente puede gestionar el estado de una cita."
+            );
+
+            return;
+        }
+
+        try {
+
+            int idCita = Integer.parseInt(idCitaParam.trim());
+            EstadoCita nuevoEstado =
+                    EstadoCita.desde(nuevoEstadoParam);
+
+            if (nuevoEstado == null) {
+                response.sendError(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "Estado de cita inválido"
+                );
+                return;
             }
 
+            Cita cita =
+                    citaDAO.buscarPorId(idCita);
+
+            if (cita == null) {
+
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "La cita no existe."
+                );
+
+                return;
+            }
+
+            Inmobiliaria inmobiliaria =
+                    inmobiliariaDAO.buscarPorUsuario(usuarioId);
+
+            if (inmobiliaria == null) {
+
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "El agente no tiene una inmobiliaria asignada."
+                );
+
+                return;
+            }
+
+            boolean pertenece = propiedadDAO
+                    .listarPorInmobiliaria(inmobiliaria.getId())
+                    .stream()
+                    .anyMatch(propiedad ->
+                            propiedad.getId() == cita.getPropiedadId()
+                    );
+
+            if (!pertenece) {
+
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No puedes gestionar citas de otra inmobiliaria."
+                );
+
+                return;
+            }
+
+            citaDAO.cambiarEstado(
+                    idCita,
+                    nuevoEstado
+            );
+
         } catch (NumberFormatException | SQLException e) {
-            getServletContext().log("Error al cambiar el estado de la cita", e);
-            // No se interrumpe la redirección por esto: el usuario
-            // simplemente no ve el cambio reflejado, no un error 500.
+
+            getServletContext().log(
+                    "Error al cambiar el estado de la cita",
+                    e
+            );
         }
 
         String contexto = request.getContextPath();
@@ -243,5 +345,65 @@ public class CitaServlet extends HttpServlet {
 
     private String vacioComoNulo(String valor) {
         return (valor == null || valor.isBlank()) ? null : valor.trim();
+    }
+
+    /**
+     * Obtiene el usuario autenticado de la sesión. Si no hay sesión o
+     * falta el usuario se redirige al login y devuelve null.
+     */
+    private Integer usuarioDeSesion(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+            return null;
+        }
+
+        Integer usuarioId =
+                (Integer) session.getAttribute("usuarioId");
+
+        if (usuarioId == null) {
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+            return null;
+        }
+
+        return usuarioId;
+    }
+
+    private boolean tieneRol(
+            HttpServletRequest request,
+            String rolBuscado
+    ) {
+
+        HttpSession session =
+                request.getSession(false);
+
+        if (session == null) {
+            return false;
+        }
+
+        Object rolesObj =
+                session.getAttribute("roles");
+
+        if (!(rolesObj instanceof List<?> roles)) {
+            return false;
+        }
+
+        for (Object objeto : roles) {
+
+            if (objeto instanceof Rol rol
+                    && rolBuscado.equals(rol.getNombre())) {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

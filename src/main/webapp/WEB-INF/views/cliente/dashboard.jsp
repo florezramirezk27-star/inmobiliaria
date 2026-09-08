@@ -14,12 +14,24 @@
 
 <p>Bienvenido al sistema inmobiliario.</p>
 
+<a href="${pageContext.request.contextPath}/propiedades">
+    Ver propiedades
+</a>
+
+<a href="${pageContext.request.contextPath}/citas">
+    Mis citas
+</a>
+
 <a href="${pageContext.request.contextPath}/cliente/perfil">
     Mi perfil
 </a>
 
 <a href="${pageContext.request.contextPath}/cliente/favoritos">
     Mis favoritos
+</a>
+
+<a href="${pageContext.request.contextPath}/cliente/solicitudes">
+    Mis solicitudes
 </a>
 
 <a href="${pageContext.request.contextPath}/logout">

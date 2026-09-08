@@ -30,7 +30,7 @@
                     <a class="nav-link" href="${pageContext.request.contextPath}/#catalogo">Catálogo</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/propiedades/formulario">Publicar propiedad</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/inmobiliaria/propiedades/formulario">Publicar propiedad</a>
                 </li>
             </ul>
 

@@ -181,4 +181,30 @@ public class CitaDAO {
         Timestamp ts = rs.getTimestamp(columna);
         return ts == null ? null : ts.toLocalDateTime();
     }
+
+    public boolean perteneceACliente(
+            int idCita,
+            int idCliente
+    ) throws SQLException {
+
+        String sql = """
+                SELECT 1
+                FROM cita
+                WHERE id_cita = ?
+                  AND id_cliente = ?
+                """;
+
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, idCita);
+            ps.setInt(2, idCliente);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
 }
