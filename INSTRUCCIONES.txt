@@ -1,0 +1,19 @@
+PAQUETE DE DOCUMENTACION - INMOBILIARIA
+
+Contenido:
+- README.md actualizado
+- docs/01-MER.md
+- docs/02-modelo-relacional.md
+- docs/03-normalizacion-3FN.md
+- docs/04-diccionario-datos.md
+- docs/05-casos-de-uso.md
+- docs/06-scrum.md
+- docs/07-pruebas.md
+
+INSTALACION:
+1. Extrae este ZIP sobre la carpeta raiz del proyecto inmobiliaria.
+2. Permite reemplazar README.md si Windows lo solicita.
+3. La carpeta docs/ debe quedar dentro de la raiz del proyecto.
+4. Revisa fechas y responsables de Scrum en docs/06-scrum.md.
+5. Ejecuta `git status` y revisa los cambios antes de hacer commit.
+6. Ejecuta `mvn clean test` y `mvn clean package` antes del commit final.
