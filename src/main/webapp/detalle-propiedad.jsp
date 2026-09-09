@@ -2,6 +2,21 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
+<c:set var="esCliente" value="false"/>
+<c:set var="esAgente" value="false"/>
+
+<c:forEach var="rol" items="${sessionScope.roles}">
+
+    <c:if test="${rol.nombre eq 'CLIENTE'}">
+        <c:set var="esCliente" value="true"/>
+    </c:if>
+
+    <c:if test="${rol.nombre eq 'AGENTE'}">
+        <c:set var="esAgente" value="true"/>
+    </c:if>
+
+</c:forEach>
+
 <%--
     detalle-propiedad.jsp — ficha completa de una propiedad.
 
@@ -215,6 +230,7 @@
                     <hr>
 
                     <div class="d-grid gap-2">
+                        <c:if test="${esCliente}">
                         <form method="post" class="d-grid"
                               action="${pageContext.request.contextPath}/propiedades/favorito">
                             <input type="hidden" name="propiedadId" value="${propiedad.id}">
@@ -238,11 +254,14 @@
                            href="${pageContext.request.contextPath}/cliente/solicitudes?accion=nueva&id=${propiedad.id}">
                             Solicitar compra / arriendo
                         </a>
+                        </c:if>
 
-                        <a class="btn btn-contorno" style="color: var(--tinta); border-color: var(--borde);"
+                        <c:if test="${esAgente}">
+                        <a class="btn btn-contorno"
                            href="${pageContext.request.contextPath}/inmobiliaria/propiedades/formulario?id=${propiedad.id}">
                             Editar propiedad
                         </a>
+                        </c:if>
                     </div>
                 </div>
             </div>
@@ -254,10 +273,6 @@
 </main>
 
 <%@ include file="/WEB-INF/includes/footer.jspf" %>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
 
 </body>
 </html>

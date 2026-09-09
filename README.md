@@ -36,15 +36,22 @@ Módulos implementados:
 
 - **Catálogo de propiedades** con búsqueda, filtros y fichas de detalle, respaldado por
   una vista `v_propiedad_catalogo`.
+- **Página de inicio dinámica**: `IndexServlet` (`/index`, welcome-file del `web.xml`)
+  muestra las 6 propiedades más recientes con marcadores de favoritos de la sesión.
 - **Formulario de propiedades** con creación/edición, asignación de características y
   subida de imágenes (multipart). Restringido al rol **AGENTE** y validación de
   pertenencia: solo la inmobiliaria dueña de la propiedad puede editarla.
 - **Autenticación y sesiones** con BCrypt, roles (ADMIN / AGENTE / CLIENTE) y filtros
-  de protección por URL.
+  de protección por URL. El cierre de sesión pide confirmación en el servidor
+  (`GET /logout` muestra una página, solo `POST /logout` invalida la sesión).
+- **Cero JavaScript en toda la aplicación**: favoritos por formulario POST +
+  servlet (server-side), confirmación de logout por JSP intermedia y menú de
+  navegación plegable con CSS puro (checkbox oculto).
 - **Solicitudes de compra/arriendo**: el cliente crea solicitudes y adjunta/descarga
   documentos; la inmobiliaria las consulta y aprueba/rechaza.
 - **Citas**: el cliente agenda visitas a propiedades y el agente gestiona su estado.
-- **Administración**: gestiona usuarios, roles, perfiles, auditoría y cinco reportes SQL.
+- **Administración**: gestiona usuarios (tarjetas sin scroll lateral), roles, perfiles,
+  auditoría y cinco reportes SQL. Paneles con diseño a color (banners, métricas, chips).
 - **Seguridad**: validación de pertenencia de recursos por usuario/inmobiliaria.
 - **Pruebas unitarias JUnit** sobre los enums de dominio (5 pruebas).
 
@@ -59,8 +66,13 @@ Módulos implementados:
 - **Servicio:** `AuthService`, `LoginResult`.
 - **Servlets/filtros:** `LoginServlet`, `LogoutServlet`, `RegistroServlet`,
   `PerfilServlet`, `AuthFilter`, `CodificacionFilter`.
-- **Vistas:** `login.jsp`, `registro.jsp`, `perfil.jsp` (en `/WEB-INF/views/auth/` y
-  `/cliente/`).
+- **Vistas:** `login.jsp`, `registro.jsp`, `perfil.jsp`,
+  `confirmar-logout.jsp` (en `/WEB-INF/views/auth/` y `/cliente/`).
+
+> **Cierre de sesión con confirmación (sin JavaScript):** `LogoutServlet` responde al
+> `GET /logout` con la vista `auth/confirmar-logout.jsp` (¿Seguro que deseas cerrar
+> sesión?) y solo el `POST /logout` (el formulario de esa página) invalida la sesión
+> y redirige a `/login`.
 
 ### 2. Catálogo y gestión de propiedades (completo)
 
@@ -68,10 +80,16 @@ Módulos implementados:
   `TipoPropiedad`, `Inmobiliaria`, enums `Operacion` y `EstadoPropiedad`.
 - **DAOs:** `PropiedadDAO`, `ImagenPropiedadDAO`, `CaracteristicaDAO`, `CiudadDAO`,
   `TipoPropiedadDAO`, `InmobiliariaDAO`, `FiltroPropiedad`, `DuplicidadException`.
-- **Servlets:** `PropiedadServlet`, `PropiedadDetalleServlet`, `PropiedadFormServlet`,
-  `FavoritoServlet`.
+- **Servlets:** `IndexServlet`, `PropiedadServlet`, `PropiedadDetalleServlet`,
+  `PropiedadFormServlet`, `FavoritoServlet`.
 - **Vistas:** `index.jsp`, `catalogo.jsp`, `detalle-propiedad.jsp`,
   `formulario-propiedad.jsp`, `favoritos.jsp`.
+
+**Favoritos 100 % server-side:** el botón de favorito de cada tarjeta y del detalle es
+un formulario `POST /propiedades/favorito`. `FavoritoServlet` alterna el favorito en BD
+(`FavoritoDAO`) y redirige de vuelta; no requiere JavaScript. El listado de favoritos
+se lee desde la sesión (`favoritosIds`), que `IndexServlet` y `PropiedadServlet`
+cargan mediante `favoritosDelUsuario()`.
 
 **Protección del formulario de propiedades:** el servlet `PropiedadFormServlet` está
 mapeado a `/inmobiliaria/propiedades/formulario`, por lo que `AuthFilter` exige siempre
@@ -133,7 +151,7 @@ propiedades sin citas y resumen por ciudad.
 | **MySQL** | Motor de base de datos relacional |
 | **MySQL Connector/J** | Driver JDBC para conectar Java con MySQL |
 | **BCrypt (jbcrypt)** | Hash seguro de contraseñas |
-| **Bootstrap 5.3** | Framework CSS para las vistas |
+| **Bootstrap 5.3** | Framework CSS para las vistas (solo CSS, sin su JS) |
 | **Tomcat 8.5+** | Servidor de aplicaciones web donde se despliega el proyecto |
 
 ---
@@ -188,7 +206,7 @@ inmobiliaria/
     │   │   │
     │   │   └── web/                          # Servlets y filtros
     │   │       ├── Login, Logout, Registro, Perfil, AuthFilter, CodificacionFilter
-    │   │       ├── Propiedad, PropiedadDetalle, PropiedadForm, Favorito
+    │   │       ├── Index, Propiedad, PropiedadDetalle, PropiedadForm, Favorito
     │   │       ├── AdminDashboard, ClienteDashboard, InmobiliariaDashboard
     │   │       ├── AgenteSolicitud, Solicitud, Documento, Cita
     │   │       └── AdminUsuarios, AdminPerfil, Auditoria, Reporte
@@ -207,7 +225,7 @@ inmobiliaria/
     │           └── views/
     │               ├── admin/dashboard.jsp, usuarios.jsp,
     │               │   perfil-usuario.jsp, auditoria.jsp, reportes.jsp
-    │               ├── auth/login.jsp, registro.jsp
+    │               ├── auth/login.jsp, registro.jsp, confirmar-logout.jsp
     │               ├── cliente/dashboard.jsp, favoritos.jsp, perfil.jsp,
     │               │   mis-solicitudes.jsp, formulario-solicitud.jsp,
     │               │   documentos.jsp
@@ -323,11 +341,13 @@ Cada servlet es un controlador mapeado por anotación `@WebServlet`. Los princip
 
 | URL | Servlet | Descripción |
 |-----|---------|-------------|
-| `/` | — | `index.jsp` → catálogo público |
+| `/` | `IndexServlet` | Landing dinámica (6 recientes + favoritos de sesión); welcome-file `index` |
 | `/propiedades` | `PropiedadServlet` | Búsqueda/listado del catálogo |
 | `/propiedades/detalle` | `PropiedadDetalleServlet` | Ficha de una propiedad |
 | `/inmobiliaria/propiedades/formulario` | `PropiedadFormServlet` | Crear/editar propiedad + imágenes |
-| `/login`, `/logout`, `/registro` | `Login`, `Logout`, `Registro` | Autenticación |
+| `/propiedades/favorito` | `FavoritoServlet` | Alternar favorito (POST server-side) |
+| `/login`, `/registro` | `Login`, `Registro` | Autenticación |
+| `/logout` | `LogoutServlet` | `GET` muestra confirmación; `POST` invalida la sesión |
 | `/cliente/dashboard` | `ClienteDashboardServlet` | Panel del cliente |
 | `/cliente/favoritos` | `FavoritoServlet` | Favoritos del cliente |
 | `/cliente/perfil` | `PerfilServlet` | Perfil del cliente |
@@ -419,6 +439,10 @@ Para probar la conexión de forma aislada existe la clase `DatabaseTest`.
 - **Subida de archivos con multipart:** imágenes de propiedades y documentos de
   solicitudes usan `@MultipartConfig` y se guardan en disco con nombres únicos
   (UUID), conservando solo la ruta en la BD.
+- **Cero JavaScript:** la aplicación no usa una sola línea de JS. Los favoritos y la
+  confirmación de logout se resuelven 100 % en el servidor (formularios POST +
+  servlets + JSP), y el menú plegable del navbar usa un *truco CSS* (checkbox oculto)
+  en lugar del JavaScript de Bootstrap.
 
 ---
 

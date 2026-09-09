@@ -11,6 +11,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -19,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Sirve el catálogo público de propiedades: la landing lo usa para
- * los destacados y esta misma ruta atiende el buscador con filtros.
+ * Sirve el catálogo público de propiedades y atiende el buscador
+ * con filtros procedente de la landing (index.jsp).
  *
  * GET /propiedades              -> catálogo completo (más recientes primero)
  * GET /propiedades?operacion=arriendo&ciudad=1&tipo=apartamento&precioMax=2000000
@@ -28,12 +29,6 @@ import java.util.Set;
  */
 @WebServlet("/propiedades")
 public class PropiedadServlet extends HttpServlet {
-
-    // Ver el javadoc de FavoritoServlet: usuario de prueba fijo hasta
-    // que exista sesión real. Cuando eso pase, este catálogo debe
-    // tomar el id_usuario de la sesión (o simplemente no calcular
-    // favoritosIds en absoluto si nadie ha iniciado sesión).
-    private static final int USUARIO_PRUEBA_ID = 4;
 
     private final PropiedadDAO propiedadDAO = new PropiedadDAO();
     private final FavoritoDAO favoritoDAO = new FavoritoDAO();
@@ -59,8 +54,7 @@ public class PropiedadServlet extends HttpServlet {
             request.setAttribute("propiedades", propiedades);
             request.setAttribute("filtro", filtro);
 
-            Set<Integer> favoritosIds = favoritoDAO.listarIdsPropiedadPorUsuario(USUARIO_PRUEBA_ID);
-            request.setAttribute("favoritosIds", favoritosIds);
+            request.setAttribute("favoritosIds", favoritosDelUsuario(request));
 
         } catch (SQLException e) {
             // No se deja pasar la excepción cruda al usuario final:
@@ -74,6 +68,31 @@ public class PropiedadServlet extends HttpServlet {
         }
 
         request.getRequestDispatcher("/catalogo.jsp").forward(request, response);
+    }
+
+    /**
+     * Ids de propiedades marcadas como favoritas por el usuario de
+     * sesión. Sin sesión iniciada la lista queda vacía (los corazones
+     * se pintan sin relleno y un clic redirige al login).
+     */
+    private Set<Integer> favoritosDelUsuario(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            return Set.of();
+        }
+
+        Integer usuarioId = (Integer) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return Set.of();
+        }
+
+        try {
+            return favoritoDAO.listarIdsPropiedadPorUsuario(usuarioId);
+        } catch (SQLException e) {
+            getServletContext().log("Error al cargar favoritos del catálogo", e);
+            return Set.of();
+        }
     }
 
     /**

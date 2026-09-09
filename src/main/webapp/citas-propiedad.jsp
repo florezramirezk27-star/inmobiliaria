@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <%--
     citas-propiedad.jsp — citas de una propiedad puntual.
@@ -43,21 +43,52 @@
 
 <body>
 
+<%-- Iconos en línea usados en la lista de citas --%>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="ico-calendario" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="5" width="18" height="16" rx="2"/>
+        <path d="M8 3v4M16 3v4M3 10h18"/>
+    </symbol>
+    <symbol id="ico-persona" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M5 20c.6-3.4 3.3-5 7-5s6.4 1.6 7 5"/>
+    </symbol>
+    <symbol id="ico-nota" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/>
+        <path d="M9 8h6M9 12h6M9 16h3"/>
+    </symbol>
+</svg>
+
 <%@ include file="/WEB-INF/includes/navbar.jspf" %>
 
-<main class="container my-5" style="max-width: 780px;">
+<main class="container my-5" style="max-width: 820px;">
 
-    <c:if test="${not empty propiedad}">
-        <a href="${pageContext.request.contextPath}/propiedades/detalle?id=${propiedad.id}"
-           class="d-inline-block mb-4" style="color: var(--gris); text-decoration: none;">
-            &larr; Volver a la propiedad
-        </a>
-    </c:if>
+    <div class="banner-panel banner-citas mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="badge badge-tag">INMOBILIARIA</span>
+                <h1 class="fuente-display mt-2">Citas</h1>
+                <c:if test="${not empty propiedad}">
+                    <p class="descripcion">${propiedad.titulo} — ${propiedad.codigo}</p>
+                </c:if>
+            </div>
 
-    <h1 class="fuente-display mb-1">Citas</h1>
-    <c:if test="${not empty propiedad}">
-        <p class="mb-4" style="color: var(--gris);">${propiedad.titulo} — ${propiedad.codigo}</p>
-    </c:if>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <c:if test="${not empty propiedad}">
+                    <span class="badge badge-tag">
+                        ${fn:length(citas)} ${fn:length(citas) == 1 ? 'visita' : 'visitas'}
+                    </span>
+                    <a href="${pageContext.request.contextPath}/propiedades/detalle?id=${propiedad.id}"
+                       class="btn btn-banner">
+                        &larr; Volver a la propiedad
+                    </a>
+                </c:if>
+            </div>
+        </div>
+    </div>
 
     <c:if test="${not empty error}">
         <div class="alert alert-warning" role="alert">${error}</div>
@@ -118,41 +149,70 @@
                 <div class="d-flex flex-column gap-3">
                     <c:forEach var="cita" items="${citas}">
                         <div class="tarjeta-prop p-3">
-                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                                <div>
-                                    <p class="fw-bold mb-1">${cita.fechaHoraFormateada}</p>
-                                    <p class="mb-1" style="color: var(--gris); font-size: 0.92rem;">
-                                        Solicitada por: ${cita.clienteNombreCompleto}
-                                    </p>
-                                    <c:if test="${not empty cita.observacion}">
-                                        <p class="mb-0" style="font-size: 0.9rem;">"${cita.observacion}"</p>
-                                    </c:if>
-                                </div>
-                                <span class="badge rounded-pill"
-                                      style="background-color: var(--verde-suave); color: var(--verde-hover); font-weight: 600; padding: 0.4rem 0.8rem;">
-                                    ${cita.estado.etiqueta}
-                                </span>
-                            </div>
+                            <div class="d-flex gap-3">
 
-                            <c:if test="${puedeGestionarCitas && cita.pendienteDeGestion}">
-                                <div class="d-flex gap-2 mt-3">
-                                    <form method="post" action="${pageContext.request.contextPath}/propiedades/citas/estado">
-                                        <input type="hidden" name="citaId" value="${cita.id}">
-                                        <input type="hidden" name="nuevoEstado" value="CONFIRMADA">
-                                        <input type="hidden" name="volver"
-                                               value="${pageContext.request.contextPath}/propiedades/citas?id=${propiedad.id}">
-                                        <button type="submit" class="btn btn-sm btn-marca">Confirmar</button>
-                                    </form>
-                                    <form method="post" action="${pageContext.request.contextPath}/propiedades/citas/estado">
-                                        <input type="hidden" name="citaId" value="${cita.id}">
-                                        <input type="hidden" name="nuevoEstado" value="RECHAZADA">
-                                        <input type="hidden" name="volver"
-                                               value="${pageContext.request.contextPath}/propiedades/citas?id=${propiedad.id}">
-                                        <button type="submit" class="btn btn-sm btn-contorno"
-                                                style="color: var(--tinta); border-color: var(--borde);">Rechazar</button>
-                                    </form>
+                                <div class="avatar-cita"
+                                     title="Cliente: ${cita.clienteNombreCompleto}">
+                                    ${fn:substring(fn:trim(cita.clienteNombreCompleto), 0, 1)}
                                 </div>
-                            </c:if>
+
+                                <div class="flex-grow-1">
+
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                        <div>
+                                            <p class="fw-bold mb-1" style="font-size: 1.05rem;">
+                                                <svg style="width: 16px; height: 16px; color: var(--verde); margin-right: 0.35rem; vertical-align: -2px;">
+                                                    <use href="#ico-calendario"/>
+                                                </svg>
+                                                ${cita.fechaHoraFormateada}
+                                            </p>
+                                            <p class="mb-1" style="color: var(--gris); font-size: 0.92rem;">
+                                                Solicitada por: ${cita.clienteNombreCompleto}
+                                            </p>
+                                            <c:if test="${not empty cita.observacion}">
+                                                <p class="mb-0" style="font-size: 0.9rem;">
+                                                    " ${cita.observacion} "
+                                                </p>
+                                            </c:if>
+                                        </div>
+
+                                        <c:set var="estadoCita" value="${cita.estado}"/>
+                                        <c:choose>
+                                            <c:when test="${estadoCita == 'CONFIRMADA' or estadoCita == 'REALIZADA'}">
+                                                <span class="chip chip-verde">${cita.estado.etiqueta}</span>
+                                            </c:when>
+                                            <c:when test="${estadoCita == 'RECHAZADA' or estadoCita == 'CANCELADA'}">
+                                                <span class="chip chip-rojo">${cita.estado.etiqueta}</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="chip chip-ocre">${cita.estado.etiqueta}</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+
+                                    <c:if test="${puedeGestionarCitas && cita.pendienteDeGestion}">
+                                        <div class="d-flex gap-2 mt-3">
+                                            <form method="post" action="${pageContext.request.contextPath}/propiedades/citas/estado">
+                                                <input type="hidden" name="citaId" value="${cita.id}">
+                                                <input type="hidden" name="nuevoEstado" value="CONFIRMADA">
+                                                <input type="hidden" name="volver"
+                                                       value="${pageContext.request.contextPath}/propiedades/citas?id=${propiedad.id}">
+                                                <button type="submit" class="btn btn-sm btn-marca">Confirmar</button>
+                                            </form>
+                                            <form method="post" action="${pageContext.request.contextPath}/propiedades/citas/estado">
+                                                <input type="hidden" name="citaId" value="${cita.id}">
+                                                <input type="hidden" name="nuevoEstado" value="RECHAZADA">
+                                                <input type="hidden" name="volver"
+                                                       value="${pageContext.request.contextPath}/propiedades/citas?id=${propiedad.id}">
+                                                <button type="submit" class="btn btn-sm btn-contorno">
+                                                    Rechazar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </c:if>
+
+                                </div>
+                            </div>
                         </div>
                     </c:forEach>
                 </div>
@@ -164,10 +224,6 @@
 </main>
 
 <%@ include file="/WEB-INF/includes/footer.jspf" %>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
 
 </body>
 </html>

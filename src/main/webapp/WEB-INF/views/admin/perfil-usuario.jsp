@@ -22,7 +22,7 @@
         <h1>Perfil del usuario</h1>
 
         <a href="${pageContext.request.contextPath}/admin/usuarios"
-           class="btn btn-secondary">
+           class="btn btn-contorno">
             Volver
         </a>
 

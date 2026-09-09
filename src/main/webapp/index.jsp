@@ -45,6 +45,9 @@
         <rect x="4" y="4" width="16" height="16" rx="1.5"/>
         <path d="M8 4v4H4M16 20v-4h4"/>
     </symbol>
+    <symbol id="ico-corazon" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20.5s-7-4.35-9.5-8.6C.9 8.9 2.4 5.5 5.9 5.5c2 0 3.4 1.1 4.4 2.5.9-1.4 2.3-2.5 4.4-2.5 3.5 0 5 3.4 3.4 6.4-2.5 4.25-9.1 8.6-9.1 8.6Z"/>
+    </symbol>
 </svg>
 
 <%@ include file="/WEB-INF/includes/navbar.jspf" %>
@@ -64,8 +67,6 @@
 
 <!-- ============================================================
      Buscador — superpuesto sobre el borde inferior del hero.
-     Sprint 2: apuntar el action a PropiedadServlet y conservar los
-     valores enviados con ${param.xxx}.
      ============================================================ -->
 <section class="container" aria-labelledby="titulo-buscador">
     <h2 id="titulo-buscador" class="visually-hidden">Buscar propiedades</h2>
@@ -119,10 +120,7 @@
 </section>
 
 <!-- ============================================================
-     Catálogo
-     Sprint 2: reemplazar las tarjetas fijas por
-     <c:forEach var="p" items="${propiedades}"> ... </c:forEach>
-     con los datos que envíe PropiedadServlet.
+     Catálogo — publicaciones recientes (IndexServlet)
      ============================================================ -->
 <main class="container my-5 pt-4" id="catalogo">
 
@@ -131,139 +129,81 @@
         <a href="${pageContext.request.contextPath}/propiedades">Ver todas las propiedades</a>
     </div>
 
-    <div class="row g-4">
+    <c:if test="${not empty errorConsulta}">
+        <div class="alert alert-warning" role="alert">${errorConsulta}</div>
+    </c:if>
 
-        <!-- Tarjeta 1 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <article class="tarjeta-prop">
-                <div class="foto-prop">
-                    <span class="etiqueta-operacion">Arriendo</span>
-                </div>
-                <div class="cuerpo-tarjeta">
-                    <p class="precio">$ 1.850.000 <span class="periodo">/ mes</span></p>
-                    <p class="direccion">Apartamento en Cabecera del Llano</p>
-                    <p class="barrio">Bucaramanga, Santander</p>
-                    <div class="fichas">
-                        <span class="ficha"><svg><use href="#ico-habitacion"/></svg>3 hab</span>
-                        <span class="ficha"><svg><use href="#ico-bano"/></svg>2 baños</span>
-                        <span class="ficha"><svg><use href="#ico-area"/></svg>92 m²</span>
-                    </div>
-                </div>
-            </article>
-        </div>
-
-        <!-- Tarjeta 2 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <article class="tarjeta-prop">
-                <div class="foto-prop">
-                    <span class="etiqueta-operacion">Venta</span>
-                </div>
-                <div class="cuerpo-tarjeta">
-                    <p class="precio">$ 420.000.000</p>
-                    <p class="direccion">Casa en Cañaveral</p>
-                    <p class="barrio">Floridablanca, Santander</p>
-                    <div class="fichas">
-                        <span class="ficha"><svg><use href="#ico-habitacion"/></svg>4 hab</span>
-                        <span class="ficha"><svg><use href="#ico-bano"/></svg>3 baños</span>
-                        <span class="ficha"><svg><use href="#ico-area"/></svg>168 m²</span>
-                    </div>
-                </div>
-            </article>
-        </div>
-
-        <!-- Tarjeta 3 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <article class="tarjeta-prop">
-                <div class="foto-prop">
-                    <span class="etiqueta-operacion">Arriendo</span>
-                </div>
-                <div class="cuerpo-tarjeta">
-                    <p class="precio">$ 1.150.000 <span class="periodo">/ mes</span></p>
-                    <p class="direccion">Apartaestudio en Provenza</p>
-                    <p class="barrio">Bucaramanga, Santander</p>
-                    <div class="fichas">
-                        <span class="ficha"><svg><use href="#ico-habitacion"/></svg>1 hab</span>
-                        <span class="ficha"><svg><use href="#ico-bano"/></svg>1 baño</span>
-                        <span class="ficha"><svg><use href="#ico-area"/></svg>45 m²</span>
-                    </div>
-                </div>
-            </article>
-        </div>
-
-        <!-- Tarjeta 4 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <article class="tarjeta-prop">
-                <div class="foto-prop">
-                    <span class="etiqueta-operacion">Venta</span>
-                </div>
-                <div class="cuerpo-tarjeta">
-                    <p class="precio">$ 295.000.000</p>
-                    <p class="direccion">Apartamento en Real de Minas</p>
-                    <p class="barrio">Bucaramanga, Santander</p>
-                    <div class="fichas">
-                        <span class="ficha"><svg><use href="#ico-habitacion"/></svg>3 hab</span>
-                        <span class="ficha"><svg><use href="#ico-bano"/></svg>2 baños</span>
-                        <span class="ficha"><svg><use href="#ico-area"/></svg>78 m²</span>
-                    </div>
-                </div>
-            </article>
-        </div>
-
-        <!-- Tarjeta 5 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <article class="tarjeta-prop">
-                <div class="foto-prop">
-                    <span class="etiqueta-operacion">Arriendo</span>
-                </div>
-                <div class="cuerpo-tarjeta">
-                    <p class="precio">$ 3.200.000 <span class="periodo">/ mes</span></p>
-                    <p class="direccion">Local comercial en Sotomayor</p>
-                    <p class="barrio">Bucaramanga, Santander</p>
-                    <div class="fichas">
-                        <span class="ficha"><svg><use href="#ico-bano"/></svg>1 baño</span>
-                        <span class="ficha"><svg><use href="#ico-area"/></svg>120 m²</span>
-                    </div>
-                </div>
-            </article>
-        </div>
-
-        <!-- Tarjeta 6 -->
-        <div class="col-12 col-sm-6 col-lg-4">
-            <article class="tarjeta-prop">
-                <div class="foto-prop">
-                    <span class="etiqueta-operacion">Venta</span>
-                </div>
-                <div class="cuerpo-tarjeta">
-                    <p class="precio">$ 610.000.000</p>
-                    <p class="direccion">Casa campestre en Ruitoque</p>
-                    <p class="barrio">Girón, Santander</p>
-                    <div class="fichas">
-                        <span class="ficha"><svg><use href="#ico-habitacion"/></svg>5 hab</span>
-                        <span class="ficha"><svg><use href="#ico-bano"/></svg>4 baños</span>
-                        <span class="ficha"><svg><use href="#ico-area"/></svg>240 m²</span>
-                    </div>
-                </div>
-            </article>
-        </div>
-
-    </div>
-
-    <%-- Estado vacío listo para el Sprint 2:
-    <c:if test="${empty propiedades}">
+    <c:if test="${empty propiedades and empty errorConsulta}">
         <div class="sin-resultados">
             <p class="mb-3">No hay propiedades publicadas todavía.</p>
-            <a class="btn btn-marca" href="${pageContext.request.contextPath}/propiedades/nueva">Publicar la primera</a>
+            <a class="btn btn-marca" href="${pageContext.request.contextPath}/propiedades">Ver el catálogo</a>
         </div>
     </c:if>
-    --%>
+
+    <div class="row g-4">
+        <c:forEach var="p" items="${propiedades}">
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="position-relative">
+
+                    <form method="post" class="boton-favorito-form"
+                          action="${pageContext.request.contextPath}/propiedades/favorito">
+                        <input type="hidden" name="propiedadId" value="${p.id}">
+                        <input type="hidden" name="volver" value="${urlActual}">
+                        <button type="submit"
+                                class="boton-favorito ${favoritosIds.contains(p.id) ? 'activo' : ''}"
+                                aria-label="${favoritosIds.contains(p.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}">
+                            <svg><use href="#ico-corazon"/></svg>
+                        </button>
+                    </form>
+
+                    <a class="text-decoration-none" style="color: inherit;"
+                       href="${pageContext.request.contextPath}/propiedades/detalle?id=${p.id}">
+                    <article class="tarjeta-prop">
+
+                        <c:choose>
+                            <c:when test="${p.tienePortada}">
+                                <img class="foto-prop" src="${pageContext.request.contextPath}/${p.rutaPortada}"
+                                     alt="Foto de ${p.titulo}">
+                            </c:when>
+                            <c:otherwise>
+                                <div class="foto-prop"></div>
+                            </c:otherwise>
+                        </c:choose>
+
+                        <span class="etiqueta-operacion">${p.operacion.etiqueta}</span>
+
+                        <div class="cuerpo-tarjeta">
+                            <p class="precio">
+                                <fmt:formatNumber value="${p.precio}" type="currency"
+                                                   currencySymbol="$ " groupingUsed="true" maxFractionDigits="0"/>
+                                <c:if test="${p.precioMensual}"><span class="periodo">/ mes</span></c:if>
+                            </p>
+                            <p class="direccion">${p.titulo}</p>
+                            <p class="barrio">${p.ubicacionCorta}</p>
+
+                            <div class="fichas">
+                                <c:if test="${p.habitaciones > 0}">
+                                    <span class="ficha"><svg><use href="#ico-habitacion"/></svg>${p.habitaciones} hab</span>
+                                </c:if>
+                                <c:if test="${p.banos > 0}">
+                                    <span class="ficha"><svg><use href="#ico-bano"/></svg>${p.banos} baños</span>
+                                </c:if>
+                                <c:if test="${not empty p.areaConstruida}">
+                                    <span class="ficha"><svg><use href="#ico-area"/></svg>${p.areaConstruida} m²</span>
+                                </c:if>
+                            </div>
+                        </div>
+                    </article>
+                    </a>
+
+                </div>
+            </div>
+        </c:forEach>
+    </div>
 
 </main>
 
 <%@ include file="/WEB-INF/includes/footer.jspf" %>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
 
 </body>
 </html>

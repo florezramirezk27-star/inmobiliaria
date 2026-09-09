@@ -129,7 +129,7 @@
                             <div class="d-flex gap-2 flex-wrap">
 
                                 <a href="${pageContext.request.contextPath}/propiedades/detalle?id=${solicitud.propiedadId}"
-                                   class="btn btn-outline-primary">
+                                   class="btn btn-contorno">
 
                                     Ver propiedad
 

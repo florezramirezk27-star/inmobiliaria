@@ -1,23 +1,34 @@
 <%--
     navbar.jspf — barra de navegación compartida por todas las vistas.
     Se incluye con: <%@ include file="/WEB-INF/includes/navbar.jspf" %>
-
-    Sprint 2: cuando exista HttpSession, envolver los botones de Ingresar /
-    Crear cuenta en <c:choose> para mostrar el menú del usuario autenticado.
 --%>
+<c:set var="esCliente" value="false"/>
+<c:set var="esAgente" value="false"/>
+
+<c:forEach var="rol" items="${sessionScope.roles}">
+    <c:if test="${rol.nombre eq 'CLIENTE'}">
+        <c:set var="esCliente" value="true"/>
+    </c:if>
+    <c:if test="${rol.nombre eq 'AGENTE'}">
+        <c:set var="esAgente" value="true"/>
+    </c:if>
+</c:forEach>
+
 <nav class="navbar navbar-expand-lg navbar-inmo">
+
+    <input type="checkbox" id="menu-nav" class="navbar-checkbox" aria-hidden="true">
+
     <div class="container">
 
         <a class="navbar-brand" href="${pageContext.request.contextPath}/">Inmobiliaria</a>
 
-        <button class="navbar-toggler border-0" type="button"
-                data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
-                aria-controls="menuPrincipal" aria-expanded="false"
-                aria-label="Abrir el menú de navegación">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <label for="menu-nav" class="navbar-toggler-solo" aria-label="Abrir el menú de navegación">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
 
-        <div class="collapse navbar-collapse" id="menuPrincipal">
+        <div class="navbar-menu-colapsable" id="menuPrincipal">
 
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                 <li class="nav-item">
@@ -29,15 +40,49 @@
                 <li class="nav-item">
                     <a class="nav-link" href="${pageContext.request.contextPath}/#catalogo">Catálogo</a>
                 </li>
+                <c:if test="${esAgente}">
                 <li class="nav-item">
                     <a class="nav-link" href="${pageContext.request.contextPath}/inmobiliaria/propiedades/formulario">Publicar propiedad</a>
                 </li>
+                </c:if>
             </ul>
 
-            <div class="d-flex flex-column flex-lg-row gap-2">
-                <a class="btn btn-contorno" href="${pageContext.request.contextPath}/login">Ingresar</a>
-                <a class="btn btn-marca" href="${pageContext.request.contextPath}/registro">Crear cuenta</a>
-            </div>
+            <c:choose>
+                <c:when test="${not empty sessionScope.usuarioId}">
+                    <div class="d-flex flex-column flex-lg-row gap-2">
+                        <c:choose>
+                            <c:when test="${esAgente}">
+                                <a class="btn btn-contorno"
+                                   href="${pageContext.request.contextPath}/inmobiliaria/dashboard">
+                                    Mi panel
+                                </a>
+                            </c:when>
+                            <c:when test="${esCliente}">
+                                <a class="btn btn-contorno"
+                                   href="${pageContext.request.contextPath}/cliente/dashboard">
+                                    Mi panel
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <a class="btn btn-contorno"
+                                   href="${pageContext.request.contextPath}/admin/dashboard">
+                                    Mi panel
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+                        <a class="btn btn-marca"
+                           href="${pageContext.request.contextPath}/logout">
+                            Cerrar sesión
+                        </a>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="d-flex flex-column flex-lg-row gap-2">
+                        <a class="btn btn-contorno" href="${pageContext.request.contextPath}/login">Ingresar</a>
+                        <a class="btn btn-marca" href="${pageContext.request.contextPath}/registro">Crear cuenta</a>
+                    </div>
+                </c:otherwise>
+            </c:choose>
 
         </div>
     </div>

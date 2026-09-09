@@ -70,6 +70,65 @@ h1, h2, h3, .fuente-display {
     color: #FFFFFF;
 }
 
+/* ---------- Navbar plegable SIN JavaScript ----------
+   Se usa un checkbox oculto + label (truco 100% CSS):
+   en móvil el label "hamburguesa" abre o cierra el menú y en
+   escritorio (>= lg) el menú siempre está visible. */
+
+.navbar-checkbox {
+    position: absolute;
+    left: -9999px;
+}
+
+.navbar-toggler-solo {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    margin-left: auto;
+    padding: 10px 6px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.navbar-menu-colapsable {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+@media (max-width: 991.98px) {
+
+    .navbar-toggler-solo {
+        display: flex;
+    }
+
+    .navbar-toggler-solo span {
+        width: 24px;
+        height: 2px;
+        background-color: #FFFFFF;
+        border-radius: 2px;
+    }
+
+    .navbar-menu-colapsable {
+        display: none;
+        width: 100%;
+        margin-top: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .navbar-menu-colapsable .navbar-nav {
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .navbar-checkbox:checked ~ .container .navbar-menu-colapsable {
+        display: flex;
+    }
+}
+
 /* ---------- Botones ---------- */
 
 .btn-marca {
@@ -89,19 +148,33 @@ h1, h2, h3, .fuente-display {
 }
 
 .btn-contorno {
-    background-color: transparent;
-    border: 1px solid #4A5C55;
-    color: #FFFFFF;
+    background-color: var(--verde-suave);
+    border: 1px solid var(--verde);
+    color: var(--verde-hover);
     font-weight: 600;
     border-radius: 6px;
     padding: 0.6rem 1.4rem;
 }
 
+/* Sobre el navbar oscuro el botón queda translúcido y claro */
+.navbar-inmo .btn-contorno {
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #FFFFFF;
+}
+
 .btn-contorno:hover,
 .btn-contorno:focus-visible {
-    background-color: #FFFFFF;
-    border-color: #FFFFFF;
-    color: var(--tinta);
+    background-color: var(--verde);
+    border-color: var(--verde);
+    color: #FFFFFF;
+}
+
+.navbar-inmo .btn-contorno:hover,
+.navbar-inmo .btn-contorno:focus-visible {
+    background-color: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #FFFFFF;
 }
 
 /* Foco visible para navegación por teclado */
@@ -346,6 +419,220 @@ select:focus-visible {
     padding: 3rem 1.5rem;
     text-align: center;
     color: var(--gris);
+}
+
+/* ---------- Panel de administración ---------- */
+
+/* Banner de cabecera de cada sección, con acento de color propio */
+.banner-panel {
+    position: relative;
+    border-radius: 14px;
+    padding: 2rem 2.25rem;
+    color: #FFFFFF;
+    overflow: hidden;
+    box-shadow: 0 14px 30px rgba(19, 37, 30, 0.18);
+}
+
+.banner-panel::before,
+.banner-panel::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.banner-panel::before {
+    width: 230px;
+    height: 230px;
+    top: -110px;
+    right: -70px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.22), transparent 65%);
+}
+
+.banner-panel::after {
+    width: 170px;
+    height: 170px;
+    bottom: -80px;
+    left: 30%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.14), transparent 60%);
+}
+
+.banner-usuarios   { background: linear-gradient(120deg, #13251E 0%, #1F6F5C 72%, #2E8B71 100%); }
+.banner-auditoria  { background: linear-gradient(120deg, #101B33 0%, #1E3A8A 58%, #3B5BD9 100%); }
+.banner-reportes   { background: linear-gradient(120deg, #3A2508 0%, #B46A2A 55%, #E09A3E 100%); }
+.banner-citas      { background: linear-gradient(120deg, #0E2E2C 0%, #12736B 58%, #1FA69B 100%); }
+
+.banner-panel .badge-tag {
+    background-color: rgba(255, 255, 255, 0.18);
+    color: #FFFFFF;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.banner-panel h1 {
+    color: #FFFFFF;
+    margin-bottom: 0.5rem;
+}
+
+.banner-panel .descripcion {
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 54ch;
+    margin-bottom: 0;
+}
+
+.btn-banner {
+    background-color: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #FFFFFF;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.55rem 1.2rem;
+    white-space: nowrap;
+}
+
+.btn-banner:hover,
+.btn-banner:focus-visible {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.7);
+    color: #FFFFFF;
+}
+
+/* Tarjetas de resumen (Usuarios, Auditoría, Reportes) con acento de color */
+.metrica {
+    background-color: #FFFFFF;
+    border: 1px solid var(--borde);
+    border-top: 4px solid var(--verde);
+    border-radius: 10px;
+    padding: 1.15rem 1.25rem;
+    height: 100%;
+}
+
+.metrica .rotulo {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gris);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+}
+
+.metrica .numero {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.metrica.verde { border-top-color: var(--verde); }
+.metrica.verde .rotulo  { color: var(--verde); }
+.metrica.verde .numero  { color: var(--verde); }
+
+.metrica.rojo { border-top-color: #C0392B; }
+.metrica.rojo .rotulo { color: #C0392B; }
+.metrica.rojo .numero { color: #C0392B; }
+
+.metrica.ocre { border-top-color: #B46A2A; }
+.metrica.ocre .rotulo { color: #B46A2A; }
+.metrica.ocre .numero { color: #B46A2A; }
+
+.metrica.azul { border-top-color: #2E5E9E; }
+.metrica.azul .rotulo { color: #2E5E9E; }
+.metrica.azul .numero { color: #2E5E9E; }
+
+.metrica.violeta { border-top-color: #7B3FA0; }
+.metrica.violeta .rotulo { color: #7B3FA0; }
+.metrica.violeta .numero { color: #7B3FA0; }
+
+/* Píldoras de estado / acción, con punto de color incluido */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.32rem 0.75rem;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.chip::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.chip-verde { background-color: var(--verde-suave); color: var(--verde-hover); }
+.chip-rojo  { background-color: #FBE9E7; color: #C0392B; }
+.chip-ocre  { background-color: #FAF0E1; color: #A8612B; }
+.chip-gris  { background-color: #EEF0EE; color: var(--gris); }
+.chip-azul  { background-color: #E4EEF9; color: #2E5E9E; }
+
+/* Tabla de datos en tarjetas (panel admin) */
+.tabla-tema {
+    background-color: #FFFFFF;
+    margin-bottom: 0;
+}
+
+.tabla-tema thead th {
+    background: linear-gradient(90deg, var(--tinta) 0%, #2A3B34 100%);
+    color: #FFFFFF;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: none;
+    padding-block: 0.9rem;
+    white-space: nowrap;
+}
+
+.tabla-verde thead th { background: linear-gradient(90deg, #13251E 0%, #1F6F5C 100%); }
+.tabla-azul thead th  { background: linear-gradient(90deg, #101B33 0%, #2E5E9E 100%); }
+.tabla-ocre thead th  { background: linear-gradient(90deg, #3A2508 0%, #B46A2A 100%); }
+
+.tabla-tema tbody td {
+    vertical-align: middle;
+    padding-block: 0.9rem;
+}
+
+.tabla-tema tbody tr:hover {
+    background-color: var(--verde-suave);
+}
+
+/* Cabecera consistente para las secciones del panel */
+.cabecera-seccion {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.cabecera-seccion h1 { margin-bottom: 0.25rem; }
+.cabecera-seccion .descripcion {
+    color: var(--gris);
+    max-width: 52ch;
+    margin-bottom: 0;
+}
+
+/* Avatar circular con la inicial del cliente (lista de citas) */
+.avatar-cita {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background-color: var(--verde-suave);
+    color: var(--verde-hover);
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
 }
 
 /* Marcador de imagen para la ficha de detalle cuando la propiedad no

@@ -36,7 +36,7 @@
 
     <a
         href="${pageContext.request.contextPath}/cliente/dashboard"
-        class="btn btn-secondary mb-4">
+        class="btn btn-contorno mb-4">
 
         Volver al panel
 

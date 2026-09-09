@@ -160,7 +160,7 @@
 
                         <a
                             href="${pageContext.request.contextPath}/cliente/dashboard"
-                            class="btn btn-secondary">
+                            class="btn btn-contorno">
 
                             Volver
 

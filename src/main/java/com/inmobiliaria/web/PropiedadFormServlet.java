@@ -13,6 +13,7 @@ import com.inmobiliaria.model.ImagenPropiedad;
 import com.inmobiliaria.model.Inmobiliaria;
 import com.inmobiliaria.model.Operacion;
 import com.inmobiliaria.model.Propiedad;
+import com.inmobiliaria.model.Rol;
 import com.inmobiliaria.model.TipoPropiedad;
 
 import javax.servlet.ServletException;
@@ -67,9 +68,10 @@ import java.util.UUID;
  * que exige el enunciado (JDBC + JSP, sin un servicio externo de
  * almacenamiento) — es una limitación conocida, no un bug.
  *
- * Nota de auth, igual que antes: sin login integrado todavía, sin
- * control de acceso por rol. Ver el comentario original de esta
- * clase en el commit anterior para el detalle completo.
+ * Nota de auth: este servlet exige sesión iniciada y rol AGENTE (además
+ * del AuthFilter por URL). Un visitante sin sesión es redirigido al login
+ * y un usuario con otro rol recibe 403 Forbidden. La pertenencia de la
+ * propiedad a la inmobiliaria del agente se valida en la edición.
  */
 @WebServlet("/inmobiliaria/propiedades/formulario")
 @MultipartConfig(
@@ -93,6 +95,33 @@ public class PropiedadFormServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+            return;
+        }
+
+        Integer usuarioId =
+                (Integer) session.getAttribute("usuarioId");
+
+        if (usuarioId == null) {
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+            return;
+        }
+
+        if (!tieneRol(request, "AGENTE")) {
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Solo los agentes pueden gestionar propiedades."
+            );
+            return;
+        }
+
         // Siempre presente, aunque quede vacío: evita invocar .contains()
         // sobre null en el EL del JSP cuando se está creando una propiedad
         // nueva (sin id todavía).
@@ -106,13 +135,6 @@ public class PropiedadFormServlet extends HttpServlet {
                 int id = Integer.parseInt(idParam.trim());
                 Propiedad existente = propiedadDAO.buscarPorId(id);
 
-                HttpSession session = request.getSession(false);
-
-                Integer usuarioId =
-                        session != null
-                                ? (Integer) session.getAttribute("usuarioId")
-                                : null;
-
                 if (existente == null) {
 
                     request.setAttribute(
@@ -120,10 +142,7 @@ public class PropiedadFormServlet extends HttpServlet {
                             "La propiedad solicitada no existe."
                     );
 
-                } else if (
-                        usuarioId == null
-                        || !perteneceAlAgente(id, usuarioId)
-                ) {
+                } else if (!perteneceAlAgente(id, usuarioId)) {
 
                     response.sendError(
                             HttpServletResponse.SC_FORBIDDEN,
@@ -171,9 +190,8 @@ public class PropiedadFormServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
 
         if (session == null) {
-            response.sendError(
-                    HttpServletResponse.SC_UNAUTHORIZED,
-                    "Sesión no válida"
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
             );
             return;
         }
@@ -182,9 +200,16 @@ public class PropiedadFormServlet extends HttpServlet {
                 (Integer) session.getAttribute("usuarioId");
 
         if (usuarioId == null) {
+            response.sendRedirect(
+                    request.getContextPath() + "/login"
+            );
+            return;
+        }
+
+        if (!tieneRol(request, "AGENTE")) {
             response.sendError(
-                    HttpServletResponse.SC_UNAUTHORIZED,
-                    "Sesión no válida"
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Solo los agentes pueden gestionar propiedades."
             );
             return;
         }
@@ -614,5 +639,36 @@ public class PropiedadFormServlet extends HttpServlet {
                     e
             );
         }
+    }
+
+    private boolean tieneRol(
+            HttpServletRequest request,
+            String rolBuscado
+    ) {
+
+        HttpSession session =
+                request.getSession(false);
+
+        if (session == null) {
+            return false;
+        }
+
+        Object rolesObj =
+                session.getAttribute("roles");
+
+        if (!(rolesObj instanceof List<?> roles)) {
+            return false;
+        }
+
+        for (Object objeto : roles) {
+
+            if (objeto instanceof Rol rol
+                    && rolBuscado.equals(rol.getNombre())) {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

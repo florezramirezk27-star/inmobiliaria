@@ -67,10 +67,8 @@
     <div class="mb-4">
         <h1 class="fuente-display mb-1">Mis favoritos</h1>
         <p class="mb-0" style="color: var(--gris);">
-            <c:choose>
-                <c:when test="${empty propiedades}">Todavía no has guardado ninguna propiedad.</c:when>
-                <c:otherwise>${propiedades.size()} propiedad(es) guardada(s).</c:otherwise>
-            </c:choose>
+            <span id="contador-favoritos">${propiedades.size()}</span>
+            <span id="texto-contador-favoritos">${propiedades.size() == 1 ? 'propiedad' : 'propiedades'} guardada${propiedades.size() == 1 ? '' : 's'}.</span>
         </p>
     </div>
 
@@ -78,16 +76,14 @@
         <div class="alert alert-warning" role="alert">${errorConsulta}</div>
     </c:if>
 
-    <c:if test="${empty propiedades and empty errorConsulta}">
-        <div class="sin-resultados">
-            <p class="mb-3">
-                Marca el corazón de cualquier propiedad del catálogo para guardarla acá.
-            </p>
-            <a class="btn btn-marca" href="${pageContext.request.contextPath}/propiedades">Ver el catálogo</a>
-        </div>
-    </c:if>
+    <div id="vacio-favoritos" class="sin-resultados ${empty propiedades and empty errorConsulta ? '' : 'd-none'}">
+        <p class="mb-3">
+            Marca el corazón de cualquier propiedad del catálogo para guardarla acá.
+        </p>
+        <a class="btn btn-marca" href="${pageContext.request.contextPath}/propiedades">Ver el catálogo</a>
+    </div>
 
-    <div class="row g-4">
+    <div id="grid-favoritos" class="row g-4 ${empty propiedades ? 'd-none' : ''}">
         <c:forEach var="p" items="${propiedades}">
             <div class="col-12 col-sm-6 col-lg-4">
                 <div class="position-relative">
@@ -152,10 +148,6 @@
 </main>
 
 <%@ include file="/WEB-INF/includes/footer.jspf" %>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
 
 </body>
 </html>
