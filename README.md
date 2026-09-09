@@ -1,8 +1,8 @@
 # Inmobiliaria
 
 Aplicación web Java (JSP + Servlets + MySQL) para la gestión de una inmobiliaria:
-publicación de propiedades, catálogo/búsqueda, autenticación por roles y gestión
-de solicitudes con documentos adjuntos.
+publicación de propiedades, catálogo/búsqueda, autenticación por roles, citas y
+gestión de solicitudes con documentos adjuntos.
 
 Proyecto académico del curso **Programación en Java** — 1º Corte.
 
@@ -32,7 +32,7 @@ Apache Tomcat), **JDBC** contra **MySQL** y vistas **JSP**. El proyecto está or
 en capas: `model` (entidades), `dao` (acceso a datos), `service` (lógica de negocio
 como la autenticación) y `web` (servlets/filtros).
 
-Lo que llevamos hasta ahora:
+Módulos implementados:
 
 - **Catálogo de propiedades** con búsqueda, filtros y fichas de detalle, respaldado por
   una vista `v_propiedad_catalogo`.
@@ -41,10 +41,12 @@ Lo que llevamos hasta ahora:
   pertenencia: solo la inmobiliaria dueña de la propiedad puede editarla.
 - **Autenticación y sesiones** con BCrypt, roles (ADMIN / AGENTE / CLIENTE) y filtros
   de protección por URL.
-- **Módulo de solicitudes del agente**: una inmobiliaria consulta y aprueba/rechaza las
-  solicitudes de las propiedades que administra.
-- **Módulo de solicitudes del cliente** (parcial): registrar solicitudes y adjuntar
-  documentos — los modelos, DAOs y servlets están creados; falta montar sus vistas JSP.
+- **Solicitudes de compra/arriendo**: el cliente crea solicitudes y adjunta/descarga
+  documentos; la inmobiliaria las consulta y aprueba/rechaza.
+- **Citas**: el cliente agenda visitas a propiedades y el agente gestiona su estado.
+- **Administración**: gestiona usuarios, roles, perfiles, auditoría y cinco reportes SQL.
+- **Seguridad**: validación de pertenencia de recursos por usuario/inmobiliaria.
+- **Pruebas unitarias JUnit** sobre los enums de dominio (5 pruebas).
 
 ---
 
@@ -79,24 +81,45 @@ autenticado (`InmobiliariaDAO.buscarPorUsuario()`) y comprueba que la propiedad 
 entre las listadas para esa inmobiliaria (`PropiedadDAO.listarPorInmobiliaria()`). Si el
 usuario no es el agente dueño responde `403 Forbidden`.
 
-### 3. Solicitudes y documentos (parcial)
+### 3. Solicitudes y documentos (completo)
 
 - **Modelo:** `Solicitud`, `Documento`, enums `TipoSolicitud`, `EstadoSolicitud`.
 - **DAOs:** `SolicitudDAO`, `DocumentoDAO`.
 - **Servlets:** `SolicitudServlet` (cliente), `DocumentoServlet` (cliente),
   `AgenteSolicitudServlet` (inmobiliaria).
+- **Vistas:** `inmobiliaria/solicitudes.jsp`,
+  `cliente/formulario-solicitud.jsp`, `cliente/mis-solicitudes.jsp`,
+  `cliente/documentos.jsp`.
 
-| Pieza | Estado |
-|-------|--------|
-| Modelos (`Solicitud`, `Documento`, enums) | ✅ Creados |
-| DAOs (`SolicitudDAO`, `DocumentoDAO`) | ✅ Creados |
-| `InmobiliariaDAO.buscarPorUsuario()` | ✅ Agregado |
-| `PropiedadDAO.listarPorInmobiliaria()` | ✅ Agregado |
-| `AgenteSolicitudServlet` | ✅ Creado |
-| Vista `inmobiliaria/solicitudes.jsp` | ✅ Creada |
-| Enlace en `inmobiliaria/dashboard.jsp` | ✅ Agregado |
-| Vistas de cliente (`formulario-solicitud.jsp`, `mis-solicitudes.jsp`, `documentos.jsp`) | ⏳ Pendientes |
-| Módulo de auditoría (`auditoria` en BD) | ⏳ Tabla lista, sin DAO/servlet |
+Flujo: el cliente crea la solicitud (`PENDIENTE`), el agente de la inmobiliaria
+dueña la aprueba o rechaza (`APROBADA` / `RECHAZADA`) desde
+`/inmobiliaria/solicitudes`, y el cliente puede adjuntar y descargar documentos de
+sus propias solicitudes. El acceso a documentos verifica que la solicitud pertenezca
+al cliente autenticado.
+
+### 4. Citas (completo)
+
+- **Modelo:** `Cita`, enum `EstadoCita`.
+- **DAO:** `CitaDAO`.
+- **Servlet:** `CitaServlet` (`/propiedades/citas`, `/propiedades/citas/estado`, `/citas`).
+- **Vistas:** `mis-citas.jsp`, `citas-propiedad.jsp`.
+
+El cliente agenda una visita a una propiedad (`SOLICITADA`); el agente confirma o
+rechaza (`CONFIRMADA` / `RECHAZADA`). El estado solo puede gestionarlo el agente
+de la inmobiliaria dueña de la propiedad, y un cliente no puede modificar su estado.
+
+### 5. Administración (completo)
+
+- **Servlets:** `AdminUsuariosServlet` (`/admin/usuarios`),
+  `AdminPerfilServlet` (`/admin/usuarios/perfil`), `AuditoriaServlet`
+  (`/admin/auditoria`), `ReporteServlet` (`/admin/reportes`).
+- **Vistas:** `admin/usuarios.jsp`, `admin/perfil-usuario.jsp`,
+  `admin/auditoria.jsp`, `admin/reportes.jsp`.
+
+El administrador activa/desactiva usuarios, cambia roles, edita perfiles, consulta la
+auditoría (`AuditoriaDAO` sobre la tabla `auditoria`) y los cinco reportes SQL
+(`ReporteDAO`): propiedades publicadas, citas activas, características por propiedad,
+propiedades sin citas y resumen por ciudad.
 
 ---
 
@@ -122,6 +145,15 @@ inmobiliaria/
 │
 ├── pom.xml                                  # Dependencias y plugins de Maven
 │
+├── docs/                                     # Documentación del proyecto
+│   ├── 01-MER.md                             # Modelo Entidad-Relación (16 entidades + vista)
+│   ├── 02-modelo-relacional.md               # Relaciones con PK/FK
+│   ├── 03-normalizacion-3FN.md               # Justificación de la normalización
+│   ├── 04-diccionario-datos.md               # Diccionario de datos por tabla
+│   ├── 05-casos-de-uso.md                    # Casos de uso por rol
+│   ├── 06-scrum.md                           # Sprints y retrospectiva
+│   └── 07-pruebas.md                         # Pruebas y evidencias
+│
 ├── database/
 │   ├── ddl.sql                              # Esquema completo (crea BD, tablas y vista)
 │   ├── dml.sql                              # Datos de prueba (usuarios, propiedades, etc.)
@@ -137,15 +169,17 @@ inmobiliaria/
     │   │   ├── model/                        # Entidades (POJOs) y enums
     │   │   │   ├── Usuario, Rol, Perfil, UsuarioRol
     │   │   │   ├── Propiedad, ImagenPropiedad, Caracteristica, Ciudad,
-    │   │   │   │   TipoPropiedad, Inmobiliaria, Favorito
+    │   │   │   │   TipoPropiedad, Inmobiliaria, Favorito, Cita, Auditoria
     │   │   │   ├── Solicitud, Documento
-    │   │   │   └── Operacion, EstadoPropiedad, TipoSolicitud, EstadoSolicitud
+    │   │   │   └── Operacion, EstadoPropiedad, TipoSolicitud, EstadoSolicitud,
+    │   │   │       EstadoCita
     │   │   │
     │   │   ├── dao/                          # Acceso a datos
     │   │   │   ├── UsuarioDAO, RolDAO, PerfilDAO, UsuarioRolDAO
     │   │   │   ├── PropiedadDAO, ImagenPropiedadDAO, CaracteristicaDAO,
-    │   │   │   │   CiudadDAO, TipoPropiedadDAO, InmobiliariaDAO, FavoritoDAO
-    │   │   │   ├── SolicitudDAO, DocumentoDAO
+    │   │   │   │   CiudadDAO, TipoPropiedadDAO, InmobiliariaDAO, FavoritoDAO,
+    │   │   │   │   CitaDAO
+    │   │   │   ├── SolicitudDAO, DocumentoDAO, AuditoriaDAO, ReporteDAO
     │   │   │   └── FiltroPropiedad, DuplicidadException, PruebaPropiedadDAO
     │   │   │
     │   │   ├── service/
@@ -156,26 +190,33 @@ inmobiliaria/
     │   │       ├── Login, Logout, Registro, Perfil, AuthFilter, CodificacionFilter
     │   │       ├── Propiedad, PropiedadDetalle, PropiedadForm, Favorito
     │   │       ├── AdminDashboard, ClienteDashboard, InmobiliariaDashboard
-    │   │       ├── AgenteSolicitud
-    │   │       └── Solicitud, Documento
+    │   │       ├── AgenteSolicitud, Solicitud, Documento, Cita
+    │   │       └── AdminUsuarios, AdminPerfil, Auditoria, Reporte
     │   │
     │   ├── resources/
     │   │   └── db.properties                 # Datos de conexión a la BD
     │   │
     │   └── webapp/
     │       ├── index.jsp, catalogo.jsp, detalle-propiedad.jsp,
-    │       │   formulario-propiedad.jsp, login.jsp, registro.jsp
+    │       │   formulario-propiedad.jsp, login.jsp, registro.jsp,
+    │       │   favoritos.jsp, mis-citas.jsp, citas-propiedad.jsp
     │       ├── css/estilos.css
     │       └── WEB-INF/
     │           ├── web.xml                   # Descriptor (Servlet 3.1)
     │           ├── includes/                 # navbar.jspf, footer.jspf
     │           └── views/
-    │               ├── admin/dashboard.jsp
+    │               ├── admin/dashboard.jsp, usuarios.jsp,
+    │               │   perfil-usuario.jsp, auditoria.jsp, reportes.jsp
     │               ├── auth/login.jsp, registro.jsp
-    │               ├── cliente/dashboard.jsp, favoritos.jsp, perfil.jsp
+    │               ├── cliente/dashboard.jsp, favoritos.jsp, perfil.jsp,
+    │               │   mis-solicitudes.jsp, formulario-solicitud.jsp,
+    │               │   documentos.jsp
     │               └── inmobiliaria/dashboard.jsp, solicitudes.jsp
     │
-    └── test/                                # (pendiente de ampliar)
+    └── test/java/com/inmobiliaria/            # Pruebas JUnit
+        ├── EstadoCitaTest.java               # 2 pruebas
+        ├── EstadoSolicitudTest.java          # 2 pruebas
+        └── TipoSolicitudTest.java            # 1 prueba
 ```
 
 ---
@@ -294,7 +335,12 @@ Cada servlet es un controlador mapeado por anotación `@WebServlet`. Los princip
 | `/cliente/solicitudes/documentos` | `DocumentoServlet` | Subida/descarga de documentos |
 | `/inmobiliaria/dashboard` | `InmobiliariaDashboardServlet` | Panel de la inmobiliaria |
 | `/inmobiliaria/solicitudes` | `AgenteSolicitudServlet` | Aprobar/rechazar solicitudes |
+| `/propiedades/citas`, `/propiedades/citas/estado`, `/citas` | `CitaServlet` | Citas del cliente y gestión del agente |
 | `/admin/dashboard` | `AdminDashboardServlet` | Panel del admin |
+| `/admin/usuarios` | `AdminUsuariosServlet` | Activar/desactivar y cambiar roles |
+| `/admin/usuarios/perfil` | `AdminPerfilServlet` | Edición de perfil por admin |
+| `/admin/auditoria` | `AuditoriaServlet` | Registro de auditoría |
+| `/admin/reportes` | `ReporteServlet` | Cinco reportes SQL |
 
 ### Protección por URL (AuthFilter)
 
@@ -378,10 +424,11 @@ Para probar la conexión de forma aislada existe la clase `DatabaseTest`.
 
 ## Notas finales
 
-Pendiente en siguientes pasos:
+La documentación del proyecto está en `docs/` (`01-MER.md` a `07-pruebas.md`)
+y se mantiene sincronizada con `database/ddl.sql`.
 
-- Crear las vistas JSP de cliente para solicitudes y documentos
-  (`formulario-solicitud.jsp`, `mis-solicitudes.jsp`, `documentos.jsp`).
-- Módulo de auditoría: DAO/servlet sobre la tabla `auditoria` (ya existe en el esquema).
-- Regenerar contraseñas BCrypt de los usuarios de prueba restantes (agente 2 y clientes).
-- Tests unitarios con JUnit (dependencia ya incluida en `pom.xml`).
+Pendiente:
+
+- Regenerar contraseñas BCrypt de los usuarios de prueba restantes (agente 2 y
+  clientes), que aún tienen el hash "de ejemplo" no asociado a ninguna contraseña
+  real.
