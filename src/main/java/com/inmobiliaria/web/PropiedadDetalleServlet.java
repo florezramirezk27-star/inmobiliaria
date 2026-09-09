@@ -13,6 +13,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -26,9 +27,6 @@ import java.util.List;
  */
 @WebServlet("/propiedades/detalle")
 public class PropiedadDetalleServlet extends HttpServlet {
-
-    // Ver el javadoc de FavoritoServlet.
-    private static final int USUARIO_PRUEBA_ID = 4;
 
     private final PropiedadDAO propiedadDAO = new PropiedadDAO();
     private final ImagenPropiedadDAO imagenDAO = new ImagenPropiedadDAO();
@@ -70,8 +68,14 @@ public class PropiedadDetalleServlet extends HttpServlet {
                 request.setAttribute("caracteristicas", caracteristicas);
                 request.setAttribute("categoriasCaracteristica",
                         List.of("INTERIOR", "EXTERIOR", "CONJUNTO", "SEGURIDAD"));
-                request.setAttribute("esFavorito",
-                        favoritoDAO.esFavorito(USUARIO_PRUEBA_ID, id));
+
+                // La ficha es pública (la ve también el visitante sin
+                // iniciar sesión); si no hay sesión, simplemente no hay
+                // favorito que marcar — nunca se redirige a /login aquí
+                // (eso solo pasa al intentar MARCAR, en FavoritoServlet).
+                Integer usuarioId = idDeSesionONulo(request);
+                boolean esFavorito = usuarioId != null && favoritoDAO.esFavorito(usuarioId, id);
+                request.setAttribute("esFavorito", esFavorito);
             }
 
         } catch (SQLException e) {
@@ -81,5 +85,19 @@ public class PropiedadDetalleServlet extends HttpServlet {
         }
 
         request.getRequestDispatcher("/detalle-propiedad.jsp").forward(request, response);
+    }
+
+    /**
+     * A diferencia de FavoritoServlet.usuarioDeSesion(), esta variante
+     * nunca redirige: la ficha debe seguir mostrándose igual para un
+     * visitante sin sesión, solo que sin el favorito marcado.
+     */
+    private Integer idDeSesionONulo(HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        return (Integer) session.getAttribute("usuarioId");
     }
 }
