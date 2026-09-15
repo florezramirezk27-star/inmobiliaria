@@ -35,22 +35,22 @@
 <main class="container my-5"
       style="max-width: 850px;">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="cabecera-seccion">
 
         <div>
 
-            <h1 class="fuente-display">
+            <h1 class="fuente-display mb-1">
                 Documentos
             </h1>
 
-            <p class="text-muted mb-0">
+            <p class="descripcion mb-0">
                 Solicitud #${solicitudId}
             </p>
 
         </div>
 
         <a href="${pageContext.request.contextPath}/cliente/solicitudes"
-           class="btn btn-contorno">
+           class="btn btn-volver">
             Mis solicitudes
         </a>
 
@@ -75,15 +75,13 @@
 
     <!-- SUBIR DOCUMENTO -->
 
-    <div class="card shadow-sm mb-4">
+    <div class="panel mb-4">
 
-        <div class="card-body">
-
-            <h5 class="card-title">
+            <h3 class="h5 mb-1">
                 Subir documento
-            </h5>
+            </h3>
 
-            <p class="text-muted">
+            <p class="mb-4" style="color: var(--gris); font-size:.9rem;">
                 Formatos permitidos: PDF, JPG, PNG, DOC y DOCX.
                 Máximo 10 MB.
             </p>
@@ -115,20 +113,16 @@
 
             </form>
 
-        </div>
-
     </div>
 
 
     <!-- DOCUMENTOS EXISTENTES -->
 
-    <div class="card shadow-sm">
+    <div class="panel">
 
-        <div class="card-body">
-
-            <h5 class="card-title mb-4">
+            <h3 class="h5 mb-4">
                 Documentos adjuntos
-            </h5>
+            </h3>
 
             <c:choose>
 
@@ -172,7 +166,7 @@
                                 </div>
 
                                 <a href="${pageContext.request.contextPath}/cliente/solicitudes/documentos?id=${documento.id}"
-                                   class="btn btn-sm btn-primary">
+                                   class="btn btn-sm btn-marca">
 
                                     Descargar
 
@@ -187,8 +181,6 @@
                 </c:otherwise>
 
             </c:choose>
-
-        </div>
 
     </div>
 

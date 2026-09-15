@@ -37,13 +37,24 @@
 
 <main class="container my-5" style="max-width: 780px;">
 
-    <h1 class="fuente-display mb-1">Mis citas</h1>
-    <p class="mb-4" style="color: var(--gris);">
-        <c:choose>
-            <c:when test="${empty citas}">Todavía no has agendado ninguna visita.</c:when>
-            <c:otherwise>${citas.size()} visita(s) agendada(s).</c:otherwise>
-        </c:choose>
-    </p>
+    <div class="cabecera-seccion">
+
+        <div>
+            <h1 class="fuente-display mb-1">Mis citas</h1>
+            <p class="descripcion mb-0">
+                <c:choose>
+                    <c:when test="${empty citas}">Todavía no has agendado ninguna visita.</c:when>
+                    <c:otherwise>${citas.size()} visita(s) agendada(s).</c:otherwise>
+                </c:choose>
+            </p>
+        </div>
+
+        <a href="${pageContext.request.contextPath}/cliente/dashboard"
+           class="btn btn-volver">
+            Volver al panel
+        </a>
+
+    </div>
 
     <c:if test="${not empty errorConsulta}">
         <div class="alert alert-warning" role="alert">${errorConsulta}</div>

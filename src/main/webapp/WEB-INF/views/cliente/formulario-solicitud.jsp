@@ -35,9 +35,9 @@
 <main class="container my-5"
       style="max-width: 750px;">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="cabecera-seccion">
 
-        <h1 class="fuente-display">
+        <h1 class="fuente-display mb-1">
             Nueva solicitud
         </h1>
 
@@ -71,15 +71,13 @@
 
     <c:if test="${not empty propiedad}">
 
-        <div class="card shadow-sm mb-4">
+        <div class="panel mb-4">
 
-            <div class="card-body">
-
-                <h5 class="card-title">
+                <h3 class="h5 mb-1">
                     ${propiedad.titulo}
-                </h5>
+                </h3>
 
-                <p class="text-muted mb-0">
+                <p class="mb-0" style="color: var(--gris); font-size:.9rem;">
                     Código: ${propiedad.codigo}
                 </p>
 
@@ -88,8 +86,6 @@
                 </p>
 
             </div>
-
-        </div>
 
     </c:if>
 

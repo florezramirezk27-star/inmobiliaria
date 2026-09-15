@@ -65,12 +65,21 @@
 
 <main class="container my-5 pt-4">
 
-    <div class="mb-4">
-        <h1 class="fuente-display mb-1">Mis favoritos</h1>
-        <p class="mb-0" style="color: var(--gris);">
-            <span id="contador-favoritos">${propiedades.size()}</span>
-            <span id="texto-contador-favoritos">${propiedades.size() == 1 ? 'propiedad' : 'propiedades'} guardada${propiedades.size() == 1 ? '' : 's'}.</span>
-        </p>
+    <div class="cabecera-seccion">
+
+        <div>
+            <h1 class="fuente-display mb-1">Mis favoritos</h1>
+            <p class="descripcion mb-0">
+                <span id="contador-favoritos">${propiedades.size()}</span>
+                <span id="texto-contador-favoritos">${propiedades.size() == 1 ? 'propiedad' : 'propiedades'} guardada${propiedades.size() == 1 ? '' : 's'}.</span>
+            </p>
+        </div>
+
+        <a href="${pageContext.request.contextPath}/cliente/dashboard"
+           class="btn btn-volver">
+            Volver al panel
+        </a>
+
     </div>
 
     <c:if test="${not empty errorConsulta}">

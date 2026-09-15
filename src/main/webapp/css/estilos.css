@@ -73,6 +73,7 @@
 
 body {
     font-family: "Inter", system-ui, -apple-system, sans-serif;
+    background-color: #F7F7F4;
     background-color: var(--background);
     color: var(--text-primary);
     font-size: 1rem;
@@ -108,6 +109,7 @@ a:hover { text-decoration: underline; }
 /* ---------- Navbar ---------- */
 
 .navbar-inmo {
+    background-color: #12372A;
     background-color: var(--primary);
     min-height: 72px;
     padding-block: 0;
@@ -237,11 +239,13 @@ a:hover { text-decoration: underline; }
 .btn-marca:hover, .btn-contorno:hover, .btn-peligro:hover { text-decoration: none; }
 
 .btn-marca {
+    background-color: #2F7664;
     background-color: var(--secondary);
     border-color: var(--secondary);
     color: #FFFFFF;
 }
 .btn-marca:hover, .btn-marca:focus-visible {
+    background-color: #245B4D;
     background-color: var(--secondary-dark);
     border-color: var(--secondary-dark);
     color: #FFFFFF;
@@ -270,6 +274,7 @@ a:hover { text-decoration: underline; }
 }
 
 .btn-peligro {
+    background-color: #C94E4E;
     background-color: var(--danger);
     border-color: var(--danger);
     color: #FFFFFF;
@@ -280,6 +285,12 @@ a:hover { text-decoration: underline; }
 
 /* Bootstrap .btn-primary alineado con la marca */
 .btn-primary {
+    --bs-btn-bg: #2F7664;
+    --bs-btn-border-color: #2F7664;
+    --bs-btn-hover-bg: #245B4D;
+    --bs-btn-hover-border-color: #245B4D;
+    --bs-btn-active-bg: #245B4D;
+    --bs-btn-active-border-color: #245B4D;
     --bs-btn-bg: var(--secondary);
     --bs-btn-border-color: var(--secondary);
     --bs-btn-hover-bg: var(--secondary-dark);
@@ -298,6 +309,7 @@ a:hover { text-decoration: underline; }
 
 .hero {
     position: relative;
+    background-color: #12372A;
     background-color: var(--primary);
     background-image:
         linear-gradient(180deg, rgba(11,38,29,.72) 0%, rgba(11,38,29,.86) 100%),
@@ -360,6 +372,7 @@ a:hover { text-decoration: underline; }
 .operacion .btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
 
 .operacion .btn-check:checked + .btn {
+    background-color: #12372A;
     background-color: var(--primary);
     border-color: var(--primary);
     color: #FFFFFF;
@@ -630,6 +643,7 @@ textarea.form-control { min-height: 120px; }
     flex-direction: column;
     justify-content: space-between;
     padding: 2.75rem;
+    background-color: #12372A;
     background-color: var(--primary);
     background-image:
         linear-gradient(200deg, rgba(11,38,29,.80) 0%, rgba(18,55,42,.94) 100%),
@@ -699,6 +713,7 @@ textarea.form-control { min-height: 120px; }
     padding: 2rem 2.25rem;
     color: #FFFFFF;
     overflow: hidden;
+    background-color: #12372A;
     background-color: var(--primary);
     box-shadow: var(--sh-md);
 }
@@ -713,7 +728,7 @@ textarea.form-control { min-height: 120px; }
     pointer-events: none;
 }
 
-.banner-usuarios  { background-color: var(--primary); }
+.banner-usuarios  { background-color: #12372A; background-color: var(--primary); }
 .banner-auditoria { background-color: #1B3040; }
 .banner-reportes  { background-color: #4A3312; }
 .banner-citas     { background-color: #123A38; }
@@ -873,6 +888,17 @@ textarea.form-control { min-height: 120px; }
 .tabla-scroll .tabla-tema { border: none; }
 
 
+/* ---------- Panel base ---------- */
+
+.panel {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 1.25rem 1.4rem;
+    box-shadow: var(--sh-sm);
+}
+
+
 /* ---------- Cabecera de sección ---------- */
 
 .cabecera-seccion {
@@ -944,6 +970,7 @@ textarea.form-control { min-height: 120px; }
 /* ---------- Pie de página ---------- */
 
 .pie {
+    background-color: #12372A;
     background-color: var(--primary);
     color: rgba(255,255,255,.72);
     padding-block: 3rem 1.75rem;

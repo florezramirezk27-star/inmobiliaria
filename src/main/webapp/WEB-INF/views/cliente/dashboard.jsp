@@ -5,22 +5,28 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mi panel — Inmobiliaria</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Panel del Cliente</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
+    <link
+        rel="stylesheet"
+        href="${pageContext.request.contextPath}/css/estilos.css">
+
 </head>
 
 <body>
@@ -29,93 +35,105 @@
 
 <main class="container py-5">
 
-    <div class="banner-panel mb-4">
+    <span class="badge"
+          style="background-color: var(--verde-suave);
+                 color: var(--verde);">
+        CLIENTE
+    </span>
 
-        <div class="d-flex
-                    flex-wrap
-                    justify-content-between
-                    align-items-center
-                    gap-3">
+    <h1 class="fuente-display mt-3">
+        Panel del Cliente
+    </h1>
 
-            <div>
+    <p class="medida">
+        Gestiona tus propiedades favoritas, citas y solicitudes
+        desde un solo lugar.
+    </p>
 
-                <span class="badge badge-tag">
-                    CLIENTE
-                </span>
+    <div class="row g-4 mt-3">
 
-                <h1 class="fuente-display mt-2 mb-1">
-                    <c:choose>
-                        <c:when test="${not empty sessionScope.correo}">
-                            Hola, <span style="color: var(--accent);">${sessionScope.correo}</span>
-                        </c:when>
-                        <c:otherwise>Mi panel</c:otherwise>
-                    </c:choose>
-                </h1>
+        <div class="col-md-6 col-lg-4">
 
-                <p class="descripcion mb-0">
-                    Gestiona tus propiedades favoritas, citas y solicitudes desde un solo lugar.
+            <div class="tarjeta-prop p-4">
+
+                <h2 class="h5">
+                    Mi perfil
+                </h2>
+
+                <p>
+                    Consulta y actualiza tu información personal.
                 </p>
+
+                <a href="${pageContext.request.contextPath}/cliente/perfil"
+                   class="btn btn-marca">
+                    Ver perfil
+                </a>
 
             </div>
 
-            <a
-                href="${pageContext.request.contextPath}/propiedades"
-                class="btn btn-volver">
+        </div>
 
-                <i class="bi bi-search" aria-hidden="true"></i>
-                Buscar propiedades
+        <div class="col-md-6 col-lg-4">
 
-            </a>
+            <div class="tarjeta-prop p-4">
+
+                <h2 class="h5">
+                    Mis favoritos
+                </h2>
+
+                <p>
+                    Las propiedades que guardaste para revisar después.
+                </p>
+
+                <a href="${pageContext.request.contextPath}/cliente/favoritos"
+                   class="btn btn-marca">
+                    Ver favoritos
+                </a>
+
+            </div>
 
         </div>
 
-    </div>
+        <div class="col-md-6 col-lg-4">
 
+            <div class="tarjeta-prop p-4">
 
-    <div class="row g-4">
+                <h2 class="h5">
+                    Mis citas
+                </h2>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <a class="tarjeta-acceso" href="${pageContext.request.contextPath}/cliente/perfil">
-                <span class="icono"><i class="bi bi-person"></i></span>
-                <h3>Mi perfil</h3>
-                <p>Consulta y actualiza tu información personal.</p>
-                <span class="accion">
-                    Ver perfil <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                </span>
-            </a>
+                <p>
+                    Consulta el estado de tus visitas programadas.
+                </p>
+
+                <a href="${pageContext.request.contextPath}/citas"
+                   class="btn btn-marca">
+                    Ver citas
+                </a>
+
+            </div>
+
         </div>
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <a class="tarjeta-acceso" href="${pageContext.request.contextPath}/cliente/favoritos">
-                <span class="icono"><i class="bi bi-heart"></i></span>
-                <h3>Mis favoritos</h3>
-                <p>Las propiedades que guardaste para revisar después.</p>
-                <span class="accion">
-                    Ver favoritos <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                </span>
-            </a>
-        </div>
+        <div class="col-md-6 col-lg-4">
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <a class="tarjeta-acceso" href="${pageContext.request.contextPath}/citas">
-                <span class="icono"><i class="bi bi-calendar-check"></i></span>
-                <h3>Mis citas</h3>
-                <p>Consulta el estado de tus visitas programadas.</p>
-                <span class="accion">
-                    Ver citas <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                </span>
-            </a>
-        </div>
+            <div class="tarjeta-prop p-4">
 
-        <div class="col-12 col-sm-6 col-lg-3">
-            <a class="tarjeta-acceso" href="${pageContext.request.contextPath}/cliente/solicitudes">
-                <span class="icono"><i class="bi bi-file-earmark-text"></i></span>
-                <h3>Mis solicitudes</h3>
-                <p>Tus solicitudes de compra y arriendo con su estado.</p>
-                <span class="accion">
-                    Ver solicitudes <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                </span>
-            </a>
+                <h2 class="h5">
+                    Mis solicitudes
+                </h2>
+
+                <p>
+                    Tus solicitudes de compra y arriendo con su estado.
+                </p>
+
+                <a href="${pageContext.request.contextPath}/cliente/solicitudes"
+                   class="btn btn-marca">
+                    Ver solicitudes
+                </a>
+
+            </div>
+
         </div>
 
     </div>

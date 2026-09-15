@@ -30,14 +30,11 @@
 
 <main class="container my-5">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="cabecera-seccion">
 
         <div>
-            <h1 class="fuente-display">Mis solicitudes</h1>
-
-            <p style="color: var(--gris);">
-                Consulta el estado de tus solicitudes de compra y arriendo.
-            </p>
+            <h1 class="fuente-display mb-1">Mis solicitudes</h1>
+            <p class="descripcion mb-0">Consulta el estado de tus solicitudes de compra y arriendo.</p>
         </div>
 
         <a href="${pageContext.request.contextPath}/cliente/dashboard"
@@ -61,14 +58,14 @@
 
     <c:if test="${empty solicitudes and empty error}">
 
-        <div class="alert alert-info">
-            Todavía no tienes solicitudes.
+        <div class="sin-resultados">
+            <h3>Todavía no tienes solicitudes</h3>
+            <p class="mb-0">Explora el catálogo y crea tu primera solicitud de compra o arriendo.</p>
+            <a href="${pageContext.request.contextPath}/propiedades"
+               class="btn btn-marca">
+                Ver propiedades
+            </a>
         </div>
-
-        <a href="${pageContext.request.contextPath}/propiedades"
-           class="btn btn-marca">
-            Ver propiedades
-        </a>
 
     </c:if>
 
@@ -81,31 +78,41 @@
 
                 <div class="col-12 col-lg-6">
 
-                    <div class="card h-100 shadow-sm">
+                    <div class="panel h-100 d-flex flex-column">
 
-                        <div class="card-body">
-
-                            <div class="d-flex justify-content-between align-items-start">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
 
                                 <div>
 
-                                    <h5 class="card-title mb-1">
+                                    <h3 class="h5 mb-1">
                                         Solicitud #${solicitud.id}
-                                    </h5>
+                                    </h3>
 
-                                    <p class="text-muted mb-3">
+                                    <p class="mb-1" style="color: var(--gris); font-size:.9rem;">
                                         Propiedad #${solicitud.propiedadId}
                                     </p>
 
                                 </div>
 
-                                <span class="badge bg-primary">
-                                    ${solicitud.estado.etiqueta}
-                                </span>
+                                <c:set var="estadoSolicitud" value="${solicitud.estado}"/>
+                                <c:choose>
+                                    <c:when test="${estadoSolicitud == 'APROBADA'}">
+                                        <span class="chip chip-verde">${solicitud.estado.etiqueta}</span>
+                                    </c:when>
+                                    <c:when test="${estadoSolicitud == 'RECHAZADA'}">
+                                        <span class="chip chip-rojo">${solicitud.estado.etiqueta}</span>
+                                    </c:when>
+                                    <c:when test="${estadoSolicitud == 'EN_REVISION'}">
+                                        <span class="chip chip-azul">${solicitud.estado.etiqueta}</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="chip chip-ocre">${solicitud.estado.etiqueta}</span>
+                                    </c:otherwise>
+                                </c:choose>
 
                             </div>
 
-                            <p class="mb-2">
+                            <p class="mb-2 mt-3">
 
                                 <strong>Tipo:</strong>
 
@@ -125,14 +132,14 @@
 
                             </c:if>
 
-                            <p class="text-muted mb-3">
+                            <p class="mb-3" style="color: var(--gris); font-size:.9rem;">
 
                                 Creada:
                                 ${solicitud.creadoEn}
 
                             </p>
 
-                            <div class="d-flex gap-2 flex-wrap">
+                            <div class="d-flex gap-2 flex-wrap mt-auto">
 
                                 <a href="${pageContext.request.contextPath}/propiedades/detalle?id=${solicitud.propiedadId}"
                                    class="btn btn-contorno">
@@ -142,15 +149,13 @@
                                 </a>
 
                                 <a href="${pageContext.request.contextPath}/cliente/solicitudes/documentos?solicitudId=${solicitud.id}"
-                                   class="btn btn-primary">
+                                   class="btn btn-marca">
 
                                     Documentos
 
                                 </a>
 
                             </div>
-
-                        </div>
 
                     </div>
 
