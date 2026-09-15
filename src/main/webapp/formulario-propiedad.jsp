@@ -142,9 +142,9 @@
                 <select class="form-select" id="idTipoPropiedad" name="idTipoPropiedad" required>
                     <option value="">Selecciona...</option>
                     <c:forEach var="t" items="${tiposPropiedad}">
-                        <option value="${t.id}"
-                            ${(not empty propiedad and propiedad.tipoPropiedadId == t.id)
-                              or param.idTipoPropiedad == t.id ? 'selected' : ''}>
+                        <option value="${t.idTipo}"
+                            ${(not empty propiedad and propiedad.tipoPropiedadId == t.idTipo)
+                              or param.idTipoPropiedad == t.idTipo ? 'selected' : ''}>
                             ${t.nombre}
                         </option>
                     </c:forEach>

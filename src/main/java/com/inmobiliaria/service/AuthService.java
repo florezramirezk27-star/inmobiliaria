@@ -90,6 +90,12 @@ public class AuthService {
             );
         }
 
+        if (perfilDAO.existeDocumento(documento)) {
+            throw new IllegalArgumentException(
+                    "El número de documento ya se encuentra registrado."
+            );
+        }
+
         String passwordHash = BCrypt.hashpw(
                 password,
                 BCrypt.gensalt()

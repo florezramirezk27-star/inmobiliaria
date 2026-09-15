@@ -56,6 +56,7 @@ Fuente principal: `database/ddl.sql`.
 |---|---|---|---|---|
 | id_tipo_propiedad | TINYINT UNSIGNED | No | PK, AUTO_INCREMENT | Identificador de tipo |
 | nombre | VARCHAR(60) | No | — | Nombre del tipo |
+| descripcion | VARCHAR(255) | Sí | — | Descripción del tipo |
 | slug | VARCHAR(60) | No | UNIQUE | Identificador amigable |
 
 ## 7. inmobiliaria

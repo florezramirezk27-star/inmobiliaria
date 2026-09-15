@@ -82,6 +82,72 @@
             <div class="tarjeta-prop p-4">
 
                 <h2 class="h5">
+                    Ciudades
+                </h2>
+
+                <p>
+                    Gestiona las ciudades disponibles
+                    para las propiedades.
+                </p>
+
+                <a href="${pageContext.request.contextPath}/admin/ciudades"
+                   class="btn btn-marca">
+                    Gestionar ciudades
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="tarjeta-prop p-4">
+
+                <h2 class="h5">
+                    Tipos de propiedad
+                </h2>
+
+                <p>
+                    Administra las categorías de inmuebles
+                    del sistema.
+                </p>
+
+                <a href="${pageContext.request.contextPath}/admin/tipos-propiedad"
+                   class="btn btn-marca">
+                    Gestionar tipos
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="tarjeta-prop p-4">
+
+                <h2 class="h5">
+                    Características
+                </h2>
+
+                <p>
+                    Gestiona las características disponibles
+                    para las propiedades.
+                </p>
+
+                <a href="${pageContext.request.contextPath}/admin/caracteristicas"
+                   class="btn btn-marca">
+                    Gestionar características
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="tarjeta-prop p-4">
+
+                <h2 class="h5">
                     Auditoría
                 </h2>
 

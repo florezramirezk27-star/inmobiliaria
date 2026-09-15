@@ -78,6 +78,28 @@
             <div class="tarjeta-prop p-4">
 
                 <h2 class="h5">
+                    Mis propiedades
+                </h2>
+
+                <p>
+                    Consulta los estados y da de baja
+                    las propiedades de tu inmobiliaria.
+                </p>
+
+                <a href="${pageContext.request.contextPath}/inmobiliaria/propiedades"
+                   class="btn btn-marca">
+                    Ver mis propiedades
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+
+            <div class="tarjeta-prop p-4">
+
+                <h2 class="h5">
                     Publicar propiedad
                 </h2>
 

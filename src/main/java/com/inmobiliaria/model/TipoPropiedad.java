@@ -1,30 +1,64 @@
 package com.inmobiliaria.model;
 
-/**
- * Fila de la tabla `tipo_propiedad`. Se usa para llenar el
- * <select> de tipo de inmueble en el buscador y en el formulario.
- */
 public class TipoPropiedad {
 
-    private int id;
+    private int idTipo;
     private String nombre;
+    private String descripcion;
     private String slug;
 
     public TipoPropiedad() {
     }
 
-    public TipoPropiedad(int id, String nombre, String slug) {
-        this.id = id;
+    public TipoPropiedad(
+            int idTipo,
+            String nombre,
+            String descripcion
+    ) {
+        this.idTipo = idTipo;
         this.nombre = nombre;
+        this.descripcion = descripcion;
+    }
+
+    public TipoPropiedad(
+            int idTipo,
+            String nombre,
+            String descripcion,
+            String slug
+    ) {
+        this(idTipo, nombre, descripcion);
         this.slug = slug;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getIdTipo() {
+        return idTipo;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setIdTipo(int idTipo) {
+        this.idTipo = idTipo;
+    }
 
-    public String getSlug() { return slug; }
-    public void setSlug(String slug) { this.slug = slug; }
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
 }

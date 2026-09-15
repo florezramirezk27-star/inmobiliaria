@@ -10,6 +10,43 @@ import java.sql.SQLException;
 
 public class PerfilDAO {
 
+    public boolean existeDocumento(String documento) {
+
+        if (documento == null || documento.isBlank()) {
+            return false;
+        }
+
+        String sql = """
+                SELECT COUNT(*)
+                FROM perfil
+                WHERE documento = ?
+                """;
+
+        try (
+                Connection connection = ConnectionFactory.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            statement.setString(1, documento);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                if (resultSet.next()) {
+                    return resultSet.getInt(1) > 0;
+                }
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Error al verificar el documento",
+                    e
+            );
+        }
+
+        return false;
+    }
+
     public int crearPerfil(Perfil perfil) {
 
         String sql = """

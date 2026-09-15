@@ -50,6 +50,7 @@ CIUDAD(
 TIPO_PROPIEDAD(
   id_tipo_propiedad PK,
   nombre,
+  descripcion,
   slug UNIQUE
 )
 

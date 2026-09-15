@@ -30,6 +30,97 @@ public class CaracteristicaDAO {
         return caracteristicas;
     }
 
+    /** Buscar una característica por ID. */
+    public Caracteristica buscarPorId(int id) throws SQLException {
+
+        String sql = """
+                SELECT id_caracteristica, nombre, categoria
+                FROM caracteristica
+                WHERE id_caracteristica = ?
+                """;
+
+        try (Connection cn = ConnectionFactory.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapear(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Crear una característica. `categoria` es NOT NULL en el esquema. */
+    public void insertar(Caracteristica caracteristica) throws SQLException {
+
+        String sql = """
+                INSERT INTO caracteristica (nombre, categoria)
+                VALUES (?, ?)
+                """;
+
+        try (Connection cn = ConnectionFactory.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setString(1, caracteristica.getNombre().trim());
+            ps.setString(2, caracteristica.getCategoria());
+
+            ps.executeUpdate();
+        }
+    }
+
+    /** Actualizar una característica. */
+    public void actualizar(Caracteristica caracteristica) throws SQLException {
+
+        String sql = """
+                UPDATE caracteristica
+                SET nombre = ?,
+                    categoria = ?
+                WHERE id_caracteristica = ?
+                """;
+
+        try (Connection cn = ConnectionFactory.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setString(1, caracteristica.getNombre().trim());
+            ps.setString(2, caracteristica.getCategoria());
+            ps.setInt(3, caracteristica.getId());
+
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Eliminar una característica.
+     *
+     * La FK propiedad_caracteristica está definida con
+     * ON DELETE CASCADE, así que al eliminar la característica
+     * también se eliminarán sus filas de la tabla puente.
+     */
+    public void eliminar(int id) throws SQLException {
+
+        String sql = """
+                DELETE FROM caracteristica
+                WHERE id_caracteristica = ?
+                """;
+
+        try (Connection cn = ConnectionFactory.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+
+            ps.executeUpdate();
+        }
+    }
+
+    /*
+     * =====================================================
+     * MÉTODOS DE RELACIÓN N:M PARA PROPIEDADES
+     * =====================================================
+     */
+
     /**
      * Características de una propiedad puntual — resuelve la relación
      * N:M vía propiedad_caracteristica, trayendo también la `cantidad`
@@ -61,6 +152,44 @@ public class CaracteristicaDAO {
             }
         }
         return caracteristicas;
+    }
+
+    /** Asocia una característica a una propiedad (tabla puente N:M). */
+    public void asignar(int idPropiedad, int idCaracteristica) throws SQLException {
+
+        String sql = """
+                INSERT INTO propiedad_caracteristica
+                    (id_propiedad, id_caracteristica)
+                VALUES (?, ?)
+                """;
+
+        try (Connection cn = ConnectionFactory.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setInt(1, idPropiedad);
+            ps.setInt(2, idCaracteristica);
+
+            ps.executeUpdate();
+        }
+    }
+
+    /** Quita la asociación entre una propiedad y una característica. */
+    public void quitar(int idPropiedad, int idCaracteristica) throws SQLException {
+
+        String sql = """
+                DELETE FROM propiedad_caracteristica
+                WHERE id_propiedad = ?
+                  AND id_caracteristica = ?
+                """;
+
+        try (Connection cn = ConnectionFactory.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setInt(1, idPropiedad);
+            ps.setInt(2, idCaracteristica);
+
+            ps.executeUpdate();
+        }
     }
 
     /**
