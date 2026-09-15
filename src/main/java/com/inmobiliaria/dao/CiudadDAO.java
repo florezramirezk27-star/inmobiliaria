@@ -10,25 +10,26 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Acceso de solo lectura al catálogo de ciudades. Alimenta los
- * <select> del buscador y del formulario de propiedades — no hay
- * pantalla para editar ciudades en el corte 1, por eso no tiene
- * insertar()/actualizar()/eliminar().
- */
 public class CiudadDAO {
 
     public List<Ciudad> listarTodas() throws SQLException {
 
-        String sql = "SELECT id_ciudad, nombre, departamento FROM ciudad ORDER BY nombre";
+        String sql = """
+                SELECT id_ciudad, nombre, departamento
+                FROM ciudad
+                ORDER BY nombre
+                """;
 
         List<Ciudad> ciudades = new ArrayList<>();
 
-        try (Connection cn = ConnectionFactory.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
 
             while (rs.next()) {
+
                 ciudades.add(new Ciudad(
                         rs.getInt("id_ciudad"),
                         rs.getString("nombre"),
@@ -36,6 +37,97 @@ public class CiudadDAO {
                 ));
             }
         }
+
         return ciudades;
+    }
+
+    public Ciudad buscarPorId(int id) throws SQLException {
+
+        String sql = """
+                SELECT id_ciudad, nombre, departamento
+                FROM ciudad
+                WHERE id_ciudad = ?
+                """;
+
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                if (rs.next()) {
+
+                    return new Ciudad(
+                            rs.getInt("id_ciudad"),
+                            rs.getString("nombre"),
+                            rs.getString("departamento")
+                    );
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public void insertar(Ciudad ciudad) throws SQLException {
+
+        String sql = """
+                INSERT INTO ciudad (nombre, departamento)
+                VALUES (?, ?)
+                """;
+
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql)
+        ) {
+
+            ps.setString(1, ciudad.getNombre().trim());
+            ps.setString(2, ciudad.getDepartamento().trim());
+
+            ps.executeUpdate();
+        }
+    }
+
+    public void actualizar(Ciudad ciudad) throws SQLException {
+
+        String sql = """
+                UPDATE ciudad
+                SET nombre = ?,
+                    departamento = ?
+                WHERE id_ciudad = ?
+                """;
+
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql)
+        ) {
+
+            ps.setString(1, ciudad.getNombre().trim());
+            ps.setString(2, ciudad.getDepartamento().trim());
+            ps.setInt(3, ciudad.getId());
+
+            ps.executeUpdate();
+        }
+    }
+
+    public void eliminar(int id) throws SQLException {
+
+        String sql = """
+                DELETE FROM ciudad
+                WHERE id_ciudad = ?
+                """;
+
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, id);
+
+            ps.executeUpdate();
+        }
     }
 }

@@ -105,14 +105,22 @@ CREATE TABLE IF NOT EXISTS ciudad (
 
 
 -- Nombre alineado con el enunciado (antes: tipo_inmueble).
+-- `slug` se conserva porque el buscador público filtra por tipo
+-- usando ese valor. `descripcion` se agrega para el CRUD del
+-- administrador (parametrización de tipos de propiedad).
 CREATE TABLE IF NOT EXISTS tipo_propiedad (
     id_tipo_propiedad TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
     nombre            VARCHAR(60)      NOT NULL,
+    descripcion       VARCHAR(255)     NULL,
     slug              VARCHAR(60)      NOT NULL,
 
     CONSTRAINT pk_tipo_propiedad PRIMARY KEY (id_tipo_propiedad),
     CONSTRAINT uq_tipo_propiedad_slug UNIQUE (slug)
 ) ENGINE = InnoDB;
+
+-- Si la base ya fue creada con el esquema anterior, agregar la columna:
+-- ALTER TABLE tipo_propiedad
+--     ADD COLUMN descripcion VARCHAR(255) NULL AFTER nombre;
 
 
 -- Relación 1:N exigida: "una inmobiliaria publica muchas propiedades".
