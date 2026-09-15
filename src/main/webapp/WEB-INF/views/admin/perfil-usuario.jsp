@@ -6,139 +6,147 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Perfil del usuario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Perfil del usuario — Inmobiliaria</title>
 
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
 </head>
 
 <body>
 
-<div class="container mt-4">
+<%@ include file="/WEB-INF/includes/navbar.jspf" %>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<main class="container py-5">
 
-        <h1>Perfil del usuario</h1>
-
-        <a href="${pageContext.request.contextPath}/admin/usuarios"
-           class="btn btn-contorno">
-            Volver
+    <div class="cabecera-seccion">
+        <div>
+            <h1 class="fuente-display mb-1">Perfil del usuario</h1>
+            <p class="descripcion mb-0">Consulta y edita los datos de la cuenta seleccionada.</p>
+        </div>
+        <a href="${pageContext.request.contextPath}/admin/usuarios" class="btn btn-contorno">
+            Volver a usuarios
         </a>
-
     </div>
 
-    <div class="card">
+    <div class="row g-4">
 
-        <div class="card-body">
+        <%-- Resumen de la cuenta --%>
+        <div class="col-12 col-lg-4">
+            <div class="panel">
 
-            <p>
-                <strong>ID:</strong>
-                ${usuario.idUsuario}
-            </p>
+                <h3 class="mb-4">Cuenta</h3>
 
-            <p>
-                <strong>Correo:</strong>
-                ${usuario.correo}
-            </p>
+                <dl class="row mb-0" style="font-size:.9375rem;">
 
-            <p>
-                <strong>Estado:</strong>
-                ${usuario.estado}
-            </p>
+                    <dt class="col-5" style="color:var(--text-secondary); font-weight:500;">ID</dt>
+                    <dd class="col-7 text-end fw-semibold">${usuario.idUsuario}</dd>
 
-            <p>
-                <strong>Rol:</strong>
+                    <dt class="col-5" style="color:var(--text-secondary); font-weight:500;">Correo</dt>
+                    <dd class="col-7 text-end" style="word-break:break-all;">${usuario.correo}</dd>
 
-                <c:forEach var="rol" items="${roles}">
-                    <span class="badge bg-primary">
-                        ${rol.nombre}
-                    </span>
-                </c:forEach>
+                    <dt class="col-5" style="color:var(--text-secondary); font-weight:500;">Estado</dt>
+                    <dd class="col-7 text-end">
+                        <c:choose>
+                            <c:when test="${usuario.estado eq 'ACTIVO'}">
+                                <span class="chip chip-verde">${usuario.estado}</span>
+                            </c:when>
+                            <c:when test="${usuario.estado eq 'BLOQUEADO'}">
+                                <span class="chip chip-rojo">${usuario.estado}</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="chip chip-gris">${usuario.estado}</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </dd>
 
-            </p>
+                </dl>
 
-            <hr>
+                <hr style="border-color: var(--border);">
 
+                <p class="mb-2" style="color:var(--text-secondary); font-size:.875rem; font-weight:600;">
+                    Roles asignados
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <c:forEach var="rol" items="${roles}">
+                        <span class="chip chip-azul">${rol.nombre}</span>
+                    </c:forEach>
+                </div>
+
+            </div>
+        </div>
+
+        <%-- Formulario de perfil --%>
+        <div class="col-12 col-lg-8">
             <form method="post"
                   action="${pageContext.request.contextPath}/admin/usuarios/perfil">
 
-                <input type="hidden"
-                       name="idUsuario"
-                       value="${usuario.idUsuario}">
+                <input type="hidden" name="idUsuario" value="${usuario.idUsuario}">
 
-                <div class="mb-3">
+                <div class="panel mb-4">
 
-                    <label class="form-label">
-                        Nombres
-                    </label>
+                    <h3 class="mb-4">Datos personales</h3>
 
-                    <input type="text"
-                           name="nombres"
-                           class="form-control"
-                           value="${perfil.nombres}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="nombres">Nombres</label>
+                            <input type="text" id="nombres" name="nombres"
+                                   class="form-control" value="${perfil.nombres}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="apellidos">Apellidos</label>
+                            <input type="text" id="apellidos" name="apellidos"
+                                   class="form-control" value="${perfil.apellidos}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="documento">Documento</label>
+                            <input type="text" id="documento" name="documento"
+                                   class="form-control" value="${perfil.documento}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="telefono">Teléfono</label>
+                            <input type="text" id="telefono" name="telefono"
+                                   class="form-control" value="${perfil.telefono}">
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label" for="direccion">Dirección</label>
+                        <input type="text" id="direccion" name="direccion"
+                               class="form-control" value="${perfil.direccion}">
+                    </div>
+
                 </div>
 
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Apellidos
-                    </label>
-
-                    <input type="text"
-                           name="apellidos"
-                           class="form-control"
-                           value="${perfil.apellidos}">
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-marca">Guardar cambios</button>
+                    <a href="${pageContext.request.contextPath}/admin/usuarios"
+                       class="btn btn-contorno">Cancelar</a>
                 </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Documento
-                    </label>
-
-                    <input type="text"
-                           name="documento"
-                           class="form-control"
-                           value="${perfil.documento}">
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Teléfono
-                    </label>
-
-                    <input type="text"
-                           name="telefono"
-                           class="form-control"
-                           value="${perfil.telefono}">
-                </div>
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Dirección
-                    </label>
-
-                    <input type="text"
-                           name="direccion"
-                           class="form-control"
-                           value="${perfil.direccion}">
-                </div>
-
-                <button type="submit"
-                        class="btn btn-primary">
-                    Guardar cambios
-                </button>
 
             </form>
-
         </div>
 
     </div>
 
-</div>
+</main>
+
+<%@ include file="/WEB-INF/includes/footer.jspf" %>
 
 </body>
 </html>

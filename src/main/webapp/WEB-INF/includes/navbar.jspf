@@ -1,6 +1,15 @@
 <%--
     navbar.jspf — barra de navegación compartida por todas las vistas.
     Se incluye con: <%@ include file="/WEB-INF/includes/navbar.jspf" %>
+
+    La lógica de sesión y roles es la original, sin cambios:
+      sessionScope.roles  →  rol.nombre = CLIENTE | AGENTE | ADMIN
+      sessionScope.usuarioId decide autenticado / visitante
+      sessionScope.correo se usa solo para saludar
+
+    Iconografía en SVG en línea a propósito: este fragmento lo
+    incluyen 17 JSP y no todas cargan Bootstrap Icons, así que
+    depender del CDN dejaría huecos en varias pantallas.
 --%>
 <c:set var="esCliente" value="false"/>
 <c:set var="esAgente" value="false"/>
@@ -18,9 +27,18 @@
 
     <input type="checkbox" id="menu-nav" class="navbar-checkbox" aria-hidden="true">
 
-    <div class="container">
+    <div class="container d-flex align-items-center">
 
-        <a class="navbar-brand" href="${pageContext.request.contextPath}/">Inmobiliaria</a>
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+                 style="color: #C4A66A;" aria-hidden="true">
+                <path d="M3 10.5 12 3l9 7.5"/>
+                <path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/>
+                <path d="M10 21v-6h4v6"/>
+            </svg>
+            Inmobiliaria
+        </a>
 
         <label for="menu-nav" class="navbar-toggler-solo" aria-label="Abrir el menú de navegación">
             <span></span>
@@ -30,7 +48,7 @@
 
         <div class="navbar-menu-colapsable" id="menuPrincipal">
 
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+            <ul class="navbar-nav me-auto mb-0 ms-lg-4">
                 <li class="nav-item">
                     <a class="nav-link" href="${pageContext.request.contextPath}/propiedades?operacion=arriendo">Arriendo</a>
                 </li>
@@ -38,7 +56,7 @@
                     <a class="nav-link" href="${pageContext.request.contextPath}/propiedades?operacion=venta">Venta</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/#catalogo">Catálogo</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/propiedades">Catálogo</a>
                 </li>
                 <c:if test="${esAgente}">
                 <li class="nav-item">
@@ -49,7 +67,12 @@
 
             <c:choose>
                 <c:when test="${not empty sessionScope.usuarioId}">
-                    <div class="d-flex flex-column flex-lg-row gap-2">
+                    <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2">
+
+                        <c:if test="${not empty sessionScope.correo}">
+                            <span class="navbar-usuario d-none d-lg-inline-flex">${sessionScope.correo}</span>
+                        </c:if>
+
                         <c:choose>
                             <c:when test="${esAgente}">
                                 <a class="btn btn-contorno"
@@ -70,6 +93,7 @@
                                 </a>
                             </c:otherwise>
                         </c:choose>
+
                         <a class="btn btn-marca"
                            href="${pageContext.request.contextPath}/logout">
                             Cerrar sesión

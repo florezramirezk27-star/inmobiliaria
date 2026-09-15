@@ -22,3 +22,4 @@ desktop.ini
 # Logs
 *.log
 src/main/resources/db.properties
+*.zip

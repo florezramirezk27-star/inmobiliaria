@@ -15,6 +15,8 @@
       propiedades   List<Propiedad>  (obligatorio, puede ir vacía)
       filtro        FiltroPropiedad  (para repintar los criterios usados)
       errorConsulta String           (opcional; solo si el DAO falló)
+
+    Parámetros GET (no renombrar): operacion, ciudad, tipo, precioMax
 --%>
 
 <!DOCTYPE html>
@@ -23,17 +25,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Resultados de búsqueda — Inmobiliaria</title>
+    <title>Propiedades disponibles — Inmobiliaria</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Karla:wght@400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
 
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
 </head>
@@ -64,12 +69,19 @@
 
 <%@ include file="/WEB-INF/includes/navbar.jspf" %>
 
-<main class="container my-5 pt-4">
+<main class="container my-5">
+
+    <div class="mb-4">
+        <h1 class="fuente-display mb-1">Propiedades disponibles</h1>
+        <p class="descripcion mb-0" style="color: var(--text-secondary);">
+            Casas, apartamentos y espacios comerciales en Bucaramanga y su área metropolitana.
+        </p>
+    </div>
 
     <%-- Buscador — repite los mismos campos de la landing, con los
          valores ya escritos según ${param.xxx} para que al refinar
          la búsqueda no se pierda lo que el usuario ya había puesto. --%>
-    <form class="buscador mb-5" style="margin-top: 0;"
+    <form class="buscador mb-4" style="margin-top: 0;"
           action="${pageContext.request.contextPath}/propiedades" method="get">
 
         <div class="operacion btn-group mb-3" role="group" aria-label="Tipo de operación">
@@ -113,27 +125,27 @@
             </div>
 
             <div class="col-12 col-md-2 d-grid">
-                <button type="submit" class="btn btn-marca">Buscar</button>
+                <button type="submit" class="btn btn-marca">
+                    <i class="bi bi-search" aria-hidden="true"></i> Buscar
+                </button>
             </div>
 
         </div>
     </form>
 
     <%-- Resumen de los criterios aplicados --%>
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
-        <div>
-            <h1 class="fuente-display mb-1">Resultados de la búsqueda</h1>
-            <p class="mb-0" style="color: var(--gris);">
-                <c:choose>
-                    <c:when test="${empty propiedades}">
-                        No se encontraron propiedades con esos criterios.
-                    </c:when>
-                    <c:otherwise>
-                        ${propiedades.size()} propiedad(es) encontrada(s).
-                    </c:otherwise>
-                </c:choose>
-            </p>
-        </div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <p class="mb-0" style="color: var(--text-secondary); font-size: .9375rem;">
+            <c:choose>
+                <c:when test="${empty propiedades}">
+                    Sin resultados para estos criterios.
+                </c:when>
+                <c:otherwise>
+                    <strong style="color: var(--text-primary);">${propiedades.size()}</strong>
+                    propiedad(es) encontrada(s).
+                </c:otherwise>
+            </c:choose>
+        </p>
         <a class="btn btn-contorno"
            href="${pageContext.request.contextPath}/propiedades">Limpiar filtros</a>
     </div>
@@ -146,7 +158,9 @@
     <%-- Estado vacío --%>
     <c:if test="${empty propiedades and empty errorConsulta}">
         <div class="sin-resultados">
-            <p class="mb-3">No hay propiedades publicadas que coincidan con tu búsqueda.</p>
+            <span class="sin-resultados-icono"><i class="bi bi-search"></i></span>
+            <h3>No encontramos propiedades</h3>
+            <p>Prueba ampliando el presupuesto o quitando alguno de los filtros.</p>
             <a class="btn btn-marca" href="${pageContext.request.contextPath}/propiedades">Ver todo el catálogo</a>
         </div>
     </c:if>
@@ -155,7 +169,7 @@
     <div class="row g-4">
         <c:forEach var="p" items="${propiedades}">
             <div class="col-12 col-sm-6 col-lg-4">
-                <div class="position-relative">
+                <div class="position-relative h-100">
 
                     <%-- El botón vive FUERA del <a> — ver el comentario en
                          estilos.css sobre por qué no se anida un <button>
@@ -171,44 +185,48 @@
                         </button>
                     </form>
 
-                    <a class="text-decoration-none" style="color: inherit;"
+                    <a class="text-decoration-none d-block h-100" style="color: inherit;"
                        href="${pageContext.request.contextPath}/propiedades/detalle?id=${p.id}">
                     <article class="tarjeta-prop">
 
-                    <c:choose>
-                        <c:when test="${p.tienePortada}">
-                            <img class="foto-prop" src="${pageContext.request.contextPath}/${p.rutaPortada}"
-                                 alt="Foto de ${p.titulo}">
-                        </c:when>
-                        <c:otherwise>
-                            <div class="foto-prop"></div>
-                        </c:otherwise>
-                    </c:choose>
+                        <div class="marco-foto">
+                            <c:choose>
+                                <c:when test="${p.tienePortada}">
+                                    <img class="foto-prop" src="${pageContext.request.contextPath}/${p.rutaPortada}"
+                                         alt="Foto de ${p.titulo}" loading="lazy">
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="foto-prop"></div>
+                                </c:otherwise>
+                            </c:choose>
 
-                    <span class="etiqueta-operacion">${p.operacion.etiqueta}</span>
-
-                    <div class="cuerpo-tarjeta">
-                        <p class="precio">
-                            <fmt:formatNumber value="${p.precio}" type="currency"
-                                               currencySymbol="$ " groupingUsed="true" maxFractionDigits="0"/>
-                            <c:if test="${p.precioMensual}"><span class="periodo">/ mes</span></c:if>
-                        </p>
-                        <p class="direccion">${p.titulo}</p>
-                        <p class="barrio">${p.ubicacionCorta}</p>
-
-                        <div class="fichas">
-                            <c:if test="${p.habitaciones > 0}">
-                                <span class="ficha"><svg><use href="#ico-habitacion"/></svg>${p.habitaciones} hab</span>
-                            </c:if>
-                            <c:if test="${p.banos > 0}">
-                                <span class="ficha"><svg><use href="#ico-bano"/></svg>${p.banos} baños</span>
-                            </c:if>
-                            <c:if test="${not empty p.areaConstruida}">
-                                <span class="ficha"><svg><use href="#ico-area"/></svg>${p.areaConstruida} m²</span>
-                            </c:if>
+                            <span class="etiqueta-operacion">${p.operacion.etiqueta}</span>
                         </div>
-                    </div>
-                </article>
+
+                        <div class="cuerpo-tarjeta">
+                            <p class="precio">
+                                <fmt:formatNumber value="${p.precio}" type="currency"
+                                                   currencySymbol="$ " groupingUsed="true" maxFractionDigits="0"/>
+                                <c:if test="${p.precioMensual}"><span class="periodo">/ mes</span></c:if>
+                            </p>
+                            <p class="direccion">${p.titulo}</p>
+                            <p class="barrio">
+                                <i class="bi bi-geo-alt" aria-hidden="true"></i>${p.ubicacionCorta}
+                            </p>
+
+                            <div class="fichas">
+                                <c:if test="${p.habitaciones > 0}">
+                                    <span class="ficha"><svg><use href="#ico-habitacion"/></svg>${p.habitaciones} hab</span>
+                                </c:if>
+                                <c:if test="${p.banos > 0}">
+                                    <span class="ficha"><svg><use href="#ico-bano"/></svg>${p.banos} baños</span>
+                                </c:if>
+                                <c:if test="${not empty p.areaConstruida}">
+                                    <span class="ficha"><svg><use href="#ico-area"/></svg>${p.areaConstruida} m²</span>
+                                </c:if>
+                            </div>
+                        </div>
+                    </article>
                     </a>
 
                 </div>
