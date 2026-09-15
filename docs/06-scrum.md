@@ -211,15 +211,15 @@ temprano y QA posterior)*.
 |---|---|---|
 | Seguridad | Hashes BCrypt de prueba correctos y verificables (`Clave123*` / `admin123`); documentado en README | `33f47e3` |
 | HU-06 | CRUD admin de ciudades/tipos/características y baja lógica de propiedades | `f6dc0b2` |
-| HU-03 | Ampliación del `AuthFilter`: reglas de rol por ruta (`/propiedades/favorito`, `/favoritos`, `/citas` = CLIENTE; `/propiedades/citas/estado` = AGENTE; `/propiedades/citas` = solo sesión) | commit de cierre (15 sep) |
-| HU-06 | Bloqueo de `BORRADOR`/`CERRADA` en el detalle público por URL directa | commit de cierre (15 sep) |
-| HU-07 | Filtro por características en el catálogo (HAVING sobre `propiedad_caracteristica`, sin romper el buscador) | commit de cierre (15 sep) |
-| HU-11 | Acceso del agente a los documentos de sus solicitudes (`/inmobiliaria/solicitudes/documentos`, solo lectura) | commit de cierre (15 sep) |
-| HU-12 | Reportes 6 (citas por estado) y 7 (solicitudes por inmobiliaria), sin eliminar los 5 obligatorios | commit de cierre (15 sep) |
-| HU-02 | Validaciones de servidor: documento obligatorio, formato de correo, documento y teléfono en `RegistroServlet` | commit de cierre (15 sep) |
+| HU-03 | Ampliación del `AuthFilter`: reglas de rol por ruta (`/propiedades/favorito`, `/favoritos`, `/citas` = CLIENTE; `/propiedades/citas/estado` = AGENTE; `/propiedades/citas` = solo sesión) | `0bf63b7` |
+| HU-06 | Bloqueo de `BORRADOR`/`CERRADA` en el detalle público por URL directa | `0bf63b7` |
+| HU-07 | Filtro por características en el catálogo (HAVING sobre `propiedad_caracteristica`, sin romper el buscador) | `0bf63b7` |
+| HU-11 | Acceso del agente a los documentos de sus solicitudes (`/inmobiliaria/solicitudes/documentos`, solo lectura) | `0bf63b7` |
+| HU-12 | Reportes 6 (citas por estado) y 7 (solicitudes por inmobiliaria), sin eliminar los 5 obligatorios | `0bf63b7` |
+| HU-02 | Validaciones de servidor: documento obligatorio, formato de correo, documento y teléfono en `RegistroServlet` | `0bf63b7` |
 | UI | Rediseño completo del frontend + imágenes demo | `e6a9bfb`, `5713076`, `4297971` |
 | Documentación | Columna `descripcion` documentada en diccionario y modelo | `f75b313` |
-| SCRUM/docs | Planning/Review/Retro de los 3 sprints; diagramas MER, modelo relacional y casos de uso exportados a PNG; checklist QA y plan de congelación | commit de cierre (15 sep) |
+| SCRUM/docs | Planning/Review/Retro de los 3 sprints; diagramas MER, modelo relacional y casos de uso exportados a PNG; checklist QA y plan de congelación | `0bf63b7` |
 
 **Dificultades previstas / en curso**
 
@@ -285,7 +285,7 @@ Repositorio: https://github.com/florezramirezk27-star/inmobiliaria
 | `9e535d2` | andrey ramirea | Protección de documentos por propietario |
 | `db8436d` | andrey ramirea | Validar documento duplicado al registrar |
 
-### Sprint 3 (13–15 sep 2026, en curso)
+### Sprint 3 (13–18 sep 2026, en curso)
 
 | Commit | Autor | Mensaje |
 |---|---|---|
@@ -295,6 +295,7 @@ Repositorio: https://github.com/florezramirezk27-star/inmobiliaria
 | `5713076` | Juan Miguel C. | Merge feature/imagenes-demo |
 | `4297971` | Juan Miguel C. | Merge develop (coordinación entre sesiones) |
 | `33f47e3` | andrey ramirea | Corregir hashes BCrypt de prueba y documentar |
+| `0bf63b7` | andrey ramirea | Filtro por características, bloqueo de no publicadas, reportes 6-7, validaciones de servidor y docs de cierre |
 
 ## 4. Capturas (evidencia visual)
 
