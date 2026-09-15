@@ -42,7 +42,7 @@
             <h1 class="fuente-display mb-1">Mis favoritos</h1>
             <p class="descripcion mb-0">Propiedades que guardaste para revisar después.</p>
         </div>
-        <a href="${pageContext.request.contextPath}/cliente/dashboard" class="btn btn-contorno">
+        <a href="${pageContext.request.contextPath}/cliente/dashboard" class="btn btn-volver">
             Volver al panel
         </a>
     </div>

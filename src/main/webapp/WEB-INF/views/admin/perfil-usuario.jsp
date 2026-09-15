@@ -34,7 +34,7 @@
             <h1 class="fuente-display mb-1">Perfil del usuario</h1>
             <p class="descripcion mb-0">Consulta y edita los datos de la cuenta seleccionada.</p>
         </div>
-        <a href="${pageContext.request.contextPath}/admin/usuarios" class="btn btn-contorno">
+        <a href="${pageContext.request.contextPath}/admin/usuarios" class="btn btn-volver">
             Volver a usuarios
         </a>
     </div>

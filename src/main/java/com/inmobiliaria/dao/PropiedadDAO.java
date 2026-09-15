@@ -325,6 +325,32 @@ public class PropiedadDAO {
             parametros.add(patron);
         }
 
+        /*
+         * Filtro por características: la propiedad debe tener TODAS las
+         * seleccionadas. Se resuelve con una subconsulta sobre la relación
+         * N:M propiedad_caracteristica y un HAVING que compara el total de
+         * coincidencias con la cantidad pedida. Los ids viajan como
+         * parámetros; solo se generan marcadores '?' en este método.
+         */
+        List<Integer> caracteristicas = filtro.getCaracteristicasIds();
+        if (caracteristicas != null && !caracteristicas.isEmpty()) {
+            String marcadores = String.join(", ",
+                    java.util.Collections.nCopies(caracteristicas.size(), "?"));
+
+            condiciones.add(
+                    "id_propiedad IN ("
+                            + "SELECT id_propiedad FROM propiedad_caracteristica "
+                            + "WHERE id_caracteristica IN (" + marcadores + ") "
+                            + "GROUP BY id_propiedad "
+                            + "HAVING COUNT(DISTINCT id_caracteristica) = ?)"
+            );
+
+            for (Integer id : caracteristicas) {
+                parametros.add(id);
+            }
+            parametros.add(caracteristicas.size());
+        }
+
         if (condiciones.isEmpty()) {
             return "";
         }

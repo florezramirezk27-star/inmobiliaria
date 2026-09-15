@@ -40,7 +40,7 @@
             <h1 class="fuente-display mb-1">Mi perfil</h1>
             <p class="descripcion mb-0">Mantén tus datos al día para agilizar tus solicitudes.</p>
         </div>
-        <a href="${pageContext.request.contextPath}/cliente/dashboard" class="btn btn-contorno">
+        <a href="${pageContext.request.contextPath}/cliente/dashboard" class="btn btn-volver">
             Volver al panel
         </a>
     </div>

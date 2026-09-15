@@ -66,10 +66,18 @@ public class AuthFilter implements Filter {
                 obtenerRolRequerido(path);
 
         /*
+         * Algunas rutas exigen sesión iniciada, pero pueden usarlas varios
+         * roles (por ejemplo /propiedades/citas la ve el cliente para pedir
+         * una visita y el agente para gestionarla).
+         */
+        boolean soloLogin =
+                requiereSoloLogin(path);
+
+        /*
          * Si la ruta no necesita autenticación,
          * dejamos pasar.
          */
-        if (rolRequerido == null) {
+        if (rolRequerido == null && !soloLogin) {
             chain.doFilter(request, response);
             return;
         }
@@ -93,6 +101,15 @@ public class AuthFilter implements Filter {
                     contextPath + "/login"
             );
 
+            return;
+        }
+
+        /*
+         * Ruta que solo exige estar autenticado
+         * (cualquier rol), sin comprobar uno en concreto.
+         */
+        if (soloLogin) {
+            chain.doFilter(request, response);
             return;
         }
 
@@ -158,7 +175,29 @@ public class AuthFilter implements Filter {
             return "CLIENTE";
         }
 
+        // Citas: el cambio de estado es solo del agente de la inmobiliaria.
+        if ("/propiedades/citas/estado".equals(path)) {
+            return "AGENTE";
+        }
+
+        // Las demás operaciones privadas restantes son de cliente:
+        // listar favoritos, alternar favorito, listar mis citas.
+        if ("/favoritos".equals(path)
+                || "/propiedades/favorito".equals(path)
+                || "/citas".equals(path)) {
+            return "CLIENTE";
+        }
+
         return null;
+    }
+
+    /**
+     * Rutas que requieren sesión iniciada pero no un rol concreto:
+     * la ficha de citas de una propiedad la usa el cliente (pedir visita)
+     * y el agente (gestionar el estado).
+     */
+    private boolean requiereSoloLogin(String path) {
+        return "/propiedades/citas".equals(path);
     }
 
     /**

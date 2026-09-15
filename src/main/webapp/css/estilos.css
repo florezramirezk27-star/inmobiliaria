@@ -746,6 +746,28 @@ textarea.form-control { min-height: 120px; }
     text-decoration: none;
 }
 
+/* Botón uniforme "Volver al panel" — visible sobre fondo claro u oscuro. */
+.btn-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    background-color: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: .875rem;
+    border-radius: var(--r-sm);
+    padding: .55rem 1.1rem;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(23,33,29,.06);
+}
+.btn-volver:hover, .btn-volver:focus-visible {
+    background-color: var(--surface-2);
+    border-color: var(--secondary);
+    color: var(--secondary-dark);
+    text-decoration: none;
+}
+
 /* Tarjetas de métrica */
 .metrica {
     background-color: var(--surface);
@@ -915,6 +937,8 @@ textarea.form-control { min-height: 120px; }
 .tarjeta-acceso h3 { font-size: 1.0625rem; margin-bottom: .25rem; }
 .tarjeta-acceso p  { font-size: .875rem; color: var(--text-secondary); margin-bottom: 1rem; }
 .tarjeta-acceso .accion { margin-top: auto; font-size: .875rem; font-weight: 600; color: var(--secondary); }
+.tarjeta-acceso .accion i { transition: transform 180ms ease; }
+.tarjeta-acceso:hover .accion i { transform: translateX(3px); }
 
 
 /* ---------- Pie de página ---------- */

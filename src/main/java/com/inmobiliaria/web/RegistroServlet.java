@@ -64,13 +64,17 @@ public class RegistroServlet extends HttpServlet {
         String direccion =
                 request.getParameter("direccion");
 
-        // Validaciones básicas
+        // Validaciones del lado del servidor: el <input required> del
+        // navegador no basta, alguien puede llegar a este POST con una
+        // petición hecha a mano. Cada campo se valida con su propio
+        // mensaje para que el cliente sepa exactamente qué corregir.
 
         if (nombres == null || nombres.isBlank()
                 || apellidos == null || apellidos.isBlank()
                 || correo == null || correo.isBlank()
                 || password == null || password.isBlank()
-                || confirmPassword == null || confirmPassword.isBlank()) {
+                || confirmPassword == null || confirmPassword.isBlank()
+                || documento == null || documento.isBlank()) {
 
             request.setAttribute(
                     "error",
@@ -103,6 +107,50 @@ public class RegistroServlet extends HttpServlet {
             request.setAttribute(
                     "error",
                     "La contraseña debe tener mínimo 8 caracteres."
+            );
+
+            request.getRequestDispatcher(
+                    "/WEB-INF/views/auth/registro.jsp"
+            ).forward(request, response);
+
+            return;
+        }
+
+        if (!correo.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+
+            request.setAttribute(
+                    "error",
+                    "El correo ingresado no tiene un formato válido."
+            );
+
+            request.getRequestDispatcher(
+                    "/WEB-INF/views/auth/registro.jsp"
+            ).forward(request, response);
+
+            return;
+        }
+
+        if (!documento.trim().matches("^[0-9]{4,15}$")) {
+
+            request.setAttribute(
+                    "error",
+                    "El número de documento solo puede contener dígitos (mínimo 4)."
+            );
+
+            request.getRequestDispatcher(
+                    "/WEB-INF/views/auth/registro.jsp"
+            ).forward(request, response);
+
+            return;
+        }
+
+        // El teléfono es opcional, pero si llega escrito se valida su formato.
+        if (telefono != null && !telefono.isBlank()
+                && !telefono.trim().matches("^[0-9+()\\- ]{7,15}$")) {
+
+            request.setAttribute(
+                    "error",
+                    "El teléfono tiene un formato inválido: usa solo dígitos, espacios, guiones, paréntesis o el prefijo +."
             );
 
             request.getRequestDispatcher(

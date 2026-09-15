@@ -51,7 +51,7 @@ Módulos implementados:
   documentos; la inmobiliaria las consulta y aprueba/rechaza.
 - **Citas**: el cliente agenda visitas a propiedades y el agente gestiona su estado.
 - **Administración**: gestiona usuarios (tarjetas sin scroll lateral), roles, perfiles,
-  auditoría y cinco reportes SQL. Paneles con diseño a color (banners, métricas, chips).
+  auditoría y siete reportes SQL. Paneles con diseño a color (banners, métricas, chips).
 - **Seguridad**: validación de pertenencia de recursos por usuario/inmobiliaria.
 - **Pruebas unitarias JUnit** sobre los enums de dominio (5 pruebas).
 
@@ -99,21 +99,39 @@ autenticado (`InmobiliariaDAO.buscarPorUsuario()`) y comprueba que la propiedad 
 entre las listadas para esa inmobiliaria (`PropiedadDAO.listarPorInmobiliaria()`). Si el
 usuario no es el agente dueño responde `403 Forbidden`.
 
+**Filtro por características (HU-07):** el catálogo combina el buscador (operación,
+ciudad, tipo, precio máximo, texto) con casillas de características que se exigen
+*todas*: cada propiedad marcada debe reunir el 100 % de las seleccionadas. Se resuelve
+con una subconsulta sobre `propiedad_caracteristica` y un `HAVING COUNT(DISTINCT
+id_caracteristica) = N` en `PropiedadDAO.construirWhere()` — sin tocar la consulta base
+de `v_propiedad_catalogo`, por lo que el buscador y el paginador no se rompen. Además,
+el detalle público solo abre propiedades en estado `PUBLICADA`: un `BORRADOR` o una
+`CERRADA` consultada por URL directa devuelve un mensaje de no disponible para
+visitantes y clientes (los empleados ADMIN/AGENTE sí la ven desde su panel).
+
 ### 3. Solicitudes y documentos (completo)
 
 - **Modelo:** `Solicitud`, `Documento`, enums `TipoSolicitud`, `EstadoSolicitud`.
 - **DAOs:** `SolicitudDAO`, `DocumentoDAO`.
-- **Servlets:** `SolicitudServlet` (cliente), `DocumentoServlet` (cliente),
-  `AgenteSolicitudServlet` (inmobiliaria).
-- **Vistas:** `inmobiliaria/solicitudes.jsp`,
+- **Servlets:** `SolicitudServlet` (cliente), `DocumentoServlet` (cliente e
+  inmobiliaria), `AgenteSolicitudServlet` (inmobiliaria).
+- **Vistas:** `inmobiliaria/solicitudes.jsp`, `inmobiliaria/documentos.jsp`,
   `cliente/formulario-solicitud.jsp`, `cliente/mis-solicitudes.jsp`,
   `cliente/documentos.jsp`.
 
 Flujo: el cliente crea la solicitud (`PENDIENTE`), el agente de la inmobiliaria
 dueña la aprueba o rechaza (`APROBADA` / `RECHAZADA`) desde
 `/inmobiliaria/solicitudes`, y el cliente puede adjuntar y descargar documentos de
-sus propias solicitudes. El acceso a documentos verifica que la solicitud pertenezca
-al cliente autenticado.
+sus propias solicitudes. El acceso a documentos verifica la pertenencia: la ruta
+`/cliente/solicitudes/documentos` exige que la solicitud sea del cliente autenticado, y
+`/inmobiliaria/solicitudes/documentos` que la solicitud pertenezca a un inmueble de la
+inmobiliaria del agente.
+
+**Revisión de documentos por el agente:** desde esa segunda ruta (botón
+**Documentos** en `inmobiliaria/solicitudes.jsp`) el agente lista y descarga los
+documentos de las solicitudes de sus propiedades. La vista es de solo lectura:
+el `POST` de subida en la ruta `inmobiliaria` responde `405`, la subida sigue siendo
+exclusiva del cliente desde sus propias solicitudes.
 
 ### 4. Citas (completo)
 
@@ -135,9 +153,11 @@ de la inmobiliaria dueña de la propiedad, y un cliente no puede modificar su es
   `admin/auditoria.jsp`, `admin/reportes.jsp`.
 
 El administrador activa/desactiva usuarios, cambia roles, edita perfiles, consulta la
-auditoría (`AuditoriaDAO` sobre la tabla `auditoria`) y los cinco reportes SQL
+auditoría (`AuditoriaDAO` sobre la tabla `auditoria`) y los siete reportes SQL
 (`ReporteDAO`): propiedades publicadas, citas activas, características por propiedad,
-propiedades sin citas y resumen por ciudad.
+propiedades sin citas, resumen por ciudad, citas por estado y solicitudes por
+inmobiliaria. Los dos últimos se agregaron al cierre del proyecto sin eliminar los
+cinco reportes obligatorios del enunciado.
 
 ---
 
@@ -164,13 +184,14 @@ inmobiliaria/
 ├── pom.xml                                  # Dependencias y plugins de Maven
 │
 ├── docs/                                     # Documentación del proyecto
-│   ├── 01-MER.md                             # Modelo Entidad-Relación (16 entidades + vista)
-│   ├── 02-modelo-relacional.md               # Relaciones con PK/FK
+│   ├── 01-MER.md y 01-MER.png                # Modelo Entidad-Relación (+ exportación PNG)
+│   ├── 02-modelo-relacional.md y .png        # Relaciones con PK/FK (+ exportación PNG)
 │   ├── 03-normalizacion-3FN.md               # Justificación de la normalización
 │   ├── 04-diccionario-datos.md               # Diccionario de datos por tabla
-│   ├── 05-casos-de-uso.md                    # Casos de uso por rol
+│   ├── 05-casos-de-uso.md y .png             # Casos de uso por rol (+ exportación PNG)
 │   ├── 06-scrum.md                           # Sprints y retrospectiva
-│   └── 07-pruebas.md                         # Pruebas y evidencias
+│   ├── 07-product-backlog.md                 # Historias de usuario y priorización
+│   └── 08-pruebas.md                         # Pruebas, evidencias, checklist QA y congelación
 │
 ├── database/
 │   ├── ddl.sql                              # Esquema completo (crea BD, tablas y vista)
@@ -229,7 +250,8 @@ inmobiliaria/
     │               ├── cliente/dashboard.jsp, favoritos.jsp, perfil.jsp,
     │               │   mis-solicitudes.jsp, formulario-solicitud.jsp,
     │               │   documentos.jsp
-    │               └── inmobiliaria/dashboard.jsp, solicitudes.jsp
+    │               └── inmobiliaria/dashboard.jsp, solicitudes.jsp,
+    │                   documentos.jsp
     │
     └── test/java/com/inmobiliaria/            # Pruebas JUnit
         ├── EstadoCitaTest.java               # 2 pruebas
@@ -350,31 +372,38 @@ Cada servlet es un controlador mapeado por anotación `@WebServlet`. Los princip
 | `/cliente/favoritos` | `FavoritoServlet` | Favoritos del cliente |
 | `/cliente/perfil` | `PerfilServlet` | Perfil del cliente |
 | `/cliente/solicitudes` | `SolicitudServlet` | Solicitudes del cliente |
-| `/cliente/solicitudes/documentos` | `DocumentoServlet` | Subida/descarga de documentos |
+| `/cliente/solicitudes/documentos` | `DocumentoServlet` | Subida/descarga de documentos (cliente) |
 | `/inmobiliaria/dashboard` | `InmobiliariaDashboardServlet` | Panel de la inmobiliaria |
 | `/inmobiliaria/solicitudes` | `AgenteSolicitudServlet` | Aprobar/rechazar solicitudes |
+| `/inmobiliaria/solicitudes/documentos` | `DocumentoServlet` | Revisión/descarga de documentos (agente, solo lectura) |
 | `/propiedades/citas`, `/propiedades/citas/estado`, `/citas` | `CitaServlet` | Citas del cliente y gestión del agente |
 | `/admin/dashboard` | `AdminDashboardServlet` | Panel del admin |
 | `/admin/usuarios` | `AdminUsuariosServlet` | Activar/desactivar y cambiar roles |
 | `/admin/usuarios/perfil` | `AdminPerfilServlet` | Edición de perfil por admin |
 | `/admin/auditoria` | `AuditoriaServlet` | Registro de auditoría |
-| `/admin/reportes` | `ReporteServlet` | Cinco reportes SQL |
+| `/admin/reportes` | `ReporteServlet` | Siete reportes SQL |
 
 ### Protección por URL (AuthFilter)
 
-El filtro `AuthFilter` exige sesión y rol según el prefijo de la URL:
+El filtro `AuthFilter` exige sesión y rol según el prefijo de la URL, con reglas
+explícitas para operaciones concretas:
 
-| Prefijo de URL | Rol requerido |
+| Prefijo / ruta | Rol requerido |
 |----------------|---------------|
 | `/admin/*` | ADMIN |
 | `/agente/*`, `/inmobiliaria/*` | AGENTE |
 | `/cliente/*` | CLIENTE |
+| `/propiedades/favorito`, `/favoritos`, `/citas` | CLIENTE |
+| `/propiedades/citas/estado` | AGENTE |
+| `/propiedades/citas` | cualquier usuario autenticado (solo sesión: el cliente agenda y el agente gestiona) |
 | Otros | acceso público |
 
 Además del filtro, el servlet revalida autorización a nivel de recurso: el GET de
 edición de `PropiedadFormServlet` responde `403` si el agente autenticado no es dueño
 de la propiedad editada (por ejemplo, `agente.norte` no puede editar propiedades de la
-inmobiliaria 1). Esta validación es independiente del rol exigido por URL.
+inmobiliaria 1). Esta validación es independiente del rol exigido por URL. Y el detalle
+público (`/propiedades/detalle`) bloquea por URL las propiedades `BORRADOR`/`CERRADA`
+salvo para usuarios con rol ADMIN o AGENTE.
 
 ### Flujo del módulo de solicitudes (agente)
 
@@ -449,4 +478,8 @@ Para probar la conexión de forma aislada existe la clase `DatabaseTest`.
 La documentación del proyecto está en `docs/` (`01-MER.md` a `08-pruebas.md`)
 y se mantiene sincronizada con `database/ddl.sql`.
 
-Pendiente:
+Pendiente (se cierra antes de la congelación del jueves 18 sep 2026):
+
+- Ejecutar el checklist de QA completo (`docs/08-pruebas.md`, sección 7).
+- Colocar la captura real del tablero Scrum en `docs/imagenes/tablero-scrum.png`.
+- Ejecutar `mvn clean package` y `mvn test` como evidencia final de la sustentación.

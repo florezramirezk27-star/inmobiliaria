@@ -1,5 +1,6 @@
 package com.inmobiliaria.web;
 
+import com.inmobiliaria.dao.CaracteristicaDAO;
 import com.inmobiliaria.dao.FavoritoDAO;
 import com.inmobiliaria.dao.FiltroPropiedad;
 import com.inmobiliaria.dao.PropiedadDAO;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -32,6 +34,7 @@ public class PropiedadServlet extends HttpServlet {
 
     private final PropiedadDAO propiedadDAO = new PropiedadDAO();
     private final FavoritoDAO favoritoDAO = new FavoritoDAO();
+    private final CaracteristicaDAO caracteristicaDAO = new CaracteristicaDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -55,6 +58,7 @@ public class PropiedadServlet extends HttpServlet {
             request.setAttribute("filtro", filtro);
 
             request.setAttribute("favoritosIds", favoritosDelUsuario(request));
+            cargarCaracteristicas(request);
 
         } catch (SQLException e) {
             // No se deja pasar la excepción cruda al usuario final:
@@ -136,6 +140,41 @@ public class PropiedadServlet extends HttpServlet {
             filtro.setTexto(texto.trim());
         }
 
+        /*
+         * Las características llegan como varios parámetros `caracteristicas`
+         * (un checkbox por cada una). Se ignoran los valores no numéricos;
+         * si al final no queda ninguna, el filtro simplemente no se aplica.
+         */
+        String[] caracteristicas = request.getParameterValues("caracteristicas");
+        if (caracteristicas != null && caracteristicas.length > 0) {
+            List<Integer> ids = new ArrayList<>();
+            for (String valor : caracteristicas) {
+                if (valor != null && !valor.isBlank()) {
+                    try {
+                        ids.add(Integer.valueOf(valor.trim()));
+                    } catch (NumberFormatException ignorado) {
+                        // Un id mal formado se descarta; no tumba la búsqueda.
+                    }
+                }
+            }
+            if (!ids.isEmpty()) {
+                filtro.setCaracteristicasIds(ids);
+            }
+        }
+
         return filtro;
+    }
+
+    /**
+     * Catálogo de características para los checkboxes del filtro.
+     * Si el catálogo no responde se deja sin atributo: la JSP oculta
+     * el bloque y la búsqueda sigue funcionando con los demás filtros.
+     */
+    private void cargarCaracteristicas(HttpServletRequest request) {
+        try {
+            request.setAttribute("caracteristicas", caracteristicaDAO.listarTodas());
+        } catch (SQLException e) {
+            getServletContext().log("Error al cargar características del catálogo", e);
+        }
     }
 }

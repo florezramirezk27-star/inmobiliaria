@@ -16,7 +16,7 @@
       filtro        FiltroPropiedad  (para repintar los criterios usados)
       errorConsulta String           (opcional; solo si el DAO falló)
 
-    Parámetros GET (no renombrar): operacion, ciudad, tipo, precioMax
+    Parámetros GET (no renombrar): operacion, ciudad, tipo, precioMax, caracteristicas
 --%>
 
 <!DOCTYPE html>
@@ -131,6 +131,28 @@
             </div>
 
         </div>
+
+        <%-- Filtro por características: exige que la propiedad tenga TODAS
+             las marcadas. La lista llega desde PropiedadServlet; si la
+             consulta falla el atributo no existe y el bloque se oculta. --%>
+        <c:if test="${not empty caracteristicas}">
+            <div class="mt-3">
+                <label class="form-label">Características (deben cumplirse todas)</label>
+                <div class="d-flex flex-wrap gap-3">
+                    <c:forEach var="car" items="${caracteristicas}">
+                        <c:set var="marcada" value="false"/>
+                        <c:forEach var="sel" items="${filtro.caracteristicasIds}">
+                            <c:if test="${sel == car.id}"><c:set var="marcada" value="true"/></c:if>
+                        </c:forEach>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="caracteristicas"
+                                   value="${car.id}" id="carac-${car.id}" ${marcada ? 'checked' : ''}>
+                            <label class="form-check-label" for="carac-${car.id}">${car.nombre}</label>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
+        </c:if>
     </form>
 
     <%-- Resumen de los criterios aplicados --%>

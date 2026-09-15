@@ -3,6 +3,7 @@ package com.inmobiliaria.dao;
 import com.inmobiliaria.model.Operacion;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Criterios de búsqueda del catálogo.
@@ -26,6 +27,9 @@ public class FiltroPropiedad {
     /** Texto libre; se busca dentro del título, el barrio y la dirección. */
     private String texto;
 
+    /** Ids de características que la propiedad debe tener todas juntas. */
+    private List<Integer> caracteristicasIds;
+
     private int limite = 24;
     private int desplazamiento = 0;
 
@@ -41,7 +45,8 @@ public class FiltroPropiedad {
                 && precioMaximo == null
                 && habitacionesMinimo == null
                 && banosMinimo == null
-                && (texto == null || texto.isBlank());
+                && (texto == null || texto.isBlank())
+                && (caracteristicasIds == null || caracteristicasIds.isEmpty());
     }
 
     public Operacion getOperacion() { return operacion; }
@@ -67,6 +72,9 @@ public class FiltroPropiedad {
 
     public String getTexto() { return texto; }
     public void setTexto(String texto) { this.texto = texto; }
+
+    public List<Integer> getCaracteristicasIds() { return caracteristicasIds; }
+    public void setCaracteristicasIds(List<Integer> caracteristicasIds) { this.caracteristicasIds = caracteristicasIds; }
 
     public int getLimite() { return limite; }
 

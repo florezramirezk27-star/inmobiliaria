@@ -1,8 +1,10 @@
 package com.inmobiliaria.web;
 
 import com.inmobiliaria.dao.DocumentoDAO;
+import com.inmobiliaria.dao.InmobiliariaDAO;
 import com.inmobiliaria.dao.SolicitudDAO;
 import com.inmobiliaria.model.Documento;
+import com.inmobiliaria.model.Inmobiliaria;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -30,12 +32,19 @@ import java.util.UUID;
  * GET /cliente/solicitudes/documentos?id=7            -> descarga el documento 7
  * POST /cliente/solicitudes/documentos?solicitudId=3  -> sube un archivo nuevo a la solicitud 3
  *
+ * GET /inmobiliaria/solicitudes/documentos?solicitudId=3   -> listado para el AGENTE de la
+ *        inmobiliaria dueña de la propiedad de la solicitud (solo lectura, sin subir)
+ * GET /inmobiliaria/solicitudes/documentos?id=7            -> descarga para el AGENTE
+ *
  * Solo la fila de la base de datos viaja por el DAO; el archivo físico se
  * guarda y se borra aquí, en el servlet, igual que hace
  * PropiedadFormServlet con las imágenes (ver su advertencia sobre la
  * carpeta real del WAR y los redeploys).
  */
-@WebServlet("/cliente/solicitudes/documentos")
+@WebServlet({
+        "/cliente/solicitudes/documentos",
+        "/inmobiliaria/solicitudes/documentos"
+})
 @MultipartConfig(
         maxFileSize = 10L * 1024 * 1024,      // 10 MB por archivo
         maxRequestSize = 30L * 1024 * 1024,   // 30 MB por envío completo
@@ -53,6 +62,18 @@ public class DocumentoServlet extends HttpServlet {
 
     private final DocumentoDAO documentoDAO = new DocumentoDAO();
     private final SolicitudDAO solicitudDAO = new SolicitudDAO();
+    private final InmobiliariaDAO inmobiliariaDAO = new InmobiliariaDAO();
+
+    private boolean esRutaAgente(HttpServletRequest request) {
+        return request.getServletPath().startsWith("/inmobiliaria/");
+    }
+
+    /** Vista de lista que corresponde a la ruta (cliente=subir/ver, agente=ver). */
+    private String vistaDeDocumentos(HttpServletRequest request) {
+        return esRutaAgente(request)
+                ? "/WEB-INF/views/inmobiliaria/documentos.jsp"
+                : "/WEB-INF/views/cliente/documentos.jsp";
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -73,7 +94,7 @@ public class DocumentoServlet extends HttpServlet {
         String solicitudId = request.getParameter("solicitudId");
         if (solicitudId == null || solicitudId.isBlank()) {
             request.setAttribute("error", "Indica la solicitud de la que quieres ver los documentos.");
-            request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
+            request.getRequestDispatcher(vistaDeDocumentos(request))
                     .forward(request, response);
             return;
         }
@@ -81,9 +102,18 @@ public class DocumentoServlet extends HttpServlet {
         try {
             int idSolicitud = Integer.parseInt(solicitudId.trim());
 
-            int idCliente = (int) session.getAttribute("usuarioId");
+            int idUsuario = (int) session.getAttribute("usuarioId");
 
-            if (!solicitudDAO.perteneceACliente(idSolicitud, idCliente)) {
+            boolean tienePermiso;
+            if (esRutaAgente(request)) {
+                Inmobiliaria inmobiliaria = inmobiliariaDAO.buscarPorUsuario(idUsuario);
+                tienePermiso = inmobiliaria != null
+                        && solicitudDAO.perteneceAInmobiliaria(idSolicitud, inmobiliaria.getId());
+            } else {
+                tienePermiso = solicitudDAO.perteneceACliente(idSolicitud, idUsuario);
+            }
+
+            if (!tienePermiso) {
                 response.sendError(
                         HttpServletResponse.SC_FORBIDDEN,
                         "No tienes permiso para acceder a esta solicitud."
@@ -101,13 +131,21 @@ public class DocumentoServlet extends HttpServlet {
             request.setAttribute("error", "El identificador de la solicitud no es válido.");
         }
 
-        request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
+        request.getRequestDispatcher(vistaDeDocumentos(request))
                 .forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        if (esRutaAgente(request)) {
+            response.sendError(
+                    HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+                    "La inmobiliaria solo revisa documentos, no los sube."
+            );
+            return;
+        }
 
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("usuarioId") == null) {
@@ -241,13 +279,25 @@ public class DocumentoServlet extends HttpServlet {
                 return;
             }
 
-            int idCliente =
+            int idUsuario =
                     (int) session.getAttribute("usuarioId");
 
-            if (!solicitudDAO.perteneceACliente(
-                    documento.getSolicitudId(),
-                    idCliente
-            )) {
+            boolean tienePermiso;
+            if (esRutaAgente(request)) {
+                Inmobiliaria inmobiliaria = inmobiliariaDAO.buscarPorUsuario(idUsuario);
+                tienePermiso = inmobiliaria != null
+                        && solicitudDAO.perteneceAInmobiliaria(
+                                documento.getSolicitudId(),
+                                inmobiliaria.getId()
+                        );
+            } else {
+                tienePermiso = solicitudDAO.perteneceACliente(
+                        documento.getSolicitudId(),
+                        idUsuario
+                );
+            }
+
+            if (!tienePermiso) {
                 response.sendError(
                         HttpServletResponse.SC_FORBIDDEN,
                         "No tienes permiso para descargar este documento."

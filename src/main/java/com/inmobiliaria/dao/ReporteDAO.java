@@ -122,6 +122,40 @@ public class ReporteDAO {
         return ejecutarConsulta(sql);
     }
 
+    /** REPORTE 6 – Citas agrupadas por estado (SOLICITADA, CONFIRMADA, CANCELADA, CUMPLIDA). */
+    public List<Map<String, Object>> citasPorEstado() {
+
+        String sql = """
+                SELECT
+                    estado,
+                    COUNT(*) AS total
+                FROM cita
+                GROUP BY estado
+                ORDER BY total DESC
+                """;
+
+        return ejecutarConsulta(sql);
+    }
+
+    /** REPORTE 7 – Cantidad de solicitudes recibidas por cada inmobiliaria. */
+    public List<Map<String, Object>> solicitudesPorInmobiliaria() {
+
+        String sql = """
+                SELECT
+                    i.nombre_comercial AS inmobiliaria,
+                    COUNT(s.id_solicitud) AS total_solicitudes
+                FROM solicitud s
+                JOIN propiedad p
+                    ON p.id_propiedad = s.id_propiedad
+                JOIN inmobiliaria i
+                    ON i.id_inmobiliaria = p.id_inmobiliaria
+                GROUP BY i.nombre_comercial
+                ORDER BY total_solicitudes DESC
+                """;
+
+        return ejecutarConsulta(sql);
+    }
+
     private List<Map<String, Object>> ejecutarConsulta(
             String sql
     ) {

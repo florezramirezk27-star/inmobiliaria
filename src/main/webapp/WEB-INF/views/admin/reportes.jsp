@@ -35,13 +35,13 @@
                 <span class="badge badge-tag">ADMINISTRADOR</span>
                 <h1 class="fuente-display mt-2">Reportes del sistema</h1>
                 <p class="descripcion">
-                    Los cinco reportes SQL definidos por el negocio, sobre
-                    propiedades, citas y ciudades.
+                    Los siete reportes SQL definidos por el negocio, sobre
+                    propiedades, citas, solicitudes y ciudades.
                 </p>
             </div>
 
             <a href="${pageContext.request.contextPath}/admin/dashboard"
-               class="btn btn-banner">
+               class="btn btn-volver">
                 &larr; Volver al panel
             </a>
         </div>
@@ -71,6 +71,18 @@
             <div class="metrica violeta">
                 <p class="rotulo">Ciudades</p>
                 <p class="numero">${fn:length(resumenPorCiudad)}</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="metrica verde">
+                <p class="rotulo">Estados de cita</p>
+                <p class="numero">${fn:length(citasPorEstado)}</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="metrica azul">
+                <p class="rotulo">Inmobiliarias</p>
+                <p class="numero">${fn:length(solicitudesPorInmobiliaria)}</p>
             </div>
         </div>
     </div>
@@ -299,6 +311,80 @@
                     <tr>
                         <td colspan="3" class="text-center text-secondary py-4">
                             No hay datos por ciudad.
+                        </td>
+                    </tr>
+                </c:if>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <%-- ---------- REPORTE 6 ---------- --%>
+    <div class="tarjeta-prop mb-4">
+        <div class="d-flex flex-wrap align-items-center gap-2 px-4 py-3 border-bottom">
+            <span class="chip chip-azul">6</span>
+            <h2 class="h5 mb-0">Citas por estado</h2>
+            <span class="chip chip-verde ms-auto">${fn:length(citasPorEstado)}</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table tabla-tema tabla-ocre">
+                <thead>
+                <tr>
+                    <th>Estado</th>
+                    <th class="text-center">Cantidad de citas</th>
+                </tr>
+                </thead>
+                <tbody>
+                <c:forEach var="fila" items="${citasPorEstado}">
+                    <tr>
+                        <td><span class="chip chip-gris">${fila.estado}</span></td>
+                        <td class="text-center"><span class="chip chip-azul">${fila.total}</span></td>
+                    </tr>
+                </c:forEach>
+
+                <c:if test="${empty citasPorEstado}">
+                    <tr>
+                        <td colspan="2" class="text-center text-secondary py-4">
+                            No hay citas registradas.
+                        </td>
+                    </tr>
+                </c:if>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <%-- ---------- REPORTE 7 ---------- --%>
+    <div class="tarjeta-prop mb-4">
+        <div class="d-flex flex-wrap align-items-center gap-2 px-4 py-3 border-bottom">
+            <span class="chip chip-azul">7</span>
+            <h2 class="h5 mb-0">Solicitudes por inmobiliaria</h2>
+            <span class="chip chip-verde ms-auto">${fn:length(solicitudesPorInmobiliaria)}</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table tabla-tema tabla-ocre">
+                <thead>
+                <tr>
+                    <th>Inmobiliaria</th>
+                    <th class="text-center">Solicitudes recibidas</th>
+                </tr>
+                </thead>
+                <tbody>
+                <c:forEach var="fila" items="${solicitudesPorInmobiliaria}">
+                    <tr>
+                        <td class="fw-semibold">${fila.inmobiliaria}</td>
+                        <td class="text-center">
+                            <span class="chip chip-verde">${fila.total_solicitudes}</span>
+                        </td>
+                    </tr>
+                </c:forEach>
+
+                <c:if test="${empty solicitudesPorInmobiliaria}">
+                    <tr>
+                        <td colspan="2" class="text-center text-secondary py-4">
+                            No hay solicitudes registradas.
                         </td>
                     </tr>
                 </c:if>

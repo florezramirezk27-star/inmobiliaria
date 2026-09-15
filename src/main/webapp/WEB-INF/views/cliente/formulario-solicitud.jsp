@@ -42,7 +42,7 @@
         </h1>
 
         <a href="${pageContext.request.contextPath}/cliente/solicitudes"
-           class="btn btn-contorno">
+           class="btn btn-volver">
             Volver
         </a>
 

@@ -29,23 +29,48 @@
 
 <main class="container py-5">
 
-    <div class="cabecera-seccion">
-        <div>
-            <span class="chip chip-verde mb-2">Cliente</span>
-            <h1 class="fuente-display mb-1">
-                <c:choose>
-                    <c:when test="${not empty sessionScope.correo}">Hola, ${sessionScope.correo}</c:when>
-                    <c:otherwise>Mi panel</c:otherwise>
-                </c:choose>
-            </h1>
-            <p class="descripcion mb-0">
-                Gestiona tus propiedades favoritas, citas y solicitudes desde un solo lugar.
-            </p>
+    <div class="banner-panel mb-4">
+
+        <div class="d-flex
+                    flex-wrap
+                    justify-content-between
+                    align-items-center
+                    gap-3">
+
+            <div>
+
+                <span class="badge badge-tag">
+                    CLIENTE
+                </span>
+
+                <h1 class="fuente-display mt-2 mb-1">
+                    <c:choose>
+                        <c:when test="${not empty sessionScope.correo}">
+                            Hola, <span style="color: var(--accent);">${sessionScope.correo}</span>
+                        </c:when>
+                        <c:otherwise>Mi panel</c:otherwise>
+                    </c:choose>
+                </h1>
+
+                <p class="descripcion mb-0">
+                    Gestiona tus propiedades favoritas, citas y solicitudes desde un solo lugar.
+                </p>
+
+            </div>
+
+            <a
+                href="${pageContext.request.contextPath}/propiedades"
+                class="btn btn-volver">
+
+                <i class="bi bi-search" aria-hidden="true"></i>
+                Buscar propiedades
+
+            </a>
+
         </div>
-        <a class="btn btn-marca" href="${pageContext.request.contextPath}/propiedades">
-            <i class="bi bi-search" aria-hidden="true"></i> Buscar propiedades
-        </a>
+
     </div>
+
 
     <div class="row g-4">
 
@@ -54,7 +79,9 @@
                 <span class="icono"><i class="bi bi-person"></i></span>
                 <h3>Mi perfil</h3>
                 <p>Consulta y actualiza tu información personal.</p>
-                <span class="accion">Ver perfil</span>
+                <span class="accion">
+                    Ver perfil <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </span>
             </a>
         </div>
 
@@ -63,7 +90,9 @@
                 <span class="icono"><i class="bi bi-heart"></i></span>
                 <h3>Mis favoritos</h3>
                 <p>Las propiedades que guardaste para revisar después.</p>
-                <span class="accion">Ver favoritos</span>
+                <span class="accion">
+                    Ver favoritos <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </span>
             </a>
         </div>
 
@@ -72,7 +101,9 @@
                 <span class="icono"><i class="bi bi-calendar-check"></i></span>
                 <h3>Mis citas</h3>
                 <p>Consulta el estado de tus visitas programadas.</p>
-                <span class="accion">Ver citas</span>
+                <span class="accion">
+                    Ver citas <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </span>
             </a>
         </div>
 
@@ -81,7 +112,9 @@
                 <span class="icono"><i class="bi bi-file-earmark-text"></i></span>
                 <h3>Mis solicitudes</h3>
                 <p>Tus solicitudes de compra y arriendo con su estado.</p>
-                <span class="accion">Ver solicitudes</span>
+                <span class="accion">
+                    Ver solicitudes <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </span>
             </a>
         </div>
 

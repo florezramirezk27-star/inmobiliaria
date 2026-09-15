@@ -56,7 +56,7 @@
 
             <a
                 href="${pageContext.request.contextPath}/admin/dashboard"
-                class="btn btn-banner">
+                class="btn btn-volver">
 
                 &larr; Volver al panel
 

@@ -41,6 +41,16 @@ public class ReporteServlet extends HttpServlet {
                 reporteDAO.resumenPorCiudad()
         );
 
+        request.setAttribute(
+                "citasPorEstado",
+                reporteDAO.citasPorEstado()
+        );
+
+        request.setAttribute(
+                "solicitudesPorInmobiliaria",
+                reporteDAO.solicitudesPorInmobiliaria()
+        );
+
         String idPropiedadParam =
                 request.getParameter("idPropiedad");
 

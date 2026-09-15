@@ -5,8 +5,10 @@ import com.inmobiliaria.dao.FavoritoDAO;
 import com.inmobiliaria.dao.ImagenPropiedadDAO;
 import com.inmobiliaria.dao.PropiedadDAO;
 import com.inmobiliaria.model.Caracteristica;
+import com.inmobiliaria.model.EstadoPropiedad;
 import com.inmobiliaria.model.ImagenPropiedad;
 import com.inmobiliaria.model.Propiedad;
+import com.inmobiliaria.model.Rol;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -59,6 +61,12 @@ public class PropiedadDetalleServlet extends HttpServlet {
 
             if (propiedad == null) {
                 request.setAttribute("error", "No se encontró la propiedad solicitada.");
+            } else if (esPropiedadNoPublica(propiedad) && !esEmpleado(request)) {
+                // Las propiedades en BORRADOR o CERRADA solo las ven los
+                // empleados desde su panel; por URL directa un visitante o
+                // cliente no puede espiarlas.
+                request.setAttribute("error",
+                        "Esta propiedad no está disponible públicamente.");
             } else {
                 List<ImagenPropiedad> imagenes = imagenDAO.listarPorPropiedad(id);
                 List<Caracteristica> caracteristicas = caracteristicaDAO.listarPorPropiedad(id);
@@ -99,5 +107,35 @@ public class PropiedadDetalleServlet extends HttpServlet {
             return null;
         }
         return (Integer) session.getAttribute("usuarioId");
+    }
+
+    /** Cualquier estado distinto de PUBLICADA se considera no público. */
+    private boolean esPropiedadNoPublica(Propiedad p) {
+        return p.getEstado() != null
+                && p.getEstado() != EstadoPropiedad.PUBLICADA;
+    }
+
+    /** ADMIN y AGENTE gestionan propiedades, incluidos borradores y cerradas. */
+    private boolean esEmpleado(HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return false;
+        }
+
+        Object roles = session.getAttribute("roles");
+        if (!(roles instanceof List<?> listaRoles)) {
+            return false;
+        }
+
+        for (Object objeto : listaRoles) {
+            if (objeto instanceof Rol rol
+                    && rol.getNombre() != null
+                    && (rol.getNombre().equalsIgnoreCase("ADMIN")
+                        || rol.getNombre().equalsIgnoreCase("AGENTE"))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

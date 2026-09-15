@@ -42,7 +42,7 @@
             <h1 class="fuente-display mb-1">Solicitudes recibidas</h1>
             <p class="descripcion mb-0">Aprueba o rechaza las solicitudes sobre tus propiedades.</p>
         </div>
-        <a href="${pageContext.request.contextPath}/inmobiliaria/dashboard" class="btn btn-contorno">
+        <a href="${pageContext.request.contextPath}/inmobiliaria/dashboard" class="btn btn-volver">
             Volver al panel
         </a>
     </div>
@@ -59,7 +59,7 @@
             <span class="sin-resultados-icono"><i class="bi bi-inbox"></i></span>
             <h3>No hay solicitudes por ahora</h3>
             <p>Cuando un cliente solicite una de tus propiedades, aparecerá aquí.</p>
-            <a class="btn btn-marca" href="${pageContext.request.contextPath}/inmobiliaria/dashboard">
+            <a class="btn btn-volver" href="${pageContext.request.contextPath}/inmobiliaria/dashboard">
                 Volver al panel
             </a>
         </div>
@@ -107,6 +107,14 @@
                         <td class="text-end">
 
                             <div class="d-inline-flex gap-2">
+
+                                <a href="${pageContext.request.contextPath}/inmobiliaria/solicitudes/documentos?solicitudId=<%= solicitud.getId() %>"
+                                   class="btn btn-contorno"
+                                   style="min-height:38px; padding:0 .9rem; font-size:.8125rem;"
+                                   title="Ver documentos de esta solicitud">
+                                    <i class="bi bi-folder2-open" aria-hidden="true"></i>
+                                    Documentos
+                                </a>
 
                                 <form method="post"
                                       action="${pageContext.request.contextPath}/inmobiliaria/solicitudes"

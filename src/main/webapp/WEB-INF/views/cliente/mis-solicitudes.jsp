@@ -41,7 +41,7 @@
         </div>
 
         <a href="${pageContext.request.contextPath}/cliente/dashboard"
-           class="btn btn-contorno">
+           class="btn btn-volver">
             Volver al panel
         </a>
 

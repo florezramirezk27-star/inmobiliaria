@@ -83,7 +83,7 @@
                         ${fn:length(citas)} ${fn:length(citas) == 1 ? 'visita' : 'visitas'}
                     </span>
                     <a href="${pageContext.request.contextPath}/propiedades/detalle?id=${propiedad.id}"
-                       class="btn btn-banner">
+                       class="btn btn-volver">
                         &larr; Volver a la propiedad
                     </a>
                 </c:if>

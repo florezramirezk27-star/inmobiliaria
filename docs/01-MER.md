@@ -1,5 +1,7 @@
 # 01. Modelo Entidad-Relación (MER)
 
+> **Exportación visual:** `docs/01-MER.png` (diagrama renderizado con Mermaid).
+
 ## Entidades
 
 El modelo físico definido en `database/ddl.sql` contiene 16 tablas principales:

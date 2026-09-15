@@ -57,7 +57,7 @@
 
             <a
                 href="${pageContext.request.contextPath}/inmobiliaria/dashboard"
-                class="btn btn-banner">
+                class="btn btn-volver">
 
                 &larr; Volver al panel
 

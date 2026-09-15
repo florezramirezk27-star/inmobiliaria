@@ -1,5 +1,7 @@
 # 05. Casos de uso
 
+> **Exportación visual:** `docs/05-casos-de-uso.png`.
+
 ## Actores
 
 ### Visitante
@@ -35,6 +37,7 @@ Casos principales:
 - Gestionar imágenes y características de sus propiedades.
 - Consultar solicitudes de sus propiedades.
 - Aprobar o rechazar solicitudes de sus propiedades.
+- **Revisar y descargar los documentos de las solicitudes de sus propiedades.**
 - Gestionar el estado de citas asociadas a propiedades de su inmobiliaria.
 
 ### Administrador
@@ -47,14 +50,15 @@ Casos principales:
 - Cambiar roles.
 - Consultar y editar perfiles.
 - Consultar auditoría.
-- Consultar los cinco reportes SQL.
+- Consultar los siete reportes SQL.
 
 ## Matriz de casos de uso
 
 | Caso de uso | Visitante | Cliente | Agente | Admin |
 |---|:---:|:---:|:---:|:---:|
 | Ver catálogo | ✅ | ✅ | ✅ | ✅ |
-| Ver detalle | ✅ | ✅ | ✅ | ✅ |
+| Ver detalle de una propiedad `PUBLICADA` | ✅ | ✅ | ✅ | ✅ |
+| Ver detalle de una propiedad `BORRADOR`/`CERRADA` | ❌ | ❌ | ✅* | ✅ |
 | Gestionar favoritos | ❌ | ✅ | ❌ | ❌ |
 | Crear cita | ❌ | ✅ | ❌ | ❌ |
 | Consultar mis citas | ❌ | ✅ | ❌ | ❌ |
@@ -62,7 +66,8 @@ Casos principales:
 | Crear solicitud | ❌ | ✅ | ❌ | ❌ |
 | Ver mis solicitudes | ❌ | ✅ | ❌ | ❌ |
 | Subir/descargar documentos propios | ❌ | ✅ | ❌ | ❌ |
-| Gestionar propiedades | ❌ | ❌ | ✅* | ❌ |
+| **Revisar/descargar documentos de las solicitudes de sus propiedades** | ❌ | ❌ | ✅* | ✅ |
+| Gestionar propiedades | ❌ | ❌ | ✅* | ✅ |
 | Gestionar solicitudes | ❌ | ❌ | ✅* | ❌ |
 | Gestión de usuarios | ❌ | ❌ | ❌ | ✅ |
 | Gestión de roles | ❌ | ❌ | ❌ | ✅ |
@@ -70,6 +75,9 @@ Casos principales:
 | Reportes | ❌ | ❌ | ❌ | ✅ |
 
 `*` El acceso del agente está limitado a los recursos de su propia inmobiliaria.
+`**` El detalle de `BORRADOR`/`CERRADA` por URL directa se bloquea en
+`PropiedadDetalleServlet` para visitantes y clientes; los empleados lo abren desde su
+panel. La subida de documentos por el agente responde `405` (solo lectura).
 
 ## Flujo de solicitud
 

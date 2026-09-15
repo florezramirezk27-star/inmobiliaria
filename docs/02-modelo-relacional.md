@@ -1,5 +1,7 @@
 # 02. Modelo relacional
 
+> **Exportación visual:** `docs/02-modelo-relacional.png`.
+
 ## Convención
 
 Las claves primarias se indican como **PK** y las claves foráneas como **FK**.

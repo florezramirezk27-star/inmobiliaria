@@ -217,6 +217,37 @@ public class SolicitudDAO {
         }
     }
 
+    /**
+     * @return true si la solicitud recae sobre una propiedad que pertenece
+     *         a la inmobiliaria indicada (permite al agente revisar los
+     *         documentos de sus propias propiedades, y solo de esas).
+     */
+    public boolean perteneceAInmobiliaria(int idSolicitud, int idInmobiliaria)
+            throws SQLException {
+
+        String sql = """
+                SELECT 1
+                FROM solicitud s
+                JOIN propiedad p ON p.id_propiedad = s.id_propiedad
+                WHERE s.id_solicitud = ?
+                  AND p.id_inmobiliaria = ?
+                LIMIT 1
+                """;
+
+        try (
+                Connection cn = ConnectionFactory.getConnection();
+                PreparedStatement ps = cn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, idSolicitud);
+            ps.setInt(2, idInmobiliaria);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     // ============================================================
     // Apoyo interno
     // ============================================================
