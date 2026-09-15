@@ -323,15 +323,13 @@ Los datos de prueba del DML incluyen usuarios con los roles:
 |-----|--------|------------|
 | **ADMIN** | `admin@inmobiliaria.com` | `admin123` |
 | **AGENTE** (inmobiliaria 1) | `agente.centro@inmobiliaria.com` | `Clave123*` |
-| **AGENTE** (inmobiliaria 2) | `agente.norte@inmobiliaria.com` | *(ver nota)* |
-| **CLIENTE** | `maria.rojas@correo.com` (u otro usuario 4-9) | *(ver nota)* |
+| **AGENTE** (inmobiliaria 2) | `agente.norte@inmobiliaria.com` | `Clave123*` |
+| **CLIENTE** | `maria.rojas@correo.com`, `juan.paez@correo.com`, `laura.gomez@correo.com`, `carlos.diaz@correo.com`, `ana.suarez@correo.com`, `felipe.torres@correo.com` | `Clave123*` |
 
-> **Nota importante sobre contraseñas:** el DML original guardaba para los usuarios
-> 2-10 un hash BCrypt "de ejemplo" que **no corresponde a ninguna contraseña real**
-> (por eso el login daba "Correo o contraseña incorrectos"). En esta sesión se regeneró
-> y actualizó en la BD la contraseña del **agente 1** a `Clave123*`. Los demás usuarios
-> (agente 2 y clientes) aún tienen el hash roto; para usarlos hay que regenerar su hash
-> BCrypt y actualizar `password_hash` en la tabla `usuario`.
+> **Contraseñas:** el usuario admin usa `admin123`. Los usuarios 2-10 (2 agentes y
+> 7 clientes) usan `Clave123*`. Cada hash BCrypt del DML es único (sal aleatoria
+> por usuario) y corresponde realmente a esa contraseña, por lo que el login
+> funciona sin regenerar nada.
 
 ---
 
@@ -448,11 +446,7 @@ Para probar la conexión de forma aislada existe la clase `DatabaseTest`.
 
 ## Notas finales
 
-La documentación del proyecto está en `docs/` (`01-MER.md` a `07-pruebas.md`)
+La documentación del proyecto está en `docs/` (`01-MER.md` a `08-pruebas.md`)
 y se mantiene sincronizada con `database/ddl.sql`.
 
 Pendiente:
-
-- Regenerar contraseñas BCrypt de los usuarios de prueba restantes (agente 2 y
-  clientes), que aún tienen el hash "de ejemplo" no asociado a ninguna contraseña
-  real.

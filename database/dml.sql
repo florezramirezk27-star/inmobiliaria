@@ -7,9 +7,9 @@
 --  Sección 1 amplía el usuario admin que ya estaba en el DML
 --  original (id_usuario = 1) con 9 usuarios más: 2 agentes y
 --  7 clientes, necesarios para inmobiliaria, citas y solicitudes.
---  Las contraseñas de los usuarios 2-10 son hashes BCrypt de
---  ejemplo para "Clave123*"; cámbialas por hashes reales cuando
---  el registro esté conectado de punta a punta.
+--  Los usuarios 2-10 comparten la contraseña "Clave123*"; cada hash
+--  BCrypt es único (sal aleatoria por usuario), generado con jbcrypt.
+--  La contraseña del admin (id=1) es "admin123".
 -- ============================================================
 
 SET NAMES utf8mb4;
@@ -21,18 +21,19 @@ USE inmobiliaria;
 -- 1. Autenticación
 -- ------------------------------------------------------------
 
--- Usuario admin (igual que en el DML original: id=1, admin123)
+-- Usuario admin (igual que en el DML original: id=1, admin123).
+-- Usuarios 2-10: contraseña "Clave123*" (hash BCrypt único por usuario).
 INSERT INTO usuario (id_usuario, correo, password_hash, estado) VALUES
     (1,  'admin@inmobiliaria.com',        '$2a$10$1abQAEwWSztTv0iATf4KJOOiev2BrcYu2evqfykcMQi8OJL4fTtvi', 'ACTIVO'),
-    (2,  'agente.centro@inmobiliaria.com','$2a$10$N9qo8uLOickgx2ZMRZoMy.MqcQfN2/9AY0f1sVdRTM8gc8n.6E7Qa', 'ACTIVO'),
-    (3,  'agente.norte@inmobiliaria.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqcQfN2/9AY0f1sVdRTM8gc8n.6E7Qa', 'ACTIVO'),
-    (4,  'maria.rojas@correo.com',        '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqcQfN2/9AY0f1sVdRTM8gc8n.6E7Qa', 'ACTIVO'),
-    (5,  'juan.paez@correo.com',          '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqcQfN2/9AY0f1sVdRTM8gc8n.6E7Qa', 'ACTIVO'),
-    (6,  'laura.gomez@correo.com',        '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqcQfN2/9AY0f1sVdRTM8gc8n.6E7Qa', 'ACTIVO'),
-    (7,  'carlos.diaz@correo.com',        '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqcQfN2/9AY0f1sVdRTM8gc8n.6E7Qa', 'ACTIVO'),
-    (8,  'ana.suarez@correo.com',         '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqcQfN2/9AY0f1sVdRTM8gc8n.6E7Qa', 'ACTIVO'),
-    (9,  'felipe.torres@correo.com',      '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqcQfN2/9AY0f1sVdRTM8gc8n.6E7Qa', 'ACTIVO'),
-    (10, 'sofia.moreno@correo.com',       '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqcQfN2/9AY0f1sVdRTM8gc8n.6E7Qa', 'INACTIVO');
+    (2,  'agente.centro@inmobiliaria.com','$2a$10$iKO.dx9w0PxNUqBqooVYzOXeMFAmiDqElaaB4l2hyn/OBX/ojPo6O', 'ACTIVO'),
+    (3,  'agente.norte@inmobiliaria.com', '$2a$10$UQ.0vxIS50g5dQUpP7yZSeq9JL4JROaFICGPDRwCk/lYzlJQi5E1C', 'ACTIVO'),
+    (4,  'maria.rojas@correo.com',        '$2a$10$fiA7TnXz6s65S9jqaa68HODk3e4BS0RWOBf0JvYZ5OaMpNXyCH3L6', 'ACTIVO'),
+    (5,  'juan.paez@correo.com',          '$2a$10$rvYNT2v/vVzWp9Y6KK5xO.DDcfIwPsVzDMQhO9mx6R.8kcv0uWA6y', 'ACTIVO'),
+    (6,  'laura.gomez@correo.com',        '$2a$10$Cx/qmJXtVDVr7DFDCJJbH.a.iTPlHSZpLf2zc9Ux1PCtIzRm3DibW', 'ACTIVO'),
+    (7,  'carlos.diaz@correo.com',        '$2a$10$aGy00QryyqkJW.tLS8Cp7uLPeBi70QIxJOTNBMomph3tTbzaVHR7C', 'ACTIVO'),
+    (8,  'ana.suarez@correo.com',         '$2a$10$kARFfVSK.otKsKBQrETUU.1kTBL2zfcIm/.zssSvpbeX4vwg4Egia', 'ACTIVO'),
+    (9,  'felipe.torres@correo.com',      '$2a$10$5BsHIlSZ6PycmBrYCoux..bWElSjQyjvAZsKbdBejbNOLV9.LH/Z.', 'ACTIVO'),
+    (10, 'sofia.moreno@correo.com',       '$2a$10$bughlNFc31LtozRd5ePUsOgOp0zaWH2Uf7EzknB2SOPCQURs64V92', 'INACTIVO');
 
 INSERT INTO rol (id_rol, nombre, descripcion) VALUES
     (1, 'ADMIN',    'Administrador del sistema'),
