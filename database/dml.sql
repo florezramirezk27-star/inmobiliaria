@@ -145,7 +145,7 @@ VALUES
 
     (3, 'BUC-0003', '300-1234569',
      'Apartaestudio en Provenza',
-     'Apartaestudio remodelado, ideal para una persona o pareja. Closets empotrados y zona de ropas.',
+     'Apartaestudio remodelado, ideal para una persona o pareja. Closets empotrados y aire acondicionado.',
      'ARRIENDO', 'PUBLICADA',
      3, 1, 2, 3,
      1150000.00, 190000.00, 45.00, NULL,
@@ -158,7 +158,7 @@ VALUES
      'VENTA', 'PUBLICADA',
      1, 1, 1, 2,
      295000000.00, 210000.00, 78.00, NULL,
-     3, 2, 1, 4, 20,
+     3, 3, 1, 4, 20,
      'Carrera 21 # 56-10', 'Real de Minas', 7.1050000, -73.1230000),
 
     (5, 'BUC-0005', '300-1234571',
@@ -167,7 +167,7 @@ VALUES
      'ARRIENDO', 'PUBLICADA',
      4, 1, 2, 3,
      3200000.00, 0.00, 120.00, NULL,
-     0, 1, 1, 5, 25,
+     0, 1, 0, 5, 25,
      'Carrera 29 # 45-60', 'Sotomayor', 7.1090000, -73.1180000),
 
     (6, 'GIR-0006', '300-1234572',
@@ -203,7 +203,7 @@ VALUES
      'VENTA', 'PUBLICADA',
      7, 2, 2, 3,
      850000000.00, 0.00, 300.00, 400.00,
-     0, 1, 4, NULL, 5,
+     0, 1, 0, NULL, 5,
      'Zona Industrial, Vía Café Madrid', 'Zona Industrial', 7.0580000, -73.0870000),
 
     (10, 'BUC-0010', '300-1234576',
@@ -219,16 +219,64 @@ VALUES
 -- ------------------------------------------------------------
 -- 7. Características por propiedad   (N : M)
 -- ------------------------------------------------------------
-INSERT INTO propiedad_caracteristica (id_propiedad, id_caracteristica) VALUES
-    (1, 1), (1, 2), (1, 3), (1, 6), (1, 12), (1, 14), (1, 15),
-    (2, 1), (2, 2), (2, 8), (2, 13), (2, 15), (2, 17),
-    (3, 2), (3, 3),
-    (4, 1), (4, 2), (4, 4), (4, 15),
-    (5, 4),
-    (6, 1), (6, 5), (6, 7), (6, 9), (6, 10), (6, 16), (6, 17),
-    (8, 5), (8, 14), (8, 15),
-    (9, 15),
-    (10, 1), (10, 3), (10, 8);
+INSERT INTO propiedad_caracteristica
+    (id_propiedad, id_caracteristica, cantidad)
+VALUES
+    -- 1. Apartamento Cabecera
+    (1, 1, 1),
+    (1, 2, 1),
+    (1, 3, 1),
+    (1, 6, 1),
+    (1, 12, 1),
+    (1, 14, 1),
+    (1, 15, 1),
+
+    -- 2. Casa Cañaveral
+    (2, 1, 1),
+    (2, 2, 1),
+    (2, 3, 1),
+    (2, 8, 1),
+    (2, 13, 1),
+    (2, 15, 1),
+    (2, 17, 1),
+
+    -- 3. Apartaestudio Provenza
+    (3, 2, 1),
+    (3, 5, 1),
+
+    -- 4. Apartamento Real de Minas
+    (4, 1, 1),
+    (4, 2, 1),
+    (4, 3, 1),
+    (4, 4, 1),
+    (4, 8, 1),
+    (4, 13, 1),
+    (4, 15, 1),
+
+    -- 5. Local Sotomayor
+    (5, 4, 1),
+
+    -- 6. Casa Campestre Ruitoque
+    (6, 1, 1),
+    (6, 5, 1),
+    (6, 7, 1),
+    (6, 9, 1),
+    (6, 10, 1),
+    (6, 16, 1),
+    (6, 17, 1),
+
+    -- 8. Oficina centro Bucaramanga
+    (8, 5, 1),
+    (8, 14, 1),
+    (8, 15, 1),
+
+    -- 9. Bodega Industrial
+    (9, 4, 1),
+
+    -- 10. Casa Mutis
+    (10, 1, 1),
+    (10, 3, 1),
+    (10, 8, 1);
 
 
 -- ------------------------------------------------------------
