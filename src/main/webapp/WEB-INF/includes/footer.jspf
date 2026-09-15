@@ -1,34 +1,44 @@
 <%--
     footer.jspf — pie de página compartido.
     Se incluye con: <%@ include file="/WEB-INF/includes/footer.jspf" %>
+    Todas las URLs son las originales.
 --%>
 <footer class="pie">
     <div class="container">
 
         <div class="row g-4">
 
-            <div class="col-lg-5">
-                <h2 class="fuente-display">Inmobiliaria</h2>
+            <div class="col-12 col-lg-5">
+                <span class="marca-pie">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+                         style="color: #C4A66A;" aria-hidden="true">
+                        <path d="M3 10.5 12 3l9 7.5"/>
+                        <path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/>
+                        <path d="M10 21v-6h4v6"/>
+                    </svg>
+                    Inmobiliaria
+                </span>
                 <p class="medida mb-0">
-                    Proyecto académico del curso Programación en Java.
-                    Publicación y búsqueda de inmuebles en arriendo y venta.
+                    Publicación y búsqueda de inmuebles en arriendo y venta
+                    en Bucaramanga y su área metropolitana.
                 </p>
             </div>
 
-            <div class="col-12 col-sm-6 col-lg-3">
-                <h2>Buscar</h2>
+            <div class="col-6 col-lg-3 offset-lg-1">
+                <h2>Explorar</h2>
                 <ul class="list-unstyled mb-0">
-                    <li class="mb-2"><a href="${pageContext.request.contextPath}/propiedades?operacion=arriendo">Inmuebles en arriendo</a></li>
-                    <li class="mb-2"><a href="${pageContext.request.contextPath}/propiedades?operacion=venta">Inmuebles en venta</a></li>
-                    <li><a href="${pageContext.request.contextPath}/#catalogo">Destacados</a></li>
+                    <li class="mb-2"><a href="${pageContext.request.contextPath}/propiedades?operacion=arriendo">Arriendo</a></li>
+                    <li class="mb-2"><a href="${pageContext.request.contextPath}/propiedades?operacion=venta">Venta</a></li>
+                    <li><a href="${pageContext.request.contextPath}/propiedades">Catálogo completo</a></li>
                 </ul>
             </div>
 
-            <div class="col-12 col-sm-6 col-lg-4">
+            <div class="col-6 col-lg-3">
                 <h2>Tu cuenta</h2>
                 <ul class="list-unstyled mb-0">
-                    <li class="mb-2"><a href="${pageContext.request.contextPath}/registro">Crear cuenta</a></li>
                     <li class="mb-2"><a href="${pageContext.request.contextPath}/login">Ingresar</a></li>
+                    <li class="mb-2"><a href="${pageContext.request.contextPath}/registro">Crear cuenta</a></li>
                     <li class="mb-2"><a href="${pageContext.request.contextPath}/favoritos">Favoritos</a></li>
                     <li><a href="${pageContext.request.contextPath}/citas">Mis citas</a></li>
                 </ul>
@@ -37,7 +47,7 @@
         </div>
 
         <p class="legal mb-0">
-            Universidad — Programación en Java. Datos de muestra con fines académicos.
+            Proyecto académico — Programación en Java. Datos de muestra con fines educativos.
         </p>
 
     </div>

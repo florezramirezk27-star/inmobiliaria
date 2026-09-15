@@ -6,15 +6,12 @@
 <c:set var="esAgente" value="false"/>
 
 <c:forEach var="rol" items="${sessionScope.roles}">
-
     <c:if test="${rol.nombre eq 'CLIENTE'}">
         <c:set var="esCliente" value="true"/>
     </c:if>
-
     <c:if test="${rol.nombre eq 'AGENTE'}">
         <c:set var="esAgente" value="true"/>
     </c:if>
-
 </c:forEach>
 
 <%--
@@ -22,10 +19,10 @@
 
     PropiedadDetalleServlet (GET /propiedades/detalle?id=X) hace el
     forward aquí con:
-      propiedad        Propiedad         (si se encontró)
+      propiedad        Propiedad
       imagenes         List<ImagenPropiedad>
-      caracteristicas  List<Caracteristica>  (ya con categoría y cantidad)
-      error            String  (si algo falló o el id no existe)
+      caracteristicas  List<Caracteristica>
+      error            String
 --%>
 
 <!DOCTYPE html>
@@ -42,13 +39,18 @@
         — Inmobiliaria
     </title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Karla:wght@400;500;600;700&display=swap"
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
 
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
 </head>
@@ -86,8 +88,16 @@
 
 <main class="container my-5">
 
-    <a href="${pageContext.request.contextPath}/propiedades" class="d-inline-block mb-4"
-       style="color: var(--gris); text-decoration: none;">&larr; Volver al catálogo</a>
+    <%-- Breadcrumb --%>
+    <nav aria-label="Ruta de navegación" class="mb-4" style="font-size:.875rem; color:var(--text-secondary);">
+        <a href="${pageContext.request.contextPath}/">Inicio</a>
+        <span class="mx-2" aria-hidden="true">/</span>
+        <a href="${pageContext.request.contextPath}/propiedades">Propiedades</a>
+        <c:if test="${not empty propiedad}">
+            <span class="mx-2" aria-hidden="true">/</span>
+            <span style="color:var(--text-primary);">${propiedad.titulo}</span>
+        </c:if>
+    </nav>
 
     <c:if test="${not empty error}">
         <div class="alert alert-warning" role="alert">${error}</div>
@@ -95,24 +105,42 @@
 
     <c:if test="${not empty propiedad}">
 
+        <%-- ---------- Encabezado ---------- --%>
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <span class="chip chip-verde mb-2">${propiedad.operacion.etiqueta}</span>
+                <h1 class="fuente-display mb-1">${propiedad.titulo}</h1>
+                <p class="mb-0" style="color: var(--text-secondary);">
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    ${propiedad.direccion}<c:if test="${not empty propiedad.barrio}"> — ${propiedad.ubicacionCorta}</c:if>
+                </p>
+            </div>
+            <span class="chip chip-gris">Código ${propiedad.codigo}</span>
+        </div>
+
         <%-- ---------- Galería ---------- --%>
         <c:choose>
             <c:when test="${not empty imagenes}">
-                <div class="row g-2 mb-4">
+                <div class="row g-2 mb-5">
                     <div class="col-12 col-md-8">
-                        <img src="${pageContext.request.contextPath}/${imagenes[0].ruta}"
-                             alt="${imagenes[0].textoAlt}"
-                             class="w-100 rounded"
-                             style="aspect-ratio: 16/10; object-fit: cover;">
+                        <div class="marco-foto" style="border-radius: var(--r-lg);">
+                            <img src="${pageContext.request.contextPath}/${imagenes[0].ruta}"
+                                 alt="${imagenes[0].textoAlt}"
+                                 class="w-100"
+                                 style="aspect-ratio: 16/10; object-fit: cover; display:block;">
+                        </div>
                     </div>
                     <div class="col-12 col-md-4">
                         <div class="row g-2">
                             <c:forEach var="img" items="${imagenes}" varStatus="st" begin="1" end="4">
                                 <div class="col-6 col-md-12">
-                                    <img src="${pageContext.request.contextPath}/${img.ruta}"
-                                         alt="${img.textoAlt}"
-                                         class="w-100 rounded"
-                                         style="aspect-ratio: 16/10; object-fit: cover;">
+                                    <div class="marco-foto" style="border-radius: var(--r-md);">
+                                        <img src="${pageContext.request.contextPath}/${img.ruta}"
+                                             alt="${img.textoAlt}"
+                                             class="w-100"
+                                             style="aspect-ratio: 16/10; object-fit: cover; display:block;"
+                                             loading="lazy">
+                                    </div>
                                 </div>
                             </c:forEach>
                         </div>
@@ -120,7 +148,7 @@
                 </div>
             </c:when>
             <c:otherwise>
-                <div class="marcador-detalle mb-4"></div>
+                <div class="marcador-detalle mb-5"></div>
             </c:otherwise>
         </c:choose>
 
@@ -129,36 +157,30 @@
             <%-- ---------- Columna principal ---------- --%>
             <div class="col-12 col-lg-8">
 
-                <span class="etiqueta-operacion" style="position: static; display: inline-block; margin-bottom: 0.75rem;">
-                    ${propiedad.operacion.etiqueta}
-                </span>
-
-                <h1 class="fuente-display mb-1">${propiedad.titulo}</h1>
-                <p class="mb-3" style="color: var(--gris);">
-                    ${propiedad.direccion}<c:if test="${not empty propiedad.barrio}"> — ${propiedad.ubicacionCorta}</c:if>
-                </p>
-
-                <div class="fichas mb-4" style="border-top: none; padding-top: 0;">
-                    <c:if test="${propiedad.habitaciones > 0}">
-                        <span class="ficha"><svg><use href="#ico-habitacion"/></svg>${propiedad.habitaciones} habitaciones</span>
-                    </c:if>
-                    <c:if test="${propiedad.banos > 0}">
-                        <span class="ficha"><svg><use href="#ico-bano"/></svg>${propiedad.banos} baños</span>
-                    </c:if>
-                    <c:if test="${propiedad.parqueaderos > 0}">
-                        <span class="ficha"><svg><use href="#ico-parqueadero"/></svg>${propiedad.parqueaderos} parqueaderos</span>
-                    </c:if>
-                    <c:if test="${not empty propiedad.areaConstruida}">
-                        <span class="ficha"><svg><use href="#ico-area"/></svg>${propiedad.areaConstruida} m² construidos</span>
-                    </c:if>
-                    <c:if test="${not empty propiedad.areaLote}">
-                        <span class="ficha"><svg><use href="#ico-area"/></svg>${propiedad.areaLote} m² de lote</span>
-                    </c:if>
+                <%-- Fichas rápidas --%>
+                <div class="panel mb-4" style="background-color: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem 1.4rem;">
+                    <div class="fichas" style="border-top: none; padding-top: 0; margin-top: 0; gap: 1.75rem;">
+                        <c:if test="${propiedad.habitaciones > 0}">
+                            <span class="ficha"><svg><use href="#ico-habitacion"/></svg>${propiedad.habitaciones} habitaciones</span>
+                        </c:if>
+                        <c:if test="${propiedad.banos > 0}">
+                            <span class="ficha"><svg><use href="#ico-bano"/></svg>${propiedad.banos} baños</span>
+                        </c:if>
+                        <c:if test="${propiedad.parqueaderos > 0}">
+                            <span class="ficha"><svg><use href="#ico-parqueadero"/></svg>${propiedad.parqueaderos} parqueaderos</span>
+                        </c:if>
+                        <c:if test="${not empty propiedad.areaConstruida}">
+                            <span class="ficha"><svg><use href="#ico-area"/></svg>${propiedad.areaConstruida} m² construidos</span>
+                        </c:if>
+                        <c:if test="${not empty propiedad.areaLote}">
+                            <span class="ficha"><svg><use href="#ico-area"/></svg>${propiedad.areaLote} m² de lote</span>
+                        </c:if>
+                    </div>
                 </div>
 
                 <c:if test="${not empty propiedad.descripcion}">
                     <h2 class="h5 mb-2">Descripción</h2>
-                    <p class="medida mb-4">${propiedad.descripcion}</p>
+                    <p class="medida mb-4" style="color: var(--text-secondary);">${propiedad.descripcion}</p>
                 </c:if>
 
                 <%-- ---------- Características agrupadas por categoría ---------- --%>
@@ -172,7 +194,7 @@
                         </c:forEach>
 
                         <c:if test="${hayEnCategoria}">
-                            <p class="fw-bold mb-2" style="font-size: 0.9rem; color: var(--gris); text-transform: uppercase; letter-spacing: 0.03em;">
+                            <p class="fw-bold mb-2" style="font-size: .875rem; color: var(--text-secondary);">
                                 <c:choose>
                                     <c:when test="${categoria == 'INTERIOR'}">Interior</c:when>
                                     <c:when test="${categoria == 'EXTERIOR'}">Exterior</c:when>
@@ -180,11 +202,10 @@
                                     <c:otherwise>Seguridad</c:otherwise>
                                 </c:choose>
                             </p>
-                            <div class="d-flex flex-wrap gap-2 mb-3">
+                            <div class="d-flex flex-wrap gap-2 mb-4">
                                 <c:forEach var="c" items="${caracteristicas}">
                                     <c:if test="${c.categoria == categoria}">
-                                        <span class="badge rounded-pill"
-                                              style="background-color: var(--verde-suave); color: var(--verde-hover); font-weight: 500; padding: 0.5rem 0.9rem;">
+                                        <span class="chip chip-verde">
                                             ${c.nombre}<c:if test="${c.cantidad > 1}"> (${c.cantidad})</c:if>
                                         </span>
                                     </c:if>
@@ -198,36 +219,37 @@
 
             <%-- ---------- Columna lateral: precio y acciones ---------- --%>
             <div class="col-12 col-lg-4">
-                <div class="tarjeta-prop p-4">
-                    <p class="precio mb-1">
+                <div class="panel" style="position: sticky; top: 1.5rem;">
+
+                    <p class="precio mb-1" style="font-size: 1.75rem;">
                         <fmt:formatNumber value="${propiedad.precio}" type="currency"
                                            currencySymbol="$ " groupingUsed="true" maxFractionDigits="0"/>
                         <c:if test="${propiedad.precioMensual}"><span class="periodo">/ mes</span></c:if>
                     </p>
                     <c:if test="${not empty propiedad.administracion and propiedad.administracion > 0}">
-                        <p class="mb-3" style="color: var(--gris); font-size: 0.9rem;">
+                        <p class="mb-3" style="color: var(--text-secondary); font-size: .875rem;">
                             + <fmt:formatNumber value="${propiedad.administracion}" type="currency"
                                                  currencySymbol="$ " groupingUsed="true" maxFractionDigits="0"/>
                             de administración
                         </p>
                     </c:if>
 
-                    <dl class="row mb-0" style="font-size: 0.92rem;">
-                        <dt class="col-6" style="color: var(--gris); font-weight: 500;">Código</dt>
-                        <dd class="col-6 text-end">${propiedad.codigo}</dd>
+                    <dl class="row mb-0 mt-4" style="font-size: .9375rem;">
+                        <dt class="col-6" style="color: var(--text-secondary); font-weight: 500;">Código</dt>
+                        <dd class="col-6 text-end fw-semibold">${propiedad.codigo}</dd>
 
                         <c:if test="${not empty propiedad.estrato}">
-                            <dt class="col-6" style="color: var(--gris); font-weight: 500;">Estrato</dt>
-                            <dd class="col-6 text-end">${propiedad.estrato}</dd>
+                            <dt class="col-6" style="color: var(--text-secondary); font-weight: 500;">Estrato</dt>
+                            <dd class="col-6 text-end fw-semibold">${propiedad.estrato}</dd>
                         </c:if>
 
                         <c:if test="${not empty propiedad.antiguedadAnios}">
-                            <dt class="col-6" style="color: var(--gris); font-weight: 500;">Antigüedad</dt>
-                            <dd class="col-6 text-end">${propiedad.antiguedadAnios} años</dd>
+                            <dt class="col-6" style="color: var(--text-secondary); font-weight: 500;">Antigüedad</dt>
+                            <dd class="col-6 text-end fw-semibold">${propiedad.antiguedadAnios} años</dd>
                         </c:if>
                     </dl>
 
-                    <hr>
+                    <hr style="border-color: var(--border);">
 
                     <div class="d-grid gap-2">
                         <c:if test="${esCliente}">
@@ -261,6 +283,12 @@
                            href="${pageContext.request.contextPath}/inmobiliaria/propiedades/formulario?id=${propiedad.id}">
                             Editar propiedad
                         </a>
+                        </c:if>
+
+                        <c:if test="${empty sessionScope.usuarioId}">
+                            <a class="btn btn-marca" href="${pageContext.request.contextPath}/login">
+                                Ingresa para agendar una visita
+                            </a>
                         </c:if>
                     </div>
                 </div>

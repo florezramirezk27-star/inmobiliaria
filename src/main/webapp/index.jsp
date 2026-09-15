@@ -14,13 +14,16 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Karla:wght@400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
 
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
 </head>
@@ -57,16 +60,27 @@
      ============================================================ -->
 <header class="hero">
     <div class="container">
-        <h1 class="fuente-display">Encuentra dónde vivir en Bucaramanga</h1>
+        <h1 class="fuente-display">Encuentra el espacio para tu próxima historia</h1>
         <p>
-            Apartamentos, casas y locales publicados por propietarios y agentes verificados
-            en el área metropolitana.
+            Compra o arrienda casas, apartamentos y locales en Bucaramanga
+            y su área metropolitana.
         </p>
+        <div class="hero-acciones">
+            <a class="btn btn-marca btn-grande"
+               href="${pageContext.request.contextPath}/propiedades">
+                Explorar propiedades
+            </a>
+            <a class="btn btn-contorno btn-grande" href="#catalogo">
+                Ver publicaciones recientes
+            </a>
+        </div>
     </div>
 </header>
 
 <!-- ============================================================
      Buscador — superpuesto sobre el borde inferior del hero.
+     Los parámetros GET son los que espera PropiedadServlet:
+     operacion, ciudad (ID numérico), tipo, precioMax.
      ============================================================ -->
 <section class="container" aria-labelledby="titulo-buscador">
     <h2 id="titulo-buscador" class="visually-hidden">Buscar propiedades</h2>
@@ -87,10 +101,10 @@
                 <label class="form-label" for="ciudad">Ciudad</label>
                 <select class="form-select" id="ciudad" name="ciudad">
                     <option value="">Todas</option>
-                    <option value="bucaramanga">Bucaramanga</option>
-                    <option value="floridablanca">Floridablanca</option>
-                    <option value="giron">Girón</option>
-                    <option value="piedecuesta">Piedecuesta</option>
+                    <option value="1">Bucaramanga</option>
+                    <option value="2">Floridablanca</option>
+                    <option value="3">Girón</option>
+                    <option value="4">Piedecuesta</option>
                 </select>
             </div>
 
@@ -112,7 +126,9 @@
             </div>
 
             <div class="col-12 col-md-2 d-grid">
-                <button type="submit" class="btn btn-marca">Buscar</button>
+                <button type="submit" class="btn btn-marca">
+                    <i class="bi bi-search" aria-hidden="true"></i> Buscar
+                </button>
             </div>
 
         </div>
@@ -120,13 +136,70 @@
 </section>
 
 <!-- ============================================================
+     Confianza
+     ============================================================ -->
+<section class="container mt-5 pt-3">
+    <div class="row g-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="d-flex align-items-start gap-3">
+                <span class="tarjeta-acceso-icono icono" style="width:40px;height:40px;background-color:var(--success-bg);color:var(--secondary);display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0;">
+                    <i class="bi bi-card-checklist"></i>
+                </span>
+                <div>
+                    <h4 class="mb-1">Fichas completas</h4>
+                    <p class="mb-0 texto-secundario" style="color:var(--text-secondary);font-size:.875rem;">Área, habitaciones, estrato y administración en cada publicación.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="d-flex align-items-start gap-3">
+                <span style="width:40px;height:40px;background-color:var(--success-bg);color:var(--secondary);display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0;">
+                    <i class="bi bi-sliders"></i>
+                </span>
+                <div>
+                    <h4 class="mb-1">Búsqueda con filtros</h4>
+                    <p class="mb-0" style="color:var(--text-secondary);font-size:.875rem;">Filtra por ciudad, tipo de inmueble y presupuesto.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="d-flex align-items-start gap-3">
+                <span style="width:40px;height:40px;background-color:var(--success-bg);color:var(--secondary);display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0;">
+                    <i class="bi bi-calendar-check"></i>
+                </span>
+                <div>
+                    <h4 class="mb-1">Visitas en línea</h4>
+                    <p class="mb-0" style="color:var(--text-secondary);font-size:.875rem;">Agenda una cita con el agente desde la ficha del inmueble.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="d-flex align-items-start gap-3">
+                <span style="width:40px;height:40px;background-color:var(--success-bg);color:var(--secondary);display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0;">
+                    <i class="bi bi-file-earmark-text"></i>
+                </span>
+                <div>
+                    <h4 class="mb-1">Solicitudes con soporte</h4>
+                    <p class="mb-0" style="color:var(--text-secondary);font-size:.875rem;">Radica tu solicitud y adjunta los documentos requeridos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
      Catálogo — publicaciones recientes (IndexServlet)
      ============================================================ -->
 <main class="container my-5 pt-4" id="catalogo">
 
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
-        <h2 class="fuente-display mb-0">Publicaciones recientes</h2>
-        <a href="${pageContext.request.contextPath}/propiedades">Ver todas las propiedades</a>
+    <div class="cabecera-seccion">
+        <div>
+            <h2 class="fuente-display mb-1">Publicaciones recientes</h2>
+            <p class="descripcion mb-0">Los últimos inmuebles publicados por agentes y propietarios.</p>
+        </div>
+        <a class="btn btn-contorno" href="${pageContext.request.contextPath}/propiedades">
+            Ver todas las propiedades
+        </a>
     </div>
 
     <c:if test="${not empty errorConsulta}">
@@ -135,7 +208,9 @@
 
     <c:if test="${empty propiedades and empty errorConsulta}">
         <div class="sin-resultados">
-            <p class="mb-3">No hay propiedades publicadas todavía.</p>
+            <span class="sin-resultados-icono"><i class="bi bi-houses"></i></span>
+            <h3>Todavía no hay propiedades publicadas</h3>
+            <p>Cuando los agentes publiquen inmuebles, aparecerán aquí.</p>
             <a class="btn btn-marca" href="${pageContext.request.contextPath}/propiedades">Ver el catálogo</a>
         </div>
     </c:if>
@@ -143,8 +218,11 @@
     <div class="row g-4">
         <c:forEach var="p" items="${propiedades}">
             <div class="col-12 col-sm-6 col-lg-4">
-                <div class="position-relative">
+                <div class="position-relative h-100">
 
+                    <%-- El botón de favorito vive FUERA del <a> a propósito:
+                         un <button> dentro de un enlace dispara a la vez la
+                         navegación y el envío del formulario. --%>
                     <form method="post" class="boton-favorito-form"
                           action="${pageContext.request.contextPath}/propiedades/favorito">
                         <input type="hidden" name="propiedadId" value="${p.id}">
@@ -156,21 +234,23 @@
                         </button>
                     </form>
 
-                    <a class="text-decoration-none" style="color: inherit;"
+                    <a class="text-decoration-none d-block h-100" style="color: inherit;"
                        href="${pageContext.request.contextPath}/propiedades/detalle?id=${p.id}">
                     <article class="tarjeta-prop">
 
-                        <c:choose>
-                            <c:when test="${p.tienePortada}">
-                                <img class="foto-prop" src="${pageContext.request.contextPath}/${p.rutaPortada}"
-                                     alt="Foto de ${p.titulo}">
-                            </c:when>
-                            <c:otherwise>
-                                <div class="foto-prop"></div>
-                            </c:otherwise>
-                        </c:choose>
+                        <div class="marco-foto">
+                            <c:choose>
+                                <c:when test="${p.tienePortada}">
+                                    <img class="foto-prop" src="${pageContext.request.contextPath}/${p.rutaPortada}"
+                                         alt="Foto de ${p.titulo}" loading="lazy">
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="foto-prop"></div>
+                                </c:otherwise>
+                            </c:choose>
 
-                        <span class="etiqueta-operacion">${p.operacion.etiqueta}</span>
+                            <span class="etiqueta-operacion">${p.operacion.etiqueta}</span>
+                        </div>
 
                         <div class="cuerpo-tarjeta">
                             <p class="precio">
@@ -179,7 +259,9 @@
                                 <c:if test="${p.precioMensual}"><span class="periodo">/ mes</span></c:if>
                             </p>
                             <p class="direccion">${p.titulo}</p>
-                            <p class="barrio">${p.ubicacionCorta}</p>
+                            <p class="barrio">
+                                <i class="bi bi-geo-alt" aria-hidden="true"></i>${p.ubicacionCorta}
+                            </p>
 
                             <div class="fichas">
                                 <c:if test="${p.habitaciones > 0}">
