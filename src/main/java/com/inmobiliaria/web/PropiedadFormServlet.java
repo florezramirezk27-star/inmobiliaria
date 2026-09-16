@@ -504,7 +504,6 @@ public class PropiedadFormServlet extends HttpServlet {
     private void cargarCatalogos(HttpServletRequest request) throws SQLException {
         request.setAttribute("ciudades", ciudadDAO.listarTodas());
         request.setAttribute("tiposPropiedad", tipoPropiedadDAO.listarTodos());
-        request.setAttribute("inmobiliarias", inmobiliariaDAO.listarTodas());
         request.setAttribute("todasLasCaracteristicas", caracteristicaDAO.listarTodas());
         request.setAttribute("categoriasCaracteristica",
                 List.of("INTERIOR", "EXTERIOR", "CONJUNTO", "SEGURIDAD"));
@@ -525,7 +524,6 @@ public class PropiedadFormServlet extends HttpServlet {
 
         exigirEntero(request, "idTipoPropiedad", "Selecciona el tipo de inmueble.", errores);
         exigirEntero(request, "idCiudad", "Selecciona la ciudad.", errores);
-        exigirEntero(request, "idInmobiliaria", "Selecciona la inmobiliaria que publica.", errores);
 
         String precio = request.getParameter("precio");
         if (precio == null || precio.isBlank()) {
@@ -575,7 +573,6 @@ public class PropiedadFormServlet extends HttpServlet {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Propiedad construirDesde(HttpServletRequest request) {
 
         Propiedad p = new Propiedad();
@@ -592,16 +589,6 @@ public class PropiedadFormServlet extends HttpServlet {
         p.setTipoPropiedadId(Integer.parseInt(request.getParameter("idTipoPropiedad").trim()));
         p.setCiudadId(Integer.parseInt(request.getParameter("idCiudad").trim()));
 
-        int idInmobiliaria = Integer.parseInt(request.getParameter("idInmobiliaria").trim());
-        p.setInmobiliariaId(idInmobiliaria);
-
-        List<Inmobiliaria> inmobiliarias = (List<Inmobiliaria>) request.getAttribute("inmobiliarias");
-        for (Inmobiliaria i : inmobiliarias) {
-            if (i.getId() == idInmobiliaria) {
-                p.setUsuarioId(i.getUsuarioId());
-                break;
-            }
-        }
 
         p.setPrecio(new BigDecimal(request.getParameter("precio").trim()));
         p.setAdministracion(parseDecimalONulo(request.getParameter("administracion"), BigDecimal.ZERO));

@@ -11,10 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Acceso de solo lectura a las inmobiliarias (agencias). Se usa
- * para llenar el <select> "publicado por" en el formulario de
- * propiedades mientras no exista un login que la asigne sola a
- * partir del usuario autenticado.
+ * Acceso de solo lectura a las inmobiliarias (agencias).
+ *
+ * En la gestión de propiedades, la inmobiliaria del agente se
+ * obtiene por el usuario autenticado y nunca desde un parámetro
+ * editable enviado por el navegador.
  */
 public class InmobiliariaDAO {
 

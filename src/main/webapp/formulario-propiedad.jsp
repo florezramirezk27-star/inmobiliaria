@@ -166,20 +166,14 @@
             </div>
 
             <div class="col-12 col-md-6">
-                <label class="form-label" for="idInmobiliaria">Publicada por</label>
-                <select class="form-select" id="idInmobiliaria" name="idInmobiliaria" required>
-                    <option value="">Selecciona...</option>
-                    <c:forEach var="i" items="${inmobiliarias}">
-                        <option value="${i.id}"
-                            ${(not empty propiedad and propiedad.inmobiliariaId == i.id)
-                              or param.idInmobiliaria == i.id ? 'selected' : ''}>
-                            ${i.nombreComercial}
-                        </option>
-                    </c:forEach>
-                </select>
+                <label class="form-label">Publicada por</label>
+                <div class="form-control bg-light text-secondary"
+                     aria-readonly="true">
+                    <i class="bi bi-building-check me-1"></i>
+                    Inmobiliaria asociada a tu cuenta
+                </div>
                 <div class="form-text">
-                    Temporal: hasta que el login esté integrado, se elige aquí manualmente
-                    la agencia que publica.
+                    La inmobiliaria se asigna automáticamente según tu sesión.
                 </div>
             </div>
 

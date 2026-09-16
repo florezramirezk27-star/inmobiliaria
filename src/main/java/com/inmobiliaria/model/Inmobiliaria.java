@@ -1,9 +1,10 @@
 package com.inmobiliaria.model;
 
 /**
- * Fila de la tabla `inmobiliaria` (la agencia, no la app). Se usa
- * para llenar el <select> de "publicado por" en el formulario de
- * propiedades, mientras no exista un login que la asigne sola.
+ * Representa una fila de la tabla `inmobiliaria`.
+ *
+ * Cada agencia está asociada a un usuario responsable mediante
+ * id_usuario.
  */
 public class Inmobiliaria {
 
