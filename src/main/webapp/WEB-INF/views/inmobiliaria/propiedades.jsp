@@ -220,6 +220,12 @@
                                                 gap-2">
 
                                         <a
+                                            class="btn btn-sm btn-marca"
+                                            href="${pageContext.request.contextPath}/propiedades/citas?id=${p.id}">
+                                            Citas
+                                        </a>
+
+                                        <a
                                             class="btn btn-sm btn-contorno"
                                             href="${pageContext.request.contextPath}/inmobiliaria/propiedades/formulario?id=${p.id}">
                                             Editar

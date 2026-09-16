@@ -3,10 +3,12 @@ package com.inmobiliaria.web;
 import com.inmobiliaria.dao.CaracteristicaDAO;
 import com.inmobiliaria.dao.FavoritoDAO;
 import com.inmobiliaria.dao.ImagenPropiedadDAO;
+import com.inmobiliaria.dao.InmobiliariaDAO;
 import com.inmobiliaria.dao.PropiedadDAO;
 import com.inmobiliaria.model.Caracteristica;
 import com.inmobiliaria.model.EstadoPropiedad;
 import com.inmobiliaria.model.ImagenPropiedad;
+import com.inmobiliaria.model.Inmobiliaria;
 import com.inmobiliaria.model.Propiedad;
 import com.inmobiliaria.model.Rol;
 
@@ -34,6 +36,7 @@ public class PropiedadDetalleServlet extends HttpServlet {
     private final ImagenPropiedadDAO imagenDAO = new ImagenPropiedadDAO();
     private final CaracteristicaDAO caracteristicaDAO = new CaracteristicaDAO();
     private final FavoritoDAO favoritoDAO = new FavoritoDAO();
+    private final InmobiliariaDAO inmobiliariaDAO = new InmobiliariaDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -61,7 +64,8 @@ public class PropiedadDetalleServlet extends HttpServlet {
 
             if (propiedad == null) {
                 request.setAttribute("error", "No se encontró la propiedad solicitada.");
-            } else if (esPropiedadNoPublica(propiedad) && !esEmpleado(request)) {
+            } else if (esPropiedadNoPublica(propiedad)
+                    && !puedeVerPropiedadNoPublica(request, propiedad)) {
                 // Las propiedades en BORRADOR o CERRADA solo las ven los
                 // empleados desde su panel; por URL directa un visitante o
                 // cliente no puede espiarlas.
@@ -74,6 +78,10 @@ public class PropiedadDetalleServlet extends HttpServlet {
                 request.setAttribute("propiedad", propiedad);
                 request.setAttribute("imagenes", imagenes);
                 request.setAttribute("caracteristicas", caracteristicas);
+                request.setAttribute(
+                        "puedeGestionarPropiedad",
+                        puedeGestionarPropiedad(request, propiedad)
+                );
                 request.setAttribute("categoriasCaracteristica",
                         List.of("INTERIOR", "EXTERIOR", "CONJUNTO", "SEGURIDAD"));
 
@@ -115,27 +123,78 @@ public class PropiedadDetalleServlet extends HttpServlet {
                 && p.getEstado() != EstadoPropiedad.PUBLICADA;
     }
 
-    /** ADMIN y AGENTE gestionan propiedades, incluidos borradores y cerradas. */
-    private boolean esEmpleado(HttpServletRequest request) {
+    /**
+     * Una propiedad no publica solo puede verla un administrador o el agente
+     * de la inmobiliaria propietaria.
+     */
+    private boolean puedeVerPropiedadNoPublica(
+            HttpServletRequest request,
+            Propiedad propiedad
+    ) throws SQLException {
 
-        HttpSession session = request.getSession(false);
+        return tieneRol(request, "ADMIN")
+                || puedeGestionarPropiedad(request, propiedad);
+    }
+
+    /**
+     * Determina si el agente autenticado pertenece a la inmobiliaria
+     * propietaria de la propiedad.
+     */
+    private boolean puedeGestionarPropiedad(
+            HttpServletRequest request,
+            Propiedad propiedad
+    ) throws SQLException {
+
+        if (!tieneRol(request, "AGENTE")) {
+            return false;
+        }
+
+        Integer usuarioId =
+                idDeSesionONulo(request);
+
+        if (usuarioId == null) {
+            return false;
+        }
+
+        Inmobiliaria inmobiliaria =
+                inmobiliariaDAO.buscarPorUsuario(usuarioId);
+
+        return inmobiliaria != null
+                && propiedad.getInmobiliariaId()
+                == inmobiliaria.getId();
+    }
+
+    private boolean tieneRol(
+            HttpServletRequest request,
+            String rolBuscado
+    ) {
+
+        HttpSession session =
+                request.getSession(false);
+
         if (session == null) {
             return false;
         }
 
-        Object roles = session.getAttribute("roles");
+        Object roles =
+                session.getAttribute("roles");
+
         if (!(roles instanceof List<?> listaRoles)) {
             return false;
         }
 
         for (Object objeto : listaRoles) {
+
             if (objeto instanceof Rol rol
                     && rol.getNombre() != null
-                    && (rol.getNombre().equalsIgnoreCase("ADMIN")
-                        || rol.getNombre().equalsIgnoreCase("AGENTE"))) {
+                    && rol.getNombre()
+                    .equalsIgnoreCase(rolBuscado)) {
+
                 return true;
             }
         }
+
         return false;
     }
+
 }

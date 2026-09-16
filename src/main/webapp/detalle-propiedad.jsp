@@ -278,7 +278,12 @@
                         </a>
                         </c:if>
 
-                        <c:if test="${esAgente}">
+                        <c:if test="${puedeGestionarPropiedad}">
+                        <a class="btn btn-marca"
+                           href="${pageContext.request.contextPath}/propiedades/citas?id=${propiedad.id}">
+                            Gestionar citas
+                        </a>
+
                         <a class="btn btn-contorno"
                            href="${pageContext.request.contextPath}/inmobiliaria/propiedades/formulario?id=${propiedad.id}">
                             Editar propiedad
