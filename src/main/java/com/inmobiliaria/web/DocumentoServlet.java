@@ -36,10 +36,9 @@ import java.util.UUID;
  *        inmobiliaria dueña de la propiedad de la solicitud (solo lectura, sin subir)
  * GET /inmobiliaria/solicitudes/documentos?id=7            -> descarga para el AGENTE
  *
- * Solo la fila de la base de datos viaja por el DAO; el archivo físico se
- * guarda y se borra aquí, en el servlet, igual que hace
- * PropiedadFormServlet con las imágenes (ver su advertencia sobre la
- * carpeta real del WAR y los redeploys).
+ * Solo la fila de la base de datos viaja por el DAO. Los archivos privados
+ * se almacenan fuera del webroot para impedir que Tomcat pueda servirlos
+ * directamente sin pasar por las validaciones de autorización.
  */
 @WebServlet({
         "/cliente/solicitudes/documentos",
@@ -305,16 +304,23 @@ public class DocumentoServlet extends HttpServlet {
                 return;
             }
 
-            String realPath = getServletContext().getRealPath("/" + documento.getRuta());
-            if (realPath == null || !Files.exists(Paths.get(realPath))) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "El archivo físico no está disponible.");
+            Path archivoFisico = archivoFisico(documento);
+
+            if (!Files.exists(archivoFisico) || !Files.isRegularFile(archivoFisico)) {
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "El archivo físico no está disponible."
+                );
                 return;
             }
 
             response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition",
-                    "attachment; filename=\"" + documento.getNombreArchivo() + "\"");
-            Files.copy(Paths.get(realPath), response.getOutputStream());
+            response.setHeader(
+                    "Content-Disposition",
+                    "attachment; filename=\"" + documento.getNombreArchivo() + "\""
+            );
+
+            Files.copy(archivoFisico, response.getOutputStream());
 
         } catch (SQLException e) {
             getServletContext().log("Error al descargar el documento", e);
@@ -324,9 +330,51 @@ public class DocumentoServlet extends HttpServlet {
         }
     }
 
-    private Path carpetaDeDocumentos(int solicitudId) {
-        String real = getServletContext().getRealPath("/docs/solicitudes/" + solicitudId);
-        return Paths.get(real);
+    private Path carpetaDeDocumentos(int solicitudId) throws IOException {
+        String catalinaBase = System.getProperty("catalina.base");
+
+        if (catalinaBase == null || catalinaBase.isBlank()) {
+            throw new IOException(
+                    "No se pudo determinar catalina.base para almacenar documentos."
+            );
+        }
+
+        return Paths.get(
+                catalinaBase,
+                "inmobiliaria-data",
+                "documentos",
+                "solicitudes",
+                String.valueOf(solicitudId)
+        ).toAbsolutePath().normalize();
+    }
+
+    private Path archivoFisico(Documento documento) throws IOException {
+        String rutaGuardada = documento.getRuta();
+
+        if (rutaGuardada == null || rutaGuardada.isBlank()) {
+            throw new IOException(
+                    "El documento no tiene una ruta física válida."
+            );
+        }
+
+        Path nombreFisico = Paths.get(rutaGuardada).getFileName();
+
+        if (nombreFisico == null || nombreFisico.toString().isBlank()) {
+            throw new IOException(
+                    "No se pudo determinar el nombre físico del documento."
+            );
+        }
+
+        Path carpeta = carpetaDeDocumentos(documento.getSolicitudId());
+        Path archivo = carpeta.resolve(nombreFisico.toString()).normalize();
+
+        if (!archivo.startsWith(carpeta)) {
+            throw new IOException(
+                    "La ruta física del documento no es válida."
+            );
+        }
+
+        return archivo;
     }
 
     private String extensionSegura(String nombreOriginal) {
