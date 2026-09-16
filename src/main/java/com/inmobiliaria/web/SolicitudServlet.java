@@ -129,7 +129,7 @@ public class SolicitudServlet extends HttpServlet {
         }
         try {
             int idPropiedad = Integer.parseInt(idParam.trim());
-            Propiedad propiedad = propiedadDAO.buscarPorId(idPropiedad);
+            Propiedad propiedad = propiedadDAO.buscarPublicadaPorId(idPropiedad);
             if (propiedad != null) {
                 request.setAttribute("propiedad", propiedad);
                 request.setAttribute("idPropiedad", idPropiedad);
@@ -148,11 +148,27 @@ public class SolicitudServlet extends HttpServlet {
             errores.add("Selecciona la propiedad sobre la que quieres solicitar.");
         } else {
             try {
-                if (Integer.parseInt(idPropiedad.trim()) <= 0) {
+                int propiedadId = Integer.parseInt(idPropiedad.trim());
+
+                if (propiedadId <= 0) {
                     errores.add("La propiedad seleccionada no es válida.");
+                } else if (
+                        propiedadDAO.buscarPublicadaPorId(propiedadId) == null
+                ) {
+                    errores.add(
+                            "La propiedad seleccionada no existe o no está disponible."
+                    );
                 }
             } catch (NumberFormatException e) {
                 errores.add("La propiedad seleccionada no es válida.");
+            } catch (SQLException e) {
+                getServletContext().log(
+                        "No se pudo validar la propiedad de la solicitud",
+                        e
+                );
+                errores.add(
+                        "No fue posible validar la propiedad en este momento."
+                );
             }
         }
 
