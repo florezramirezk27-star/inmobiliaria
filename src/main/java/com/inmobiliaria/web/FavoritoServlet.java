@@ -54,10 +54,9 @@ public class FavoritoServlet extends HttpServlet {
             List<Propiedad> propiedades = new ArrayList<>();
 
             for (Integer id : ids) {
-                Propiedad p = propiedadDAO.buscarPorId(id);
-                // Una propiedad pudo borrarse físicamente después de
-                // marcarse como favorita; se omite en vez de romper la
-                // página completa por una fila huérfana.
+                Propiedad p = propiedadDAO.buscarPublicadaPorId(id);
+                // Si la propiedad dejó de estar publicada o fue eliminada,
+                // se oculta del listado del cliente.
                 if (p != null) {
                     propiedades.add(p);
                 }
@@ -97,7 +96,9 @@ public class FavoritoServlet extends HttpServlet {
 
                 if (favoritoDAO.esFavorito(usuarioId, propiedadId)) {
                     favoritoDAO.quitar(usuarioId, propiedadId);
-                } else {
+                } else if (
+                        propiedadDAO.buscarPublicadaPorId(propiedadId) != null
+                ) {
                     favoritoDAO.agregar(usuarioId, propiedadId);
                 }
 

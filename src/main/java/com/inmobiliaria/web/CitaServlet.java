@@ -64,7 +64,7 @@ public class CitaServlet extends HttpServlet {
         if ("/citas".equals(ruta)) {
             mostrarMisCitas(request, response, usuarioId);
         } else {
-            mostrarCitasDeLaPropiedad(request, response);
+            mostrarCitasDeLaPropiedad(request, response, usuarioId);
         }
     }
 
@@ -90,46 +90,130 @@ public class CitaServlet extends HttpServlet {
     // GET /propiedades/citas?id=X
     // ============================================================
 
-    private void mostrarCitasDeLaPropiedad(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    private void mostrarCitasDeLaPropiedad(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            int usuarioId
+    ) throws ServletException, IOException {
 
         String idParam = request.getParameter("id");
 
         if (idParam == null || idParam.isBlank()) {
-            request.setAttribute("error", "No se indicó de qué propiedad mostrar las citas.");
-            request.getRequestDispatcher("/citas-propiedad.jsp").forward(request, response);
+            request.setAttribute(
+                    "error",
+                    "No se indicó de qué propiedad mostrar las citas."
+            );
+
+            request.getRequestDispatcher(
+                    "/citas-propiedad.jsp"
+            ).forward(request, response);
+
             return;
         }
 
         try {
             int id = Integer.parseInt(idParam.trim());
-            Propiedad propiedad = propiedadDAO.buscarPorId(id);
+
+            boolean esCliente =
+                    tieneRol(request, "CLIENTE");
+
+            boolean esAgente =
+                    tieneRol(request, "AGENTE");
+
+            if (!esCliente && !esAgente) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No tienes permiso para consultar estas citas."
+                );
+                return;
+            }
+
+            Propiedad propiedad = esAgente
+                    ? propiedadDAO.buscarPorId(id)
+                    : propiedadDAO.buscarPublicadaPorId(id);
 
             if (propiedad == null) {
-                request.setAttribute("error", "La propiedad solicitada no existe.");
+                request.setAttribute(
+                        "error",
+                        "La propiedad solicitada no existe "
+                                + "o no está disponible."
+                );
+
             } else {
-                request.setAttribute("propiedad", propiedad);
-                request.setAttribute("citas", citaDAO.listarPorPropiedad(id));
+
+                if (esAgente) {
+                    Inmobiliaria inmobiliaria =
+                            inmobiliariaDAO.buscarPorUsuario(
+                                    usuarioId
+                            );
+
+                    if (
+                            inmobiliaria == null
+                            || propiedad.getInmobiliariaId()
+                            != inmobiliaria.getId()
+                    ) {
+                        response.sendError(
+                                HttpServletResponse.SC_FORBIDDEN,
+                                "No puedes consultar citas "
+                                        + "de otra inmobiliaria."
+                        );
+                        return;
+                    }
+                }
+
+                request.setAttribute(
+                        "propiedad",
+                        propiedad
+                );
+
+                if (esAgente) {
+                    request.setAttribute(
+                            "citas",
+                            citaDAO.listarPorPropiedad(id)
+                    );
+                } else {
+                    request.setAttribute(
+                            "citas",
+                            citaDAO.listarPorClienteYPropiedad(
+                                    usuarioId,
+                                    id
+                            )
+                    );
+                }
+
                 request.setAttribute(
                         "puedeCrearCita",
-                        tieneRol(request, "CLIENTE")
+                        esCliente
                 );
 
                 request.setAttribute(
                         "puedeGestionarCitas",
-                        tieneRol(request, "AGENTE")
+                        esAgente
                 );
             }
 
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "El identificador de la propiedad no es válido.");
+            request.setAttribute(
+                    "error",
+                    "El identificador de la propiedad no es válido."
+            );
+
         } catch (SQLException e) {
-            getServletContext().log("Error al cargar las citas de la propiedad", e);
-            request.setAttribute("error",
-                    "No fue posible cargar las citas en este momento. Intenta de nuevo en unos minutos.");
+            getServletContext().log(
+                    "Error al cargar las citas de la propiedad",
+                    e
+            );
+
+            request.setAttribute(
+                    "error",
+                    "No fue posible cargar las citas "
+                            + "en este momento."
+            );
         }
 
-        request.getRequestDispatcher("/citas-propiedad.jsp").forward(request, response);
+        request.getRequestDispatcher(
+                "/citas-propiedad.jsp"
+        ).forward(request, response);
     }
 
     // ============================================================
@@ -183,6 +267,24 @@ public class CitaServlet extends HttpServlet {
             return;
         }
 
+        try {
+            if (propiedadDAO.buscarPublicadaPorId(propiedadId) == null) {
+                response.sendRedirect(
+                        request.getContextPath() + "/propiedades"
+                );
+                return;
+            }
+        } catch (SQLException e) {
+            getServletContext().log(
+                    "Error al validar la propiedad antes de agendar",
+                    e
+            );
+            response.sendRedirect(
+                    request.getContextPath() + "/propiedades"
+            );
+            return;
+        }
+
         List<String> errores = new java.util.ArrayList<>();
         LocalDateTime fechaHora = null;
 
@@ -203,7 +305,7 @@ public class CitaServlet extends HttpServlet {
         }
 
         if (!errores.isEmpty()) {
-            volverAFormularioConError(request, response, propiedadId, errores);
+            volverAFormularioConError(request, response, usuarioId, propiedadId, errores);
             return;
         }
 
@@ -221,33 +323,77 @@ public class CitaServlet extends HttpServlet {
                     + "/propiedades/citas?id=" + propiedadId + "&agendada=1");
 
         } catch (DuplicidadException e) {
-            volverAFormularioConError(request, response, propiedadId, List.of(e.getMessage()));
+            volverAFormularioConError(request, response, usuarioId, propiedadId, List.of(e.getMessage()));
 
         } catch (SQLException e) {
             getServletContext().log("Error al agendar la visita", e);
-            volverAFormularioConError(request, response, propiedadId,
-                    List.of("No fue posible agendar la visita en este momento. Intenta de nuevo en unos minutos."));
+            volverAFormularioConError(request, response, usuarioId, propiedadId, List.of("No fue posible agendar la visita en este momento. Intenta de nuevo en unos minutos."));
         }
     }
 
-    private void volverAFormularioConError(HttpServletRequest request, HttpServletResponse response,
-                                            int propiedadId, List<String> errores)
-            throws ServletException, IOException {
+    private void volverAFormularioConError(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            int usuarioId,
+            int propiedadId,
+            List<String> errores
+    ) throws ServletException, IOException {
 
         try {
-            Propiedad propiedad = propiedadDAO.buscarPorId(propiedadId);
-            request.setAttribute("propiedad", propiedad);
-            request.setAttribute("citas", citaDAO.listarPorPropiedad(propiedadId));
+            Propiedad propiedad =
+                    propiedadDAO.buscarPublicadaPorId(
+                            propiedadId
+                    );
+
+            request.setAttribute(
+                    "propiedad",
+                    propiedad
+            );
+
+            if (propiedad != null) {
+                request.setAttribute(
+                        "citas",
+                        citaDAO.listarPorClienteYPropiedad(
+                                usuarioId,
+                                propiedadId
+                        )
+                );
+            } else {
+                request.setAttribute(
+                        "citas",
+                        List.of()
+                );
+            }
+
         } catch (SQLException ignorado) {
-            // si ni siquiera esto carga, la JSP igual muestra los errores
+            request.setAttribute(
+                    "citas",
+                    List.of()
+            );
         }
 
-        request.setAttribute("errores", errores);
-        request.getRequestDispatcher("/citas-propiedad.jsp").forward(request, response);
+        request.setAttribute(
+                "puedeCrearCita",
+                true
+        );
+
+        request.setAttribute(
+                "puedeGestionarCitas",
+                false
+        );
+
+        request.setAttribute(
+                "errores",
+                errores
+        );
+
+        request.getRequestDispatcher(
+                "/citas-propiedad.jsp"
+        ).forward(request, response);
     }
 
     // ============================================================
-    // POST /propiedades/citas/estado — confirmar/rechazar/etc.
+    // POST /propiedades/citas/estado
     // ============================================================
 
     private void cambiarEstado(HttpServletRequest request, HttpServletResponse response,

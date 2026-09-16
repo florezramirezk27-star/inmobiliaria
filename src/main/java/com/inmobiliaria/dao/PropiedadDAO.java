@@ -159,6 +159,23 @@ public class PropiedadDAO {
         }
     }
 
+    /**
+     * Busca una propiedad únicamente cuando existe y está publicada.
+     *
+     * Este método se utiliza en operaciones iniciadas por clientes para
+     * impedir que un id manipulado permita operar sobre propiedades en
+     * BORRADOR u otros estados no públicos.
+     *
+     * @return la propiedad publicada, o null si no existe o no es pública.
+     */
+    public Propiedad buscarPublicadaPorId(int id) throws SQLException {
+        Propiedad propiedad = buscarPorId(id);
+        return propiedad != null
+                && propiedad.getEstado() == EstadoPropiedad.PUBLICADA
+                ? propiedad
+                : null;
+    }
+
     // ============================================================
     // Escrituras
     // ============================================================
