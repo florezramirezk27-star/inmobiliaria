@@ -200,7 +200,19 @@ public class DocumentoServlet extends HttpServlet {
         }
 
         try {
-            guardarDocumento(request, idSolicitud, parte);
+            boolean guardado = guardarDocumento(request, idSolicitud, parte);
+
+            if (!guardado) {
+                request.setAttribute("solicitudId", idSolicitud);
+                request.setAttribute(
+                        "documentos",
+                        documentoDAO.listarPorSolicitud(idSolicitud)
+                );
+                request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
+                        .forward(request, response);
+                return;
+            }
+
             response.sendRedirect(request.getContextPath()
                     + "/cliente/solicitudes/documentos?solicitudId=" + idSolicitud + "&subido=1");
 
@@ -218,19 +230,24 @@ public class DocumentoServlet extends HttpServlet {
     // Apoyo interno
     // ============================================================
 
-    private void guardarDocumento(HttpServletRequest request, int solicitudId, Part parte)
+    private boolean guardarDocumento(HttpServletRequest request, int solicitudId, Part parte)
             throws IOException, SQLException {
+
+        if (parte == null) {
+            request.setAttribute("error", "Selecciona un archivo para subir.");
+            return false;
+        }
 
         String nombreOriginal = parte.getSubmittedFileName();
         if (nombreOriginal == null || nombreOriginal.isBlank() || parte.getSize() == 0) {
             request.setAttribute("error", "Selecciona un archivo para subir.");
-            return;
+            return false;
         }
 
         String tipoMime = parte.getContentType();
         if (tipoMime == null || !TIPOS_MIME_PERMITIDOS.contains(tipoMime.toLowerCase())) {
             request.setAttribute("error", "El tipo de archivo no está permitido. Sube un PDF, imagen o documento de Word.");
-            return;
+            return false;
         }
 
         String extension = extensionSegura(nombreOriginal);
@@ -249,7 +266,18 @@ public class DocumentoServlet extends HttpServlet {
         documento.setNombreArchivo(nombreOriginal);
         documento.setRuta("docs/solicitudes/" + solicitudId + "/" + nombreArchivo);
 
-        documentoDAO.insertar(documento);
+        try {
+            documentoDAO.insertar(documento);
+        } catch (SQLException e) {
+            try {
+                Files.deleteIfExists(archivoDestino);
+            } catch (IOException limpieza) {
+                e.addSuppressed(limpieza);
+            }
+            throw e;
+        }
+
+        return true;
     }
 
     private void descargarDocumento(HttpServletRequest request, HttpServletResponse response)

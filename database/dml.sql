@@ -337,12 +337,10 @@ INSERT INTO solicitud (id_propiedad, id_cliente, tipo, estado, comentario) VALUE
 -- ------------------------------------------------------------
 -- 12. Documentos de solicitud
 -- ------------------------------------------------------------
-INSERT INTO documento_solicitud (id_solicitud, nombre_archivo, ruta) VALUES
-    (1, 'cedula_maria_rojas.pdf',      'docs/solicitudes/1/cedula.pdf'),
-    (1, 'certificado_laboral.pdf',     'docs/solicitudes/1/laboral.pdf'),
-    (2, 'cedula_juan_paez.pdf',        'docs/solicitudes/2/cedula.pdf'),
-    (2, 'extracto_bancario.pdf',       'docs/solicitudes/2/extracto.pdf'),
-    (7, 'cedula_sofia_moreno.pdf',     'docs/solicitudes/7/cedula.pdf');
+-- Los documentos no se precargan como datos demo porque cada registro
+-- debe corresponder a un archivo fisico real almacenado fuera del webroot.
+-- La aplicacion crea el metadato en documento_solicitud unicamente cuando
+-- el cliente realiza una carga valida mediante el modulo de documentos.
 
 
 -- ------------------------------------------------------------
