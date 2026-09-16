@@ -125,9 +125,8 @@ public class AuthFilter implements Filter {
 
         if (!tieneRol(roles, rolRequerido)) {
 
-            resp.sendError(
-                    HttpServletResponse.SC_FORBIDDEN,
-                    "No tienes permisos para acceder a esta sección."
+            resp.sendRedirect(
+                    contextPath + "/acceso-denegado"
             );
 
             return;
@@ -148,10 +147,16 @@ public class AuthFilter implements Filter {
     private boolean esRutaPublica(String path) {
 
         return path.equals("/")
+                || path.equals("/index")
                 || path.equals("/index.jsp")
                 || path.equals("/catalogo.jsp")
+                || path.equals("/propiedades")
+                || path.equals("/propiedades/detalle")
+                || path.equals("/acceso-denegado")
+                || path.equals("/favicon.ico")
                 || path.startsWith("/css/")
                 || path.startsWith("/js/")
+                || path.startsWith("/img/")
                 || path.startsWith("/images/")
                 || path.equals("/login")
                 || path.equals("/registro");
@@ -197,7 +202,8 @@ public class AuthFilter implements Filter {
      * y el agente (gestionar el estado).
      */
     private boolean requiereSoloLogin(String path) {
-        return "/propiedades/citas".equals(path);
+        return "/propiedades/citas".equals(path)
+                || "/logout".equals(path);
     }
 
     /**
