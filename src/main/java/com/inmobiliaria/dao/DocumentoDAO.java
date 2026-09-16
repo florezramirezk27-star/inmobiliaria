@@ -2,6 +2,7 @@ package com.inmobiliaria.dao;
 
 import com.inmobiliaria.config.ConnectionFactory;
 import com.inmobiliaria.model.Documento;
+import com.inmobiliaria.model.EstadoDocumento;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,7 +26,7 @@ import java.util.List;
 public class DocumentoDAO {
 
     private static final String COLUMNAS = """
-            id_documento, id_solicitud, nombre_archivo, ruta, subido_en
+            id_documento, id_solicitud, nombre_archivo, ruta, estado, subido_en
             """;
 
     public List<Documento> listarPorSolicitud(int solicitudId) throws SQLException {
@@ -47,6 +48,25 @@ public class DocumentoDAO {
             }
         }
         return documentos;
+    }
+
+    public boolean cambiarEstado(int idDocumento, EstadoDocumento estado)
+            throws SQLException {
+
+        if (estado == null) {
+            return false;
+        }
+
+        String sql = "UPDATE documento_solicitud SET estado = ? WHERE id_documento = ?";
+
+        try (Connection cn = ConnectionFactory.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setString(1, estado.name());
+            ps.setInt(2, idDocumento);
+
+            return ps.executeUpdate() > 0;
+        }
     }
 
     /** Necesario antes de borrar: para saber qué archivo físico eliminar del disco. */
@@ -120,6 +140,7 @@ public class DocumentoDAO {
         documento.setSolicitudId(rs.getInt("id_solicitud"));
         documento.setNombreArchivo(rs.getString("nombre_archivo"));
         documento.setRuta(rs.getString("ruta"));
+        documento.setEstado(EstadoDocumento.desde(rs.getString("estado")));
         documento.setSubidoEn(leerFecha(rs, "subido_en"));
 
         return documento;

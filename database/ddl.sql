@@ -339,6 +339,7 @@ CREATE TABLE IF NOT EXISTS documento_solicitud (
     id_solicitud    INT UNSIGNED  NOT NULL,
     nombre_archivo  VARCHAR(150)  NOT NULL,
     ruta            VARCHAR(255)  NOT NULL,
+    estado          ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO') NOT NULL DEFAULT 'PENDIENTE',
     subido_en       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT pk_documento_solicitud PRIMARY KEY (id_documento),

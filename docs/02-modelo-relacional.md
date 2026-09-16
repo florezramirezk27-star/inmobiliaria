@@ -148,6 +148,7 @@ DOCUMENTO_SOLICITUD(
   id_solicitud FK -> SOLICITUD,
   nombre_archivo,
   ruta,
+  estado,
   subido_en
 )
 

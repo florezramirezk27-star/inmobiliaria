@@ -4,6 +4,7 @@ import com.inmobiliaria.dao.DocumentoDAO;
 import com.inmobiliaria.dao.InmobiliariaDAO;
 import com.inmobiliaria.dao.SolicitudDAO;
 import com.inmobiliaria.model.Documento;
+import com.inmobiliaria.model.EstadoDocumento;
 import com.inmobiliaria.model.Inmobiliaria;
 
 import javax.servlet.ServletException;
@@ -138,17 +139,14 @@ public class DocumentoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        if (esRutaAgente(request)) {
-            response.sendError(
-                    HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                    "La inmobiliaria solo revisa documentos, no los sube."
-            );
-            return;
-        }
-
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("usuarioId") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        if (esRutaAgente(request)) {
+            cambiarEstadoDocumentoAgente(request, response, session);
             return;
         }
 
@@ -223,6 +221,97 @@ public class DocumentoServlet extends HttpServlet {
             request.setAttribute("solicitudId", idSolicitud);
             request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
                     .forward(request, response);
+        }
+    }
+
+    private void cambiarEstadoDocumentoAgente(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            HttpSession session
+    ) throws IOException {
+
+        String idParam = request.getParameter("documentoId");
+        String estadoParam = request.getParameter("estado");
+
+        if (idParam == null || idParam.isBlank()
+                || estadoParam == null || estadoParam.isBlank()) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "Debes indicar el documento y el estado."
+            );
+            return;
+        }
+
+        try {
+            int idDocumento = Integer.parseInt(idParam.trim());
+            EstadoDocumento estado = EstadoDocumento.desde(estadoParam);
+
+            if (estado != EstadoDocumento.APROBADO
+                    && estado != EstadoDocumento.RECHAZADO) {
+                response.sendError(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "El estado indicado no es valido."
+                );
+                return;
+            }
+
+            Documento documento = documentoDAO.buscarPorId(idDocumento);
+
+            if (documento == null) {
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "El documento no existe."
+                );
+                return;
+            }
+
+            int idUsuario = (int) session.getAttribute("usuarioId");
+
+            Inmobiliaria inmobiliaria =
+                    inmobiliariaDAO.buscarPorUsuario(idUsuario);
+
+            boolean autorizado = inmobiliaria != null
+                    && solicitudDAO.perteneceAInmobiliaria(
+                            documento.getSolicitudId(),
+                            inmobiliaria.getId()
+                    );
+
+            if (!autorizado) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No tienes permiso para gestionar este documento."
+                );
+                return;
+            }
+
+            if (!documentoDAO.cambiarEstado(idDocumento, estado)) {
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "No fue posible actualizar el documento."
+                );
+                return;
+            }
+
+            response.sendRedirect(
+                    request.getContextPath()
+                            + "/inmobiliaria/solicitudes/documentos?solicitudId="
+                            + documento.getSolicitudId()
+                            + "&estadoActualizado=1"
+            );
+
+        } catch (NumberFormatException e) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "El identificador del documento no es valido."
+            );
+        } catch (SQLException e) {
+            getServletContext().log(
+                    "Error al cambiar el estado del documento",
+                    e
+            );
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            );
         }
     }
 

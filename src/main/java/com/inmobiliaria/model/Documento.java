@@ -9,6 +9,7 @@ public class Documento {
     private int solicitudId;
     private String nombreArchivo;
     private String ruta;
+    private EstadoDocumento estado;
     private LocalDateTime subidoEn;
 
     public int getId() { return id; }
@@ -22,6 +23,9 @@ public class Documento {
 
     public String getRuta() { return ruta; }
     public void setRuta(String ruta) { this.ruta = ruta; }
+
+    public EstadoDocumento getEstado() { return estado; }
+    public void setEstado(EstadoDocumento estado) { this.estado = estado; }
 
     public LocalDateTime getSubidoEn() { return subidoEn; }
     public void setSubidoEn(LocalDateTime subidoEn) { this.subidoEn = subidoEn; }

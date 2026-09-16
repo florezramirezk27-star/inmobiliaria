@@ -169,6 +169,7 @@ Fuente principal: `database/ddl.sql`.
 | id_solicitud | INT UNSIGNED | No | FK | Solicitud asociada |
 | nombre_archivo | VARCHAR(150) | No | — | Nombre del archivo |
 | ruta | VARCHAR(255) | No | — | Ruta de almacenamiento |
+| estado | ENUM(PENDIENTE, APROBADO, RECHAZADO) | No | DEFAULT PENDIENTE | Estado de revisión del documento |
 | subido_en | TIMESTAMP | No | DEFAULT CURRENT_TIMESTAMP | Fecha de carga |
 
 ## 16. auditoria
