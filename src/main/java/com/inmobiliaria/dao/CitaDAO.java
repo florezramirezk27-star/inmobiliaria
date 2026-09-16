@@ -144,6 +144,38 @@ public class CitaDAO {
         return citas;
     }
 
+    /** Para el panel del administrador: todas las citas del sistema. */
+    public List<Cita> listarTodas() throws SQLException {
+
+        String sql = """
+                SELECT c.id_cita, c.id_propiedad, c.id_cliente, c.fecha_hora,
+                       c.estado, c.observacion, c.creado_en,
+                       p.titulo AS propiedad_titulo, p.codigo AS propiedad_codigo,
+                       CONCAT(perf.nombres, ' ', perf.apellidos) AS cliente_nombre_completo
+                  FROM cita c
+                  JOIN propiedad p ON p.id_propiedad = c.id_propiedad
+                  JOIN usuario u ON u.id_usuario = c.id_cliente
+                  LEFT JOIN perfil perf ON perf.id_usuario = u.id_usuario
+                 ORDER BY c.fecha_hora DESC
+                """;
+
+        List<Cita> citas = new ArrayList<>();
+
+        try (Connection cn = ConnectionFactory.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Cita c = mapearBase(rs);
+                c.setPropiedadTitulo(rs.getString("propiedad_titulo"));
+                c.setPropiedadCodigo(rs.getString("propiedad_codigo"));
+                c.setClienteNombreCompleto(rs.getString("cliente_nombre_completo"));
+                citas.add(c);
+            }
+        }
+        return citas;
+    }
+
     public Cita buscarPorId(int idCita) throws SQLException {
 
         String sql = """

@@ -197,7 +197,7 @@
                     Consulta las citas registradas.
                 </p>
 
-                <a href="${pageContext.request.contextPath}/propiedades/citas?id=1"
+                <a href="${pageContext.request.contextPath}/admin/citas"
                    class="btn btn-marca">
                     Consultar citas
                 </a>
