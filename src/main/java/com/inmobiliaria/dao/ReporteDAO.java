@@ -156,6 +156,102 @@ public class ReporteDAO {
         return ejecutarConsulta(sql);
     }
 
+    /**
+     * Resumen de las propiedades de una inmobiliaria agrupadas por
+     * operacion. Permite al agente analizar su oferta de venta y arriendo.
+     */
+    public List<Map<String, Object>> resumenOperacionesInmobiliaria(
+            int idInmobiliaria
+    ) {
+
+        String sql = """
+                SELECT
+                    p.operacion,
+                    COUNT(*) AS total_propiedades,
+                    SUM(p.estado = 'PUBLICADA') AS publicadas,
+                    SUM(p.estado = 'BORRADOR') AS borradores,
+                    SUM(p.estado = 'RESERVADA') AS reservadas,
+                    SUM(p.estado = 'CERRADA') AS cerradas,
+                    ROUND(AVG(p.precio), 0) AS precio_promedio
+                FROM propiedad p
+                WHERE p.id_inmobiliaria = ?
+                GROUP BY p.operacion
+                ORDER BY p.operacion
+                """;
+
+        return ejecutarConsultaConParametro(
+                sql,
+                idInmobiliaria
+        );
+    }
+
+    /**
+     * Solicitudes de compra o arriendo recibidas por una inmobiliaria,
+     * agrupadas por tipo y estado.
+     */
+    public List<Map<String, Object>> solicitudesPorTipoEstadoInmobiliaria(
+            int idInmobiliaria
+    ) {
+
+        String sql = """
+                SELECT
+                    s.tipo,
+                    s.estado,
+                    COUNT(*) AS total_solicitudes
+                FROM solicitud s
+                JOIN propiedad p
+                    ON p.id_propiedad = s.id_propiedad
+                WHERE p.id_inmobiliaria = ?
+                GROUP BY s.tipo, s.estado
+                ORDER BY s.tipo, s.estado
+                """;
+
+        return ejecutarConsultaConParametro(
+                sql,
+                idInmobiliaria
+        );
+    }
+
+    /**
+     * Negociaciones aprobadas de la inmobiliaria.
+     *
+     * En el modelo actual no existe una tabla independiente de contratos
+     * o cierres. Por eso una solicitud APROBADA representa la operacion
+     * de compra o arriendo que fue aceptada por la inmobiliaria.
+     */
+    public List<Map<String, Object>> operacionesAprobadasInmobiliaria(
+            int idInmobiliaria
+    ) {
+
+        String sql = """
+                SELECT
+                    s.id_solicitud,
+                    p.codigo,
+                    p.titulo,
+                    s.tipo,
+                    CONCAT(
+                        COALESCE(perf.nombres, ''),
+                        ' ',
+                        COALESCE(perf.apellidos, '')
+                    ) AS cliente,
+                    p.precio,
+                    s.actualizado_en
+                FROM solicitud s
+                JOIN propiedad p
+                    ON p.id_propiedad = s.id_propiedad
+                LEFT JOIN perfil perf
+                    ON perf.id_usuario = s.id_cliente
+                WHERE p.id_inmobiliaria = ?
+                  AND s.estado = 'APROBADA'
+                ORDER BY s.actualizado_en DESC
+                """;
+
+        return ejecutarConsultaConParametro(
+                sql,
+                idInmobiliaria
+        );
+    }
+
     private List<Map<String, Object>> ejecutarConsulta(
             String sql
     ) {

@@ -121,6 +121,28 @@
             <div class="tarjeta-prop p-4">
 
                 <h2 class="h5">
+                    Reportes
+                </h2>
+
+                <p>
+                    Consulta indicadores de ventas, arriendos
+                    y solicitudes de tu inmobiliaria.
+                </p>
+
+                <a href="${pageContext.request.contextPath}/inmobiliaria/reportes"
+                   class="btn btn-marca">
+                    Ver reportes
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+
+            <div class="tarjeta-prop p-4">
+
+                <h2 class="h5">
                     Cerrar sesión
                 </h2>
 
