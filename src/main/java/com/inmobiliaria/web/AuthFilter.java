@@ -158,6 +158,7 @@ public class AuthFilter implements Filter {
                 || path.startsWith("/js/")
                 || path.startsWith("/img/")
                 || path.startsWith("/images/")
+                || path.startsWith("/media/propiedades/")
                 || path.equals("/login")
                 || path.equals("/registro");
     }

@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -53,20 +52,12 @@ import java.util.UUID;
  *                                                      características e imágenes
  *                                                      nuevas, en una sola pasada
  *
- * ADVERTENCIA IMPORTANTE sobre las imágenes subidas — probado y
- * confirmado en este mismo proyecto: las fotos se guardan con
- * getRealPath() dentro de la carpeta donde Tomcat expande el WAR
- * (webapps/inmobiliaria/img/propiedades/). Esa carpeta se BORRA cada
- * vez que se despliega un WAR nuevo (ya lo vimos en el log de Tomcat:
- * "An expanded directory ... will be deleted"). Es decir: si subes
- * fotos, luego haces `mvn clean package` + redeploy, esas fotos
- * físicas desaparecen aunque la fila en `imagen_propiedad` siga
- * apuntando a ellas (quedaría como imagen rota). Para que una foto
- * sobreviva a un redeploy, hay que copiarla manualmente a
- * src/main/webapp/img/propiedades/ para que quede empaquetada en el
- * próximo WAR. Esto no lo pude evitar sin salirme de las tecnologías
- * que exige el enunciado (JDBC + JSP, sin un servicio externo de
- * almacenamiento) — es una limitación conocida, no un bug.
+ * Las imágenes cargadas por los agentes se guardan fuera del WAR,
+ * bajo catalina.base/inmobiliaria-data/imagenes/propiedades. En la base
+ * de datos se conserva una ruta pública media/propiedades/<archivo>,
+ * atendida por ImagenPropiedadMediaServlet. De esta forma sobreviven a
+ * los redeploys de Tomcat. Las imágenes demo empaquetadas originalmente
+ * en img/propiedades siguen siendo compatibles.
  *
  * Nota de auth: este servlet exige sesión iniciada y rol AGENTE (además
  * del AuthFilter por URL). Un visitante sin sesión es redirigido al login
@@ -368,11 +359,20 @@ public class PropiedadFormServlet extends HttpServlet {
 
             ImagenPropiedad imagen = new ImagenPropiedad();
             imagen.setPropiedadId(propiedadId);
-            imagen.setRuta("img/propiedades/" + nombreArchivo);
+            imagen.setRuta("media/propiedades/" + nombreArchivo);
             imagen.setTextoAlt(request.getParameter("titulo")); // texto alternativo razonable por defecto
             imagen.setOrden(0);
 
-            imagenDAO.insertar(imagen);
+            try {
+                imagenDAO.insertar(imagen);
+            } catch (SQLException e) {
+                try {
+                    Files.deleteIfExists(archivoDestino);
+                } catch (IOException limpieza) {
+                    e.addSuppressed(limpieza);
+                }
+                throw e;
+            }
         }
     }
 
@@ -416,23 +416,77 @@ public class PropiedadFormServlet extends HttpServlet {
     }
 
     private void borrarArchivoFisico(String rutaRelativa) {
+
+        String nombreArchivo =
+                nombrePersistenteDesdeRuta(rutaRelativa);
+
+        if (nombreArchivo == null) {
+            return;
+        }
+
         try {
-            String realPath = getServletContext().getRealPath("/" + rutaRelativa);
-            if (realPath != null) {
-                Files.deleteIfExists(Paths.get(realPath));
+            Path carpeta = carpetaDeImagenes();
+            Path archivo = carpeta.resolve(nombreArchivo).normalize();
+
+            if (!archivo.getParent().equals(carpeta)) {
+                getServletContext().log(
+                        "Se rechazo una ruta de imagen fuera del almacenamiento permitido: "
+                                + rutaRelativa
+                );
+                return;
             }
+
+            Files.deleteIfExists(archivo);
+
         } catch (IOException e) {
-            // No borrar el archivo físico no debe tumbar el resto del
-            // guardado — a lo sumo queda un archivo huérfano en disco,
-            // que un redeploy limpia de todas formas (ver advertencia
-            // al inicio de esta clase).
-            getServletContext().log("No se pudo borrar el archivo físico: " + rutaRelativa, e);
+            getServletContext().log(
+                    "No se pudo borrar el archivo fisico de la imagen: "
+                            + rutaRelativa,
+                    e
+            );
         }
     }
 
-    private Path carpetaDeImagenes() {
-        String real = getServletContext().getRealPath("/img/propiedades");
-        return Paths.get(real);
+    private String nombrePersistenteDesdeRuta(String rutaRelativa) {
+
+        String prefijo = "media/propiedades/";
+
+        if (rutaRelativa == null
+                || !rutaRelativa.startsWith(prefijo)) {
+            return null;
+        }
+
+        String nombre =
+                rutaRelativa.substring(prefijo.length());
+
+        if (nombre.isBlank()
+                || nombre.contains("/")
+                || nombre.contains("\\")
+                || nombre.contains("..")) {
+            return null;
+        }
+
+        return nombre;
+    }
+
+    private Path carpetaDeImagenes() throws IOException {
+
+        String catalinaBase =
+                System.getProperty("catalina.base");
+
+        if (catalinaBase == null
+                || catalinaBase.isBlank()) {
+            throw new IOException(
+                    "No esta definida la propiedad del sistema catalina.base."
+            );
+        }
+
+        return Path.of(
+                catalinaBase,
+                "inmobiliaria-data",
+                "imagenes",
+                "propiedades"
+        ).toAbsolutePath().normalize();
     }
 
     private String extensionSegura(String nombreOriginal, String tipoMime) {
