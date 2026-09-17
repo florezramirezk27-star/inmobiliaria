@@ -44,12 +44,11 @@ Módulos implementados:
 - **Autenticación y sesiones** con BCrypt, roles (ADMIN / AGENTE / CLIENTE) y filtros
   de protección por URL. El cierre de sesión pide confirmación en el servidor
   (`GET /logout` muestra una página, solo `POST /logout` invalida la sesión).
-- **Cero JavaScript en toda la aplicación**: favoritos por formulario POST +
-  servlet (server-side), confirmación de logout por JSP intermedia y menú de
-  navegación plegable con CSS puro (checkbox oculto).
+- **JavaScript en la interfaz**: se usa JavaScript nativo para confirmar acciones sensibles como eliminar ciudades, tipos de propiedad y características, y dar de baja propiedades. Los favoritos y el cierre de sesión continúan resolviéndose del lado del servidor, y el menú plegable usa CSS.
 - **Solicitudes de compra/arriendo**: el cliente crea solicitudes y adjunta/descarga
   documentos; la inmobiliaria las consulta y aprueba/rechaza.
 - **Citas**: el cliente agenda visitas a propiedades y el agente gestiona su estado.
+- **Reportes de inmobiliaria**: cada agente consulta indicadores de ventas, arriendos, solicitudes y negociaciones aprobadas exclusivamente de su propia inmobiliaria.
 - **Administración**: gestiona usuarios (tarjetas sin scroll lateral), roles, perfiles,
   auditoría y siete reportes SQL. Paneles con diseño a color (banners, métricas, chips).
 - **Seguridad**: validación de pertenencia de recursos por usuario/inmobiliaria.
@@ -107,7 +106,7 @@ id_caracteristica) = N` en `PropiedadDAO.construirWhere()` — sin tocar la cons
 de `v_propiedad_catalogo`, por lo que el buscador y el paginador no se rompen. Además,
 el detalle público solo abre propiedades en estado `PUBLICADA`: un `BORRADOR` o una
 `CERRADA` consultada por URL directa devuelve un mensaje de no disponible para
-visitantes y clientes (los empleados ADMIN/AGENTE sí la ven desde su panel).
+visitantes y clientes (ADMIN puede consultarla y el AGENTE únicamente cuando pertenece a su propia inmobiliaria).
 
 ### 3. Solicitudes y documentos (completo)
 
@@ -129,9 +128,11 @@ inmobiliaria del agente.
 
 **Revisión de documentos por el agente:** desde esa segunda ruta (botón
 **Documentos** en `inmobiliaria/solicitudes.jsp`) el agente lista y descarga los
-documentos de las solicitudes de sus propiedades. La vista es de solo lectura:
-el `POST` de subida en la ruta `inmobiliaria` responde `405`, la subida sigue siendo
-exclusiva del cliente desde sus propias solicitudes.
+documentos de las solicitudes de sus propiedades y puede aprobarlos o rechazarlos
+individualmente. Cada documento mantiene estado `PENDIENTE`, `APROBADO` o
+`RECHAZADO`. La subida de archivos continúa siendo exclusiva del cliente; el agente
+solo revisa, descarga y cambia el estado de documentos pertenecientes a solicitudes
+de su propia inmobiliaria.
 
 ### 4. Citas (completo)
 
@@ -144,20 +145,33 @@ El cliente agenda una visita a una propiedad (`SOLICITADA`); el agente confirma 
 rechaza (`CONFIRMADA` / `RECHAZADA`). El estado solo puede gestionarlo el agente
 de la inmobiliaria dueña de la propiedad, y un cliente no puede modificar su estado.
 
-### 5. Administración (completo)
+### 5. Reportes de la inmobiliaria (completo)
 
-- **Servlets:** `AdminUsuariosServlet` (`/admin/usuarios`),
-  `AdminPerfilServlet` (`/admin/usuarios/perfil`), `AuditoriaServlet`
-  (`/admin/auditoria`), `ReporteServlet` (`/admin/reportes`).
-- **Vistas:** `admin/usuarios.jsp`, `admin/perfil-usuario.jsp`,
-  `admin/auditoria.jsp`, `admin/reportes.jsp`.
+- **Servlet:** `AgenteReporteServlet` (`/inmobiliaria/reportes`).
+- **DAO:** `ReporteDAO`.
+- **Vista:** `inmobiliaria/reportes.jsp`.
 
-El administrador activa/desactiva usuarios, cambia roles, edita perfiles, consulta la
-auditoría (`AuditoriaDAO` sobre la tabla `auditoria`) y los siete reportes SQL
-(`ReporteDAO`): propiedades publicadas, citas activas, características por propiedad,
-propiedades sin citas, resumen por ciudad, citas por estado y solicitudes por
-inmobiliaria. Los dos últimos se agregaron al cierre del proyecto sin eliminar los
-cinco reportes obligatorios del enunciado.
+Los resultados se filtran por la inmobiliaria asociada al agente autenticado. Se muestran indicadores de ventas y arriendos, solicitudes agrupadas por tipo y estado y negociaciones aprobadas. Las dos inmobiliarias demo fueron verificadas por separado contra MySQL.
+
+### 6. Administración (completo)
+
+- **Servlets:** `AdminDashboardServlet` (`/admin/dashboard`),
+  `AdminUsuariosServlet` (`/admin/usuarios`),
+  `AdminPerfilServlet` (`/admin/usuarios/perfil`),
+  `AdminCiudadesServlet` (`/admin/ciudades`),
+  `AdminTiposPropiedadServlet` (`/admin/tipos-propiedad`),
+  `AdminCaracteristicasServlet` (`/admin/caracteristicas`),
+  `AuditoriaServlet` (`/admin/auditoria`) y
+  `ReporteServlet` (`/admin/reportes`).
+- **Vistas:** dashboard, usuarios, perfil de usuario, ciudades, tipos de propiedad,
+  características, auditoría y reportes dentro de `WEB-INF/views/admin/`.
+
+El administrador dispone de las funciones administrativas globales del sistema:
+activa o desactiva usuarios, cambia roles, edita perfiles, parametriza ciudades,
+tipos de propiedad y características, consulta la auditoría y accede a los siete
+reportes SQL. Las operaciones propias de una inmobiliaria sobre sus propiedades,
+citas, solicitudes y documentos permanecen restringidas al rol `AGENTE`.
+
 
 ---
 
@@ -185,9 +199,9 @@ inmobiliaria/
 │
 ├── docs/                                     # Documentación del proyecto
 │   ├── 01-MER.md y 01-MER.png                # Modelo Entidad-Relación (+ exportación PNG)
-│   ├── 02-modelo-relacional.md y .png        # Relaciones con PK/FK (+ exportación PNG)
+│   ├── 02-modelo-relacional.md y .pdf        # Relaciones con PK/FK (+ exportación PDF)
 │   ├── 03-normalizacion-3FN.md               # Justificación de la normalización
-│   ├── 04-diccionario-datos.md               # Diccionario de datos por tabla
+│   ├── 04-diccionario-datos.md y diccionario-datos.docx               # Diccionario de datos por tabla
 │   ├── 05-casos-de-uso.md y .png             # Casos de uso por rol (+ exportación PNG)
 │   ├── 06-scrum.md                           # Sprints y retrospectiva
 │   ├── 07-product-backlog.md                 # Historias de usuario y priorización
@@ -375,7 +389,8 @@ Cada servlet es un controlador mapeado por anotación `@WebServlet`. Los princip
 | `/cliente/solicitudes/documentos` | `DocumentoServlet` | Subida/descarga de documentos (cliente) |
 | `/inmobiliaria/dashboard` | `InmobiliariaDashboardServlet` | Panel de la inmobiliaria |
 | `/inmobiliaria/solicitudes` | `AgenteSolicitudServlet` | Aprobar/rechazar solicitudes |
-| `/inmobiliaria/solicitudes/documentos` | `DocumentoServlet` | Revisión/descarga de documentos (agente, solo lectura) |
+| `/inmobiliaria/reportes` | `AgenteReporteServlet` | Reportes de ventas, arriendos y solicitudes de la inmobiliaria autenticada |
+| `/inmobiliaria/solicitudes/documentos` | `DocumentoServlet` | Revisión, descarga y aprobación/rechazo de documentos de la propia inmobiliaria |
 | `/propiedades/citas`, `/propiedades/citas/estado`, `/citas` | `CitaServlet` | Citas del cliente y gestión del agente |
 | `/admin/dashboard` | `AdminDashboardServlet` | Panel del admin |
 | `/admin/usuarios` | `AdminUsuariosServlet` | Activar/desactivar y cambiar roles |
@@ -466,10 +481,7 @@ Para probar la conexión de forma aislada existe la clase `DatabaseTest`.
 - **Subida de archivos con multipart:** imágenes de propiedades y documentos de
   solicitudes usan `@MultipartConfig` y se guardan en disco con nombres únicos
   (UUID), conservando solo la ruta en la BD.
-- **Cero JavaScript:** la aplicación no usa una sola línea de JS. Los favoritos y la
-  confirmación de logout se resuelven 100 % en el servidor (formularios POST +
-  servlets + JSP), y el menú plegable del navbar usa un *truco CSS* (checkbox oculto)
-  en lugar del JavaScript de Bootstrap.
+- **JavaScript:** se utiliza de forma puntual en vistas administrativas y de inmobiliaria para mostrar confirmaciones antes de operaciones sensibles. La lógica de negocio permanece en servlets y DAO; favoritos y logout funcionan mediante formularios y procesamiento server-side.
 
 ---
 
@@ -478,8 +490,13 @@ Para probar la conexión de forma aislada existe la clase `DatabaseTest`.
 La documentación del proyecto está en `docs/` (`01-MER.md` a `08-pruebas.md`)
 y se mantiene sincronizada con `database/ddl.sql`.
 
-Pendiente (se cierra antes de la congelación del jueves 18 sep 2026):
+Cierre técnico validado el 16 de septiembre de 2026:
 
-- Ejecutar el checklist de QA completo (`docs/08-pruebas.md`, sección 7).
-- Colocar la captura real del tablero Scrum en `docs/imagenes/tablero-scrum.png`.
-- Ejecutar `mvn clean package` y `mvn test` como evidencia final de la sustentación.
+- `mvn clean package`: **BUILD SUCCESS**.
+- 5 pruebas JUnit ejecutadas sin fallos.
+- Regresión integral de roles, permisos, IDOR, documentos y reportes completada.
+- Rama `develop` sincronizada con `origin/develop`.
+
+Evidencia documental incorporada para la entrega:
+
+- Evidencia visual del tablero Scrum disponible en `docs/imagenes/tablero-scrum.png`.

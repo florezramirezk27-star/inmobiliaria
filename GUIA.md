@@ -201,6 +201,6 @@ cp target/inmobiliaria.war ~/tools/apache-tomcat-8.5.100/webapps/
    ```
 4. Haz un respaldo de la base de datos:
    ```bash
-   mysqldump -u root -p87654321 inmobiliaria > ~/Desktop/inmobiliaria-FINAL.sql
+   mysqldump -u root -p inmobiliaria > ~/Desktop/inmobiliaria-FINAL.sql
    ```
 5. Deja Tomcat corriendo y la landing abierta antes de empezar a presentar.

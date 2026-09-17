@@ -25,7 +25,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
           rel="stylesheet">
 
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css?v=editorial-final-2">
 </head>
 
 <body>
@@ -58,21 +58,83 @@
 <!-- ============================================================
      Hero
      ============================================================ -->
-<header class="hero">
+<header class="hero hero-editorial">
     <div class="container">
-        <h1 class="fuente-display">Encuentra el espacio para tu próxima historia</h1>
-        <p>
-            Compra o arrienda casas, apartamentos y locales en Bucaramanga
-            y su área metropolitana.
-        </p>
-        <div class="hero-acciones">
-            <a class="btn btn-marca btn-grande"
-               href="${pageContext.request.contextPath}/propiedades">
-                Explorar propiedades
-            </a>
-            <a class="btn btn-contorno btn-grande" href="#catalogo">
-                Ver publicaciones recientes
-            </a>
+        <div class="hero-editorial-grid">
+
+            <div class="hero-editorial-copy">
+                <span class="hero-kicker">
+                    <span class="hero-kicker-punto"></span>
+                    INMUEBLES SELECCIONADOS · SANTANDER
+                </span>
+
+                <h1 class="fuente-display">
+                    Encuentra un lugar
+                    <span>que se sienta tuyo.</span>
+                </h1>
+
+                <p>
+                    Explora propiedades en Bucaramanga y su área metropolitana
+                    para comprar, arrendar y dar el siguiente paso con confianza.
+                </p>
+
+                <div class="hero-acciones">
+                    <a class="btn btn-marca btn-grande"
+                       href="${pageContext.request.contextPath}/propiedades">
+                        Explorar propiedades
+                        <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+                    </a>
+
+                    <a class="btn btn-contorno btn-grande" href="#catalogo">
+                        Ver catálogo
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-arquitectura" aria-hidden="true">
+
+                <div class="plano-linea plano-linea-a"></div>
+                <div class="plano-linea plano-linea-b"></div>
+                <div class="plano-linea plano-linea-c"></div>
+
+                <div class="plano-marco">
+                    <div class="plano-habitacion plano-habitacion-a"></div>
+                    <div class="plano-habitacion plano-habitacion-b"></div>
+                    <div class="plano-habitacion plano-habitacion-c"></div>
+                    <div class="plano-arco"></div>
+                    <div class="plano-circulo"></div>
+                </div>
+
+                <div class="hero-info-card">
+                    <div class="hero-info-superior">
+                        <span class="hero-info-icono">
+                            <i class="bi bi-buildings"></i>
+                        </span>
+                        <span>Experiencia inmobiliaria digital</span>
+                    </div>
+
+                    <div class="hero-info-item">
+                        <small>Cobertura</small>
+                        <strong>Bucaramanga y área metropolitana</strong>
+                    </div>
+
+                    <div class="hero-info-divisor"></div>
+
+                    <div class="hero-info-fila">
+                        <div>
+                            <small>Modalidades</small>
+                            <strong>Venta · Arriendo</strong>
+                        </div>
+                        <div>
+                            <small>Gestión</small>
+                            <strong>100% en línea</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <span class="hero-numero">01</span>
+            </div>
+
         </div>
     </div>
 </header>
@@ -138,7 +200,7 @@
 <!-- ============================================================
      Confianza
      ============================================================ -->
-<section class="container mt-5 pt-3">
+<section class="container mt-5 pt-3 home-beneficios">
     <div class="row g-4">
         <div class="col-12 col-sm-6 col-lg-3">
             <div class="d-flex align-items-start gap-3">
@@ -190,7 +252,7 @@
 <!-- ============================================================
      Catálogo — publicaciones recientes (IndexServlet)
      ============================================================ -->
-<main class="container my-5 pt-4" id="catalogo">
+<main class="container my-5 pt-4 home-catalogo" id="catalogo">
 
     <div class="cabecera-seccion">
         <div>

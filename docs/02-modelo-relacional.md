@@ -1,6 +1,6 @@
 # 02. Modelo relacional
 
-> **Exportación visual:** `docs/02-modelo-relacional.png`.
+> **Exportación visual final:** `docs/02-modelo-relacional.pdf` (modelo diagramado y exportado con dbdiagram.io).
 
 ## Convención
 

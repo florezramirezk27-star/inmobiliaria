@@ -1,6 +1,6 @@
 # 01. Modelo Entidad-Relación (MER)
 
-> **Exportación visual:** `docs/01-MER.png` (diagrama renderizado con Mermaid).
+> **Exportación visual:** `docs/01-MER.png` (versión final diagramada y exportada con Graphviz Online). El bloque Mermaid se conserva como representación textual de referencia.
 
 ## Entidades
 

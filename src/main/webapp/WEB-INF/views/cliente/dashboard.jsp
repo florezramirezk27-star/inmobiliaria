@@ -5,138 +5,344 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport"
           content="width=device-width, initial-scale=1">
 
-    <title>Panel del Cliente</title>
+    <title>Panel del Cliente — Inmobiliaria</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
-    <link
-        rel="stylesheet"
-        href="${pageContext.request.contextPath}/css/estilos.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/estilos.css?v=cliente-final-1">
 </head>
 
 <body>
 
 <%@ include file="/WEB-INF/includes/navbar.jspf" %>
 
-<main class="container py-5">
+<main class="cliente-dashboard">
 
-    <span class="badge"
-          style="background-color: var(--verde-suave);
-                 color: var(--verde);">
-        CLIENTE
-    </span>
+    <section class="container cliente-dashboard-superior">
 
-    <h1 class="fuente-display mt-3">
-        Panel del Cliente
-    </h1>
+        <div class="cliente-hero">
 
-    <p class="medida">
-        Gestiona tus propiedades favoritas, citas y solicitudes
-        desde un solo lugar.
-    </p>
+            <div class="cliente-hero-copy">
 
-    <div class="row g-4 mt-3">
+                <span class="cliente-eyebrow">
+                    <span></span>
+                    PANEL DEL CLIENTE
+                </span>
 
-        <div class="col-md-6 col-lg-4">
-
-            <div class="tarjeta-prop p-4">
-
-                <h2 class="h5">
-                    Mi perfil
-                </h2>
+                <h1 class="fuente-display">
+                    Tu espacio para gestionar
+                    <em>cada paso.</em>
+                </h1>
 
                 <p>
-                    Consulta y actualiza tu información personal.
+                    Organiza tu perfil, propiedades favoritas, visitas y
+                    solicitudes desde un mismo lugar.
                 </p>
 
-                <a href="${pageContext.request.contextPath}/cliente/perfil"
-                   class="btn btn-marca">
+                <a class="cliente-hero-cta"
+                   href="${pageContext.request.contextPath}/propiedades">
+
+                    Explorar propiedades
+
+                    <i class="bi bi-arrow-up-right"
+                       aria-hidden="true"></i>
+                </a>
+
+            </div>
+
+            <div class="cliente-hero-panel"
+                 aria-label="Secciones disponibles">
+
+                <div class="cliente-hero-panel-cabecera">
+
+                    <span class="cliente-hero-panel-icono">
+                        <i class="bi bi-grid-1x2"
+                           aria-hidden="true"></i>
+                    </span>
+
+                    <div>
+                        <small>Tu espacio personal</small>
+                        <strong>4 accesos principales</strong>
+                    </div>
+
+                </div>
+
+                <div class="cliente-ruta">
+
+                    <span>01</span>
+                    <p>Perfil</p>
+
+                </div>
+
+                <div class="cliente-ruta">
+
+                    <span>02</span>
+                    <p>Favoritos</p>
+
+                </div>
+
+                <div class="cliente-ruta">
+
+                    <span>03</span>
+                    <p>Citas</p>
+
+                </div>
+
+                <div class="cliente-ruta">
+
+                    <span>04</span>
+                    <p>Solicitudes</p>
+
+                </div>
+
+            </div>
+
+            <div class="cliente-plano"
+                 aria-hidden="true">
+
+                <div class="cliente-plano-a"></div>
+                <div class="cliente-plano-b"></div>
+                <div class="cliente-plano-c"></div>
+                <div class="cliente-plano-circulo"></div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="container cliente-accesos">
+
+        <div class="cliente-seccion-cabecera">
+
+            <div>
+
+                <span class="cliente-seccion-kicker">
+                    ACCESOS RÁPIDOS
+                </span>
+
+                <h2>¿Qué quieres gestionar?</h2>
+
+                <p>
+                    Entra directamente a la sección que necesitas.
+                </p>
+
+            </div>
+
+            <a class="cliente-catalogo-link"
+               href="${pageContext.request.contextPath}/propiedades">
+
+                Ver catálogo
+
+                <i class="bi bi-arrow-right"
+                   aria-hidden="true"></i>
+            </a>
+
+        </div>
+
+        <div class="cliente-cards">
+
+            <a class="cliente-card cliente-card-perfil"
+               href="${pageContext.request.contextPath}/cliente/perfil">
+
+                <div class="cliente-card-top">
+
+                    <span class="cliente-card-icono">
+                        <i class="bi bi-person"
+                           aria-hidden="true"></i>
+                    </span>
+
+                    <span class="cliente-card-tag">
+                        CUENTA
+                    </span>
+
+                </div>
+
+                <div class="cliente-card-contenido">
+
+                    <h3>Mi perfil</h3>
+
+                    <p>
+                        Consulta y actualiza tu información personal.
+                    </p>
+
+                </div>
+
+                <span class="cliente-card-accion">
+
                     Ver perfil
-                </a>
 
-            </div>
+                    <i class="bi bi-arrow-right"
+                       aria-hidden="true"></i>
+                </span>
 
-        </div>
+            </a>
 
-        <div class="col-md-6 col-lg-4">
+            <a class="cliente-card cliente-card-favoritos"
+               href="${pageContext.request.contextPath}/cliente/favoritos">
 
-            <div class="tarjeta-prop p-4">
+                <div class="cliente-card-top">
 
-                <h2 class="h5">
-                    Mis favoritos
-                </h2>
+                    <span class="cliente-card-icono">
+                        <i class="bi bi-heart"
+                           aria-hidden="true"></i>
+                    </span>
 
-                <p>
-                    Las propiedades que guardaste para revisar después.
-                </p>
+                    <span class="cliente-card-tag">
+                        GUARDADOS
+                    </span>
 
-                <a href="${pageContext.request.contextPath}/cliente/favoritos"
-                   class="btn btn-marca">
+                </div>
+
+                <div class="cliente-card-contenido">
+
+                    <h3>Mis favoritos</h3>
+
+                    <p>
+                        Revisa las propiedades que guardaste para después.
+                    </p>
+
+                </div>
+
+                <span class="cliente-card-accion">
+
                     Ver favoritos
-                </a>
 
-            </div>
+                    <i class="bi bi-arrow-right"
+                       aria-hidden="true"></i>
+                </span>
 
-        </div>
+            </a>
 
-        <div class="col-md-6 col-lg-4">
+            <a class="cliente-card cliente-card-citas"
+               href="${pageContext.request.contextPath}/citas">
 
-            <div class="tarjeta-prop p-4">
+                <div class="cliente-card-top">
 
-                <h2 class="h5">
-                    Mis citas
-                </h2>
+                    <span class="cliente-card-icono">
+                        <i class="bi bi-calendar-check"
+                           aria-hidden="true"></i>
+                    </span>
 
-                <p>
-                    Consulta el estado de tus visitas programadas.
-                </p>
+                    <span class="cliente-card-tag">
+                        VISITAS
+                    </span>
 
-                <a href="${pageContext.request.contextPath}/citas"
-                   class="btn btn-marca">
+                </div>
+
+                <div class="cliente-card-contenido">
+
+                    <h3>Mis citas</h3>
+
+                    <p>
+                        Consulta el estado de tus visitas programadas.
+                    </p>
+
+                </div>
+
+                <span class="cliente-card-accion">
+
                     Ver citas
-                </a>
 
-            </div>
+                    <i class="bi bi-arrow-right"
+                       aria-hidden="true"></i>
+                </span>
+
+            </a>
+
+            <a class="cliente-card cliente-card-solicitudes"
+               href="${pageContext.request.contextPath}/cliente/solicitudes">
+
+                <div class="cliente-card-top">
+
+                    <span class="cliente-card-icono">
+                        <i class="bi bi-file-earmark-text"
+                           aria-hidden="true"></i>
+                    </span>
+
+                    <span class="cliente-card-tag">
+                        TRÁMITES
+                    </span>
+
+                </div>
+
+                <div class="cliente-card-contenido">
+
+                    <h3>Mis solicitudes</h3>
+
+                    <p>
+                        Consulta tus solicitudes de compra o arriendo y su estado.
+                    </p>
+
+                </div>
+
+                <span class="cliente-card-accion">
+
+                    Ver solicitudes
+
+                    <i class="bi bi-arrow-right"
+                       aria-hidden="true"></i>
+                </span>
+
+            </a>
 
         </div>
 
-        <div class="col-md-6 col-lg-4">
+        <div class="cliente-explorar">
 
-            <div class="tarjeta-prop p-4">
+            <div class="cliente-explorar-icono"
+                 aria-hidden="true">
 
-                <h2 class="h5">
-                    Mis solicitudes
+                <i class="bi bi-buildings"></i>
+
+            </div>
+
+            <div class="cliente-explorar-copy">
+
+                <span>SIGUE EXPLORANDO</span>
+
+                <h2>
+                    Encuentra tu próxima propiedad.
                 </h2>
 
                 <p>
-                    Tus solicitudes de compra y arriendo con su estado.
+                    Consulta el catálogo completo y guarda las opciones
+                    que más te interesen.
                 </p>
-
-                <a href="${pageContext.request.contextPath}/cliente/solicitudes"
-                   class="btn btn-marca">
-                    Ver solicitudes
-                </a>
 
             </div>
 
+            <a class="btn btn-marca"
+               href="${pageContext.request.contextPath}/propiedades">
+
+                Explorar catálogo
+
+                <i class="bi bi-arrow-up-right"
+                   aria-hidden="true"></i>
+            </a>
+
         </div>
 
-    </div>
+    </section>
 
 </main>
 

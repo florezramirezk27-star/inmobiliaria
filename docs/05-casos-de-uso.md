@@ -39,6 +39,7 @@ Casos principales:
 - Aprobar o rechazar solicitudes de sus propiedades.
 - **Revisar y descargar los documentos de las solicitudes de sus propiedades.**
 - Gestionar el estado de citas asociadas a propiedades de su inmobiliaria.
+- Generar reportes de ventas, arriendos y solicitudes de su propia inmobiliaria.
 
 ### Administrador
 Usuario autenticado con rol `ADMIN`.
@@ -48,6 +49,7 @@ Casos principales:
 - Consultar usuarios.
 - Activar o desactivar usuarios.
 - Cambiar roles.
+- Parametrizar los catálogos de ciudades, tipos de propiedad y características.
 - Consultar y editar perfiles.
 - Consultar auditoría.
 - Consultar los siete reportes SQL.
@@ -66,18 +68,20 @@ Casos principales:
 | Crear solicitud | ❌ | ✅ | ❌ | ❌ |
 | Ver mis solicitudes | ❌ | ✅ | ❌ | ❌ |
 | Subir/descargar documentos propios | ❌ | ✅ | ❌ | ❌ |
-| **Revisar/descargar documentos de las solicitudes de sus propiedades** | ❌ | ❌ | ✅* | ✅ |
-| Gestionar propiedades | ❌ | ❌ | ✅* | ✅ |
+| **Revisar, descargar y aprobar/rechazar documentos de las solicitudes de sus propiedades** | ❌ | ❌ | ✅* | ❌ |
+| Gestionar propiedades | ❌ | ❌ | ✅* | ❌ |
 | Gestionar solicitudes | ❌ | ❌ | ✅* | ❌ |
 | Gestión de usuarios | ❌ | ❌ | ❌ | ✅ |
 | Gestión de roles | ❌ | ❌ | ❌ | ✅ |
+| Parametrizar catálogos del sistema | ❌ | ❌ | ❌ | ✅ |
 | Auditoría | ❌ | ❌ | ❌ | ✅ |
-| Reportes | ❌ | ❌ | ❌ | ✅ |
+| Reportes de su propia inmobiliaria | ❌ | ❌ | ✅* | ❌ |
+| Reportes administrativos globales | ❌ | ❌ | ❌ | ✅ |
 
 `*` El acceso del agente está limitado a los recursos de su propia inmobiliaria.
 `**` El detalle de `BORRADOR`/`CERRADA` por URL directa se bloquea en
-`PropiedadDetalleServlet` para visitantes y clientes; los empleados lo abren desde su
-panel. La subida de documentos por el agente responde `405` (solo lectura).
+`PropiedadDetalleServlet` para visitantes y clientes; ADMIN puede consultarla y el
+AGENTE únicamente cuando pertenece a su propia inmobiliaria. La subida de archivos permanece exclusiva del CLIENTE; el AGENTE puede revisar, descargar y cambiar el estado de documentos únicamente de solicitudes de su propia inmobiliaria.
 
 ## Flujo de solicitud
 

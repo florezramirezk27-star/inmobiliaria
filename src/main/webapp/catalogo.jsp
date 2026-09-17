@@ -40,7 +40,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
           rel="stylesheet">
 
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css?v=catalogo-final-1">
 </head>
 
 <body>
@@ -81,7 +81,7 @@
     <%-- Buscador — repite los mismos campos de la landing, con los
          valores ya escritos según ${param.xxx} para que al refinar
          la búsqueda no se pierda lo que el usuario ya había puesto. --%>
-    <form class="buscador mb-4" style="margin-top: 0;"
+    <form class="buscador catalogo-buscador mb-4" style="margin-top: 0;"
           action="${pageContext.request.contextPath}/propiedades" method="get">
 
         <div class="operacion btn-group mb-3" role="group" aria-label="Tipo de operación">

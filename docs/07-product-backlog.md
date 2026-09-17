@@ -33,6 +33,7 @@
 | HU-12 | Como administrador, quiero un reporte de propiedades por ciudad y estado, generado con consultas de agregación, para tomar decisiones. | Media | 5 |
 | HU-13 | Como administrador, quiero consultar la auditoría de accesos y cambios para hacer seguimiento a la operación del sistema. | Baja | 5 |
 | HU-14 | Como usuario, quiero contar con funcionalidades adicionales como mapas, notificaciones, comparador o chat para mejorar la experiencia del sistema. | Baja | 8 |
+| HU-15 | Como agente de la inmobiliaria, quiero consultar reportes de ventas, arriendos y solicitudes de mis propiedades para hacer seguimiento a la operación. | Media | 5 |
 
 ## 3. Criterios de aceptación y Definition of Done
 
@@ -285,17 +286,20 @@ Como agente de la inmobiliaria, quiero aprobar o rechazar las solicitudes y sus 
 - El agente puede consultar solicitudes de sus propiedades.
 - Puede aprobar una solicitud.
 - Puede rechazar una solicitud.
-- Puede revisar los documentos.
-- No puede gestionar solicitudes de otra inmobiliaria.
-- El estado debe actualizarse correctamente.
+- Puede revisar y descargar los documentos.
+- Puede aprobar o rechazar individualmente los documentos.
+- Cada documento conserva estado `PENDIENTE`, `APROBADO` o `RECHAZADO`.
+- No puede gestionar solicitudes ni documentos de otra inmobiliaria.
+- Los estados deben actualizarse correctamente.
 
 **Definition of Done**
 
 - Gestión de solicitudes funcionando.
-- Revisión de documentos funcionando.
-- Aprobación funcionando.
-- Rechazo funcionando.
-- Control de autorización probado.
+- Revisión y descarga de documentos funcionando.
+- Aprobación y rechazo de solicitudes funcionando.
+- Aprobación y rechazo individual de documentos funcionando.
+- Persistencia del estado documental verificada en MySQL.
+- Control de autorización e intento IDOR entre inmobiliarias probado con respuesta `403`.
 
 ### HU-12 - Reportes
 
@@ -347,6 +351,8 @@ Como administrador, quiero consultar la auditoría de accesos y cambios para hac
 
 Como usuario, quiero contar con funcionalidades adicionales como mapas, notificaciones, comparador o chat para mejorar la experiencia del sistema.
 
+**Estado final:** `BACKLOG`. Historia adicional propuesta por el equipo que no fue incorporada al alcance implementado de los tres Sprints. El enunciado académico presenta este punto como espacio para otras historias propuestas por el equipo.
+
 **Criterios de aceptación**
 
 - Se debe seleccionar al menos una funcionalidad adicional.
@@ -359,6 +365,31 @@ Como usuario, quiero contar con funcionalidades adicionales como mapas, notifica
 - Funcionalidad adicional implementada.
 - Integración comprobada.
 - Pruebas realizadas.
+- Documentación actualizada.
+
+### HU-15 - Reportes de la inmobiliaria
+
+**Historia:**
+
+Como agente de la inmobiliaria, quiero consultar reportes de ventas, arriendos y solicitudes de mis propiedades para hacer seguimiento a la operación.
+
+**Criterios de aceptación**
+
+- El reporte se consulta desde el panel del agente.
+- Los resultados se filtran por la inmobiliaria asociada al usuario autenticado.
+- Se muestran indicadores de propiedades de venta y arriendo.
+- Se muestran solicitudes agrupadas por tipo y estado.
+- Se muestran negociaciones aprobadas.
+- Un agente no puede consultar información consolidada de otra inmobiliaria.
+- Visitantes y clientes no pueden acceder a los reportes del agente.
+
+**Definition of Done**
+
+- Reportes del agente implementados.
+- Aislamiento por inmobiliaria comprobado.
+- Control de acceso por rol verificado.
+- Resultados contrastados contra MySQL.
+- Pruebas runtime realizadas con las dos inmobiliarias demo.
 - Documentación actualizada.
 
 ## 4. Definition of Done general del proyecto
@@ -396,6 +427,7 @@ Una historia se considera terminada cuando cumple todos los siguientes puntos:
 - HU-10 Solicitudes y documentos
 - HU-11 Aprobación de solicitudes
 - HU-12 Reportes
+- HU-15 Reportes de la inmobiliaria
 
 **Prioridad baja**
 
@@ -428,8 +460,10 @@ Una historia se considera terminada cuando cumple todos los siguientes puntos:
 - HU-10 Solicitudes y documentos
 - HU-11 Aprobación de solicitudes
 - HU-12 Reportes
+- HU-15 Reportes de la inmobiliaria
 - HU-13 Auditoría
-- HU-14 Funcionalidades adicionales
+
+**Historia no incorporada al Sprint 3:** HU-14 Funcionalidades adicionales permanece en `BACKLOG`.
 
 **Objetivo:** completar la operación del sistema, generar reportes, fortalecer la trazabilidad y cerrar la documentación y pruebas.
 

@@ -124,7 +124,7 @@ Resultado validado: mensaje "Esta propiedad no está disponible públicamente" p
 
 ## 6. Plan de congelación de código
 
-Fecha de congelación: **jueves 18 de septiembre de 2026** (cierre del Sprint 3).
+Fecha de congelación técnica: **miércoles 16 de septiembre de 2026** (cierre del Sprint 3). La entrega académica está programada para el **jueves 17 de septiembre de 2026 a las 14:00**.
 
 Antes de esa fecha se deben cumplir los siguientes pasos:
 
@@ -140,47 +140,47 @@ Antes de esa fecha se deben cumplir los siguientes pasos:
 
 ### Compilación y pruebas
 
-- [ ] `mvn clean package` termina en `BUILD SUCCESS`.
-- [ ] `mvn test` ejecuta las 5 pruebas JUnit sin fallos (`Tests run: 5, Failures: 0, Errors: 0`).
+- [x] `mvn clean package` termina en `BUILD SUCCESS`.
+- [x] `mvn test` ejecuta las 5 pruebas JUnit sin fallos (`Tests run: 5, Failures: 0, Errors: 0`).
 
 ### Roles y login
 
-- [ ] Login con `admin@inmobiliaria.com` / `admin123` entra al panel de admin.
-- [ ] Login de agente (`agente.centro` / `Clave123*`) entra al panel de inmobiliaria.
-- [ ] Login de cliente (`sofia.moreno@correo.com` / `Clave123*`) entra al panel de cliente.
-- [ ] Logout cierra la sesión y evita volver atrás a un panel.
-- [ ] Cuenta inactiva no puede iniciar sesión.
-- [ ] Registro rechaza correo con formato inválido, documento no numérico, teléfono inválido y documento vacío.
+- [x] Login con `admin@inmobiliaria.com` / `admin123` entra al panel de admin.
+- [x] Login de agente (`agente.centro@inmobiliaria.com` / `Clave123*`) entra al panel de inmobiliaria.
+- [x] Login de cliente (`maria.rojas@correo.com` / `Clave123*`) entra al panel de cliente.
+- [x] Logout cierra la sesión y evita volver atrás a un panel.
+- [x] Cuenta inactiva no puede iniciar sesión.
+- [x] Registro rechaza correo con formato inválido, documento no numérico, teléfono inválido y documento vacío.
 
 ### Catálogo y detalle
 
-- [ ] El buscador por operación, ciudad, tipo y precio funciona.
-- [ ] El filtro por características exige que se cumplan todas las marcadas.
-- [ ] El filtro por características combinado con el buscador no rompe la búsqueda.
-- [ ] Un visitante no abre propiedades en BORRADOR o CERRADA por URL.
-- [ ] Cliente y visitante ven el detalle de propiedades PUBLICADA.
-- [ ] Agente y admin abren borradores/cerradas desde su panel.
+- [x] El buscador por operación, ciudad, tipo y precio funciona.
+- [x] El filtro por características exige que se cumplan todas las marcadas.
+- [x] El filtro por características combinado con el buscador no rompe la búsqueda.
+- [x] Un visitante no abre propiedades en BORRADOR o CERRADA por URL.
+- [x] Cliente y visitante ven el detalle de propiedades PUBLICADA.
+- [x] Agente y admin abren borradores/cerradas desde su panel.
 
 ### Favoritos y citas
 
-- [ ] Solo el cliente puede marcar/quitar favoritos.
-- [ ] El cliente agenda cita; el agente la gestiona; el admin solo la consulta.
-- [ ] No se puede agendar cita en el pasado.
-- [ ] El agente no gestiona citas de propiedades de otra inmobiliaria.
+- [x] Solo el cliente puede marcar/quitar favoritos.
+- [x] El cliente agenda cita; el agente la gestiona; el admin solo la consulta.
+- [x] No se puede agendar cita en el pasado.
+- [x] El agente no gestiona citas de propiedades de otra inmobiliaria.
 
 ### Solicitudes y documentos
 
-- [ ] El cliente crea una solicitud con su tipo correspondiente.
-- [ ] El agente ve las solicitudes de sus propiedades (no las ajenas).
-- [ ] El agente abre y descarga los documentos de sus solicitudes; no puede subirlos (solo lectura).
-- [ ] El cliente sube y descarga documentos de sus solicitudes.
-- [ ] Un cliente no ve documentos de una solicitud de otro cliente (`403`).
+- [x] El cliente crea una solicitud con su tipo correspondiente.
+- [x] El agente ve las solicitudes de sus propiedades (no las ajenas).
+- [x] El agente abre y descarga documentos de sus solicitudes y puede aprobarlos o rechazarlos individualmente; no puede subir archivos.
+- [x] El cliente sube y descarga documentos de sus solicitudes.
+- [x] Un cliente no ve documentos de una solicitud de otro cliente (`403`).
 
 ### Administración y reportes
 
-- [ ] El admin gestiona usuarios, roles, auditoría y los 7 reportes.
-- [ ] Los reportes 6 (citas por estado) y 7 (solicitudes por inmobiliaria) muestran datos.
-- [ ] Las rutas protegidas sin sesión redirigen a login.
+- [x] El admin gestiona usuarios, roles, auditoría y los 7 reportes.
+- [x] Los reportes 6 (citas por estado) y 7 (solicitudes por inmobiliaria) muestran datos.
+- [x] Las rutas protegidas sin sesión redirigen a login.
 
 ## 8. Casos negativos relevantes
 
@@ -211,4 +211,39 @@ Se recomienda tomar capturas de:
 12. Auditoría con registros.
 13. Los siete reportes (incluidos citas por estado y solicitudes por inmobiliaria).
 14. Consola Maven con `BUILD SUCCESS` y las 5 pruebas JUnit sin fallos.
-15. Paginación del tablero Scrum con las historias terminadas.
+15. Captura del tablero Scrum con las historias y su estado final.
+
+
+## 9. Regresión final integral - 16 de septiembre de 2026
+
+Se ejecutó una regresión final sobre un WAR generado desde cero y desplegado limpiamente en Tomcat 8.5.
+
+### Resultado de compilación
+
+- `mvn clean package`: **BUILD SUCCESS**.
+- Pruebas JUnit: **5 ejecutadas, 0 fallos, 0 errores, 0 omitidas**.
+
+### Validaciones runtime completadas
+
+- ✅ Landing, catálogo, detalle e imágenes públicas.
+- ✅ Visitante redirigido al login al intentar acceder a rutas privadas.
+- ✅ Login, dashboard, perfil, favoritos, citas, solicitudes y documentos del CLIENTE.
+- ✅ Un cliente no puede consultar documentos de solicitudes ajenas (`403`).
+- ✅ Login y módulos de los agentes Centro y Norte.
+- ✅ Un agente puede editar propiedades propias y no puede editar propiedades de otra inmobiliaria (`403`).
+- ✅ Un agente gestiona citas únicamente de propiedades de su inmobiliaria.
+- ✅ Un agente revisa documentos únicamente de solicitudes pertenecientes a su inmobiliaria.
+- ✅ El agente propietario puede cambiar un documento de `PENDIENTE` a `APROBADO` o `RECHAZADO` y el estado queda persistido en MySQL.
+- ✅ Un agente de otra inmobiliaria recibe `403` al intentar modificar el estado del documento y el registro permanece sin cambios.
+- ✅ Reportes del agente protegidos por rol y filtrados por inmobiliaria.
+- ✅ Reportes de Centro y Norte contrastados contra consultas directas en MySQL.
+- ✅ Login y módulos administrativos verificados.
+- ✅ Cuenta inactiva rechazada durante el login.
+- ✅ Documentos privados inaccesibles mediante URL pública directa.
+- ✅ Logout invalida la sesión y obliga a autenticarse nuevamente.
+- ✅ No quedaron propiedades, solicitudes ni documentos temporales de las pruebas.
+- ✅ Los documentos privados permanecen fuera del webroot.
+- ✅ La rama `develop` quedó sincronizada con `origin/develop`.
+- ✅ Repositorio limpio al terminar la regresión.
+
+**Resultado final:** regresión integral completada sin fallas funcionales detectadas.
