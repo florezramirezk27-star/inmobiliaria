@@ -1,6 +1,6 @@
 # 05. Casos de uso
 
-> **Exportación visual:** `docs/05-casos-de-uso.png`.
+> **Exportación visual:** `docs/05-casos-de-uso.pdf`.
 
 ## Actores
 

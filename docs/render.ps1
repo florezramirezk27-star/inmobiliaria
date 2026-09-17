@@ -29,11 +29,7 @@ $text2 = $md2.Substring($x1,$x2-$x1).Trim()
 Render-TextImage $text2 (Join-Path $docs "02-modelo-relacional.png")
 Write-Host "  OK"
 
-Write-Host "Generating 05-casos-de-uso.png ..."
-$md5 = Get-Content (Join-Path $docs "05-casos-de-uso.md") -Raw
-$text5 = $md5.Replace('```',"")
-Render-TextImage $text5 (Join-Path $docs "05-casos-de-uso.png")
-Write-Host "  OK"
+Write-Host "Skipping 05-casos-de-uso: se entrega como PDF (docs/05-casos-de-uso.pdf)"
 
 Write-Host "Generated files:"
 Get-ChildItem $docs -Filter *.png | ForEach-Object { Write-Host ("  "+$_.FullName) }
