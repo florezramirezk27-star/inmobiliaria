@@ -1,0 +1,508 @@
+package com.inmobiliaria.web;
+
+import com.inmobiliaria.dao.DocumentoDAO;
+import com.inmobiliaria.dao.InmobiliariaDAO;
+import com.inmobiliaria.dao.SolicitudDAO;
+import com.inmobiliaria.model.Documento;
+import com.inmobiliaria.model.EstadoDocumento;
+import com.inmobiliaria.model.Inmobiliaria;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.sql.SQLException;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Subida y eliminación de documentos adjuntos a una solicitud.
+ *
+ * GET /cliente/solicitudes/documentos?solicitudId=3   -> listado de los documentos de la solicitud 3
+ * GET /cliente/solicitudes/documentos?id=7            -> descarga el documento 7
+ * POST /cliente/solicitudes/documentos?solicitudId=3  -> sube un archivo nuevo a la solicitud 3
+ *
+ * GET /inmobiliaria/solicitudes/documentos?solicitudId=3   -> listado para el AGENTE de la
+ *        inmobiliaria dueña de la propiedad de la solicitud (solo lectura, sin subir)
+ * GET /inmobiliaria/solicitudes/documentos?id=7            -> descarga para el AGENTE
+ *
+ * Solo la fila de la base de datos viaja por el DAO. Los archivos privados
+ * se almacenan fuera del webroot para impedir que Tomcat pueda servirlos
+ * directamente sin pasar por las validaciones de autorización.
+ */
+@WebServlet({
+        "/cliente/solicitudes/documentos",
+        "/inmobiliaria/solicitudes/documentos"
+})
+@MultipartConfig(
+        maxFileSize = 10L * 1024 * 1024,      // 10 MB por archivo
+        maxRequestSize = 30L * 1024 * 1024,   // 30 MB por envío completo
+        fileSizeThreshold = 0
+)
+public class DocumentoServlet extends HttpServlet {
+
+    private static final Set<String> TIPOS_MIME_PERMITIDOS = Set.of(
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+
+    private final DocumentoDAO documentoDAO = new DocumentoDAO();
+    private final SolicitudDAO solicitudDAO = new SolicitudDAO();
+    private final InmobiliariaDAO inmobiliariaDAO = new InmobiliariaDAO();
+
+    private boolean esRutaAgente(HttpServletRequest request) {
+        return request.getServletPath().startsWith("/inmobiliaria/");
+    }
+
+    /** Vista de lista que corresponde a la ruta (cliente=subir/ver, agente=ver). */
+    private String vistaDeDocumentos(HttpServletRequest request) {
+        return esRutaAgente(request)
+                ? "/WEB-INF/views/inmobiliaria/documentos.jsp"
+                : "/WEB-INF/views/cliente/documentos.jsp";
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("usuarioId") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        String idDocumento = request.getParameter("id");
+        if (idDocumento != null && !idDocumento.isBlank()) {
+            descargarDocumento(request, response);
+            return;
+        }
+
+        String solicitudId = request.getParameter("solicitudId");
+        if (solicitudId == null || solicitudId.isBlank()) {
+            request.setAttribute("error", "Indica la solicitud de la que quieres ver los documentos.");
+            request.getRequestDispatcher(vistaDeDocumentos(request))
+                    .forward(request, response);
+            return;
+        }
+
+        try {
+            int idSolicitud = Integer.parseInt(solicitudId.trim());
+
+            int idUsuario = (int) session.getAttribute("usuarioId");
+
+            boolean tienePermiso;
+            if (esRutaAgente(request)) {
+                Inmobiliaria inmobiliaria = inmobiliariaDAO.buscarPorUsuario(idUsuario);
+                tienePermiso = inmobiliaria != null
+                        && solicitudDAO.perteneceAInmobiliaria(idSolicitud, inmobiliaria.getId());
+            } else {
+                tienePermiso = solicitudDAO.perteneceACliente(idSolicitud, idUsuario);
+            }
+
+            if (!tienePermiso) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No tienes permiso para acceder a esta solicitud."
+                );
+                return;
+            }
+
+            request.setAttribute("solicitudId", idSolicitud);
+            request.setAttribute("documentos", documentoDAO.listarPorSolicitud(idSolicitud));
+        } catch (SQLException e) {
+            getServletContext().log("Error al listar los documentos de la solicitud", e);
+            request.setAttribute("error",
+                    "No fue posible cargar los documentos en este momento. Intenta de nuevo en unos minutos.");
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "El identificador de la solicitud no es válido.");
+        }
+
+        request.getRequestDispatcher(vistaDeDocumentos(request))
+                .forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("usuarioId") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        if (esRutaAgente(request)) {
+            cambiarEstadoDocumentoAgente(request, response, session);
+            return;
+        }
+
+        String solicitudId = request.getParameter("solicitudId");
+        if (solicitudId == null || solicitudId.isBlank()) {
+            request.setAttribute("error", "Indica la solicitud a la que quieres adjuntar el documento.");
+            request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
+                    .forward(request, response);
+            return;
+        }
+
+        int idSolicitud;
+        try {
+            idSolicitud = Integer.parseInt(solicitudId.trim());
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "El identificador de la solicitud no es válido.");
+            request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
+                    .forward(request, response);
+            return;
+        }
+
+        int idCliente = (int) session.getAttribute("usuarioId");
+
+        try {
+            if (!solicitudDAO.perteneceACliente(idSolicitud, idCliente)) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No tienes permiso para modificar esta solicitud."
+                );
+                return;
+            }
+        } catch (SQLException e) {
+            getServletContext().log("Error al validar la solicitud del documento", e);
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            );
+            return;
+        }
+
+        Part parte;
+        try {
+            parte = request.getPart("archivo");
+        } catch (ServletException | IOException e) {
+            getServletContext().log("No se pudo leer el archivo subido", e);
+            request.setAttribute("error", "No se pudo leer el archivo enviado.");
+            request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
+                    .forward(request, response);
+            return;
+        }
+
+        try {
+            boolean guardado = guardarDocumento(request, idSolicitud, parte);
+
+            if (!guardado) {
+                request.setAttribute("solicitudId", idSolicitud);
+                request.setAttribute(
+                        "documentos",
+                        documentoDAO.listarPorSolicitud(idSolicitud)
+                );
+                request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
+                        .forward(request, response);
+                return;
+            }
+
+            response.sendRedirect(request.getContextPath()
+                    + "/cliente/solicitudes/documentos?solicitudId=" + idSolicitud + "&subido=1");
+
+        } catch (SQLException | IOException e) {
+            getServletContext().log("Error al guardar el documento", e);
+            request.setAttribute("error",
+                    "No fue posible guardar el documento en este momento. Intenta de nuevo en unos minutos.");
+            request.setAttribute("solicitudId", idSolicitud);
+            request.getRequestDispatcher("/WEB-INF/views/cliente/documentos.jsp")
+                    .forward(request, response);
+        }
+    }
+
+    private void cambiarEstadoDocumentoAgente(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            HttpSession session
+    ) throws IOException {
+
+        String idParam = request.getParameter("documentoId");
+        String estadoParam = request.getParameter("estado");
+
+        if (idParam == null || idParam.isBlank()
+                || estadoParam == null || estadoParam.isBlank()) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "Debes indicar el documento y el estado."
+            );
+            return;
+        }
+
+        try {
+            int idDocumento = Integer.parseInt(idParam.trim());
+            EstadoDocumento estado = EstadoDocumento.desde(estadoParam);
+
+            if (estado != EstadoDocumento.APROBADO
+                    && estado != EstadoDocumento.RECHAZADO) {
+                response.sendError(
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "El estado indicado no es valido."
+                );
+                return;
+            }
+
+            Documento documento = documentoDAO.buscarPorId(idDocumento);
+
+            if (documento == null) {
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "El documento no existe."
+                );
+                return;
+            }
+
+            int idUsuario = (int) session.getAttribute("usuarioId");
+
+            Inmobiliaria inmobiliaria =
+                    inmobiliariaDAO.buscarPorUsuario(idUsuario);
+
+            boolean autorizado = inmobiliaria != null
+                    && solicitudDAO.perteneceAInmobiliaria(
+                            documento.getSolicitudId(),
+                            inmobiliaria.getId()
+                    );
+
+            if (!autorizado) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No tienes permiso para gestionar este documento."
+                );
+                return;
+            }
+
+            if (!documentoDAO.cambiarEstado(idDocumento, estado)) {
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "No fue posible actualizar el documento."
+                );
+                return;
+            }
+
+            response.sendRedirect(
+                    request.getContextPath()
+                            + "/inmobiliaria/solicitudes/documentos?solicitudId="
+                            + documento.getSolicitudId()
+                            + "&estadoActualizado=1"
+            );
+
+        } catch (NumberFormatException e) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "El identificador del documento no es valido."
+            );
+        } catch (SQLException e) {
+            getServletContext().log(
+                    "Error al cambiar el estado del documento",
+                    e
+            );
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    // ============================================================
+    // Apoyo interno
+    // ============================================================
+
+    private boolean guardarDocumento(HttpServletRequest request, int solicitudId, Part parte)
+            throws IOException, SQLException {
+
+        if (parte == null) {
+            request.setAttribute("error", "Selecciona un archivo para subir.");
+            return false;
+        }
+
+        String nombreOriginal = parte.getSubmittedFileName();
+        if (nombreOriginal == null || nombreOriginal.isBlank() || parte.getSize() == 0) {
+            request.setAttribute("error", "Selecciona un archivo para subir.");
+            return false;
+        }
+
+        String tipoMime = parte.getContentType();
+        if (tipoMime == null || !TIPOS_MIME_PERMITIDOS.contains(tipoMime.toLowerCase())) {
+            request.setAttribute("error", "El tipo de archivo no está permitido. Sube un PDF, imagen o documento de Word.");
+            return false;
+        }
+
+        String extension = extensionSegura(nombreOriginal);
+        String nombreArchivo = "doc-" + solicitudId + "-" + UUID.randomUUID() + extension;
+
+        Path carpetaDestino = carpetaDeDocumentos(solicitudId);
+        Files.createDirectories(carpetaDestino);
+        Path archivoDestino = carpetaDestino.resolve(nombreArchivo);
+
+        try (InputStream in = parte.getInputStream()) {
+            Files.copy(in, archivoDestino, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        Documento documento = new Documento();
+        documento.setSolicitudId(solicitudId);
+        documento.setNombreArchivo(nombreOriginal);
+        documento.setRuta("docs/solicitudes/" + solicitudId + "/" + nombreArchivo);
+
+        try {
+            documentoDAO.insertar(documento);
+        } catch (SQLException e) {
+            try {
+                Files.deleteIfExists(archivoDestino);
+            } catch (IOException limpieza) {
+                e.addSuppressed(limpieza);
+            }
+            throw e;
+        }
+
+        return true;
+    }
+
+    private void descargarDocumento(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        String idParam = request.getParameter("id");
+
+        try {
+            int idDocumento = Integer.parseInt(idParam.trim());
+            Documento documento = documentoDAO.buscarPorId(idDocumento);
+
+            if (documento == null) {
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "El documento no existe."
+                );
+                return;
+            }
+
+            HttpSession session = request.getSession(false);
+
+            if (session == null || session.getAttribute("usuarioId") == null) {
+                response.sendRedirect(
+                        request.getContextPath() + "/login"
+                );
+                return;
+            }
+
+            int idUsuario =
+                    (int) session.getAttribute("usuarioId");
+
+            boolean tienePermiso;
+            if (esRutaAgente(request)) {
+                Inmobiliaria inmobiliaria = inmobiliariaDAO.buscarPorUsuario(idUsuario);
+                tienePermiso = inmobiliaria != null
+                        && solicitudDAO.perteneceAInmobiliaria(
+                                documento.getSolicitudId(),
+                                inmobiliaria.getId()
+                        );
+            } else {
+                tienePermiso = solicitudDAO.perteneceACliente(
+                        documento.getSolicitudId(),
+                        idUsuario
+                );
+            }
+
+            if (!tienePermiso) {
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "No tienes permiso para descargar este documento."
+                );
+                return;
+            }
+
+            Path archivoFisico = archivoFisico(documento);
+
+            if (!Files.exists(archivoFisico) || !Files.isRegularFile(archivoFisico)) {
+                response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "El archivo físico no está disponible."
+                );
+                return;
+            }
+
+            response.setContentType("application/octet-stream");
+            response.setHeader(
+                    "Content-Disposition",
+                    "attachment; filename=\"" + documento.getNombreArchivo() + "\""
+            );
+
+            Files.copy(archivoFisico, response.getOutputStream());
+
+        } catch (SQLException e) {
+            getServletContext().log("Error al descargar el documento", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "El identificador del documento no es válido.");
+        }
+    }
+
+    private Path carpetaDeDocumentos(int solicitudId) throws IOException {
+        String catalinaBase = System.getProperty("catalina.base");
+
+        if (catalinaBase == null || catalinaBase.isBlank()) {
+            throw new IOException(
+                    "No se pudo determinar catalina.base para almacenar documentos."
+            );
+        }
+
+        return Paths.get(
+                catalinaBase,
+                "inmobiliaria-data",
+                "documentos",
+                "solicitudes",
+                String.valueOf(solicitudId)
+        ).toAbsolutePath().normalize();
+    }
+
+    private Path archivoFisico(Documento documento) throws IOException {
+        String rutaGuardada = documento.getRuta();
+
+        if (rutaGuardada == null || rutaGuardada.isBlank()) {
+            throw new IOException(
+                    "El documento no tiene una ruta física válida."
+            );
+        }
+
+        Path nombreFisico = Paths.get(rutaGuardada).getFileName();
+
+        if (nombreFisico == null || nombreFisico.toString().isBlank()) {
+            throw new IOException(
+                    "No se pudo determinar el nombre físico del documento."
+            );
+        }
+
+        Path carpeta = carpetaDeDocumentos(documento.getSolicitudId());
+        Path archivo = carpeta.resolve(nombreFisico.toString()).normalize();
+
+        if (!archivo.startsWith(carpeta)) {
+            throw new IOException(
+                    "La ruta física del documento no es válida."
+            );
+        }
+
+        return archivo;
+    }
+
+    private String extensionSegura(String nombreOriginal) {
+        int punto = nombreOriginal.lastIndexOf('.');
+        if (punto == -1) {
+            return ".dat";
+        }
+        String ext = nombreOriginal.substring(punto).toLowerCase();
+        return switch (ext) {
+            case ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx" -> ext;
+            default -> ".dat";
+        };
+    }
+}

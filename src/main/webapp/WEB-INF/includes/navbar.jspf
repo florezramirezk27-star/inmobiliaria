@@ -2,24 +2,53 @@
     navbar.jspf — barra de navegación compartida por todas las vistas.
     Se incluye con: <%@ include file="/WEB-INF/includes/navbar.jspf" %>
 
-    Sprint 2: cuando exista HttpSession, envolver los botones de Ingresar /
-    Crear cuenta en <c:choose> para mostrar el menú del usuario autenticado.
+    La lógica de sesión y roles es la original, sin cambios:
+      sessionScope.roles  →  rol.nombre = CLIENTE | AGENTE | ADMIN
+      sessionScope.usuarioId decide autenticado / visitante
+      sessionScope.correo se usa solo para saludar
+
+    Iconografía en SVG en línea a propósito: este fragmento lo
+    incluyen 17 JSP y no todas cargan Bootstrap Icons, así que
+    depender del CDN dejaría huecos en varias pantallas.
 --%>
+<c:set var="esCliente" value="false"/>
+<c:set var="esAgente" value="false"/>
+
+<c:forEach var="rol" items="${sessionScope.roles}">
+    <c:if test="${rol.nombre eq 'CLIENTE'}">
+        <c:set var="esCliente" value="true"/>
+    </c:if>
+    <c:if test="${rol.nombre eq 'AGENTE'}">
+        <c:set var="esAgente" value="true"/>
+    </c:if>
+</c:forEach>
+
 <nav class="navbar navbar-expand-lg navbar-inmo">
-    <div class="container">
 
-        <a class="navbar-brand" href="${pageContext.request.contextPath}/">Inmobiliaria</a>
+    <input type="checkbox" id="menu-nav" class="navbar-checkbox" aria-hidden="true">
 
-        <button class="navbar-toggler border-0" type="button"
-                data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
-                aria-controls="menuPrincipal" aria-expanded="false"
-                aria-label="Abrir el menú de navegación">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    <div class="container d-flex align-items-center">
 
-        <div class="collapse navbar-collapse" id="menuPrincipal">
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+                 style="color: #C4A66A;" aria-hidden="true">
+                <path d="M3 10.5 12 3l9 7.5"/>
+                <path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/>
+                <path d="M10 21v-6h4v6"/>
+            </svg>
+            Inmobiliaria
+        </a>
 
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+        <label for="menu-nav" class="navbar-toggler-solo" aria-label="Abrir el menú de navegación">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+
+        <div class="navbar-menu-colapsable" id="menuPrincipal">
+
+            <ul class="navbar-nav me-auto mb-0 ms-lg-4">
                 <li class="nav-item">
                     <a class="nav-link" href="${pageContext.request.contextPath}/propiedades?operacion=arriendo">Arriendo</a>
                 </li>
@@ -27,14 +56,57 @@
                     <a class="nav-link" href="${pageContext.request.contextPath}/propiedades?operacion=venta">Venta</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/#catalogo">Catálogo</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/propiedades">Catálogo</a>
                 </li>
+                <c:if test="${esAgente}">
+                <li class="nav-item">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/inmobiliaria/propiedades/formulario">Publicar propiedad</a>
+                </li>
+                </c:if>
             </ul>
 
-            <div class="d-flex flex-column flex-lg-row gap-2">
-                <a class="btn btn-contorno" href="${pageContext.request.contextPath}/login">Ingresar</a>
-                <a class="btn btn-marca" href="${pageContext.request.contextPath}/registro">Crear cuenta</a>
-            </div>
+            <c:choose>
+                <c:when test="${not empty sessionScope.usuarioId}">
+                    <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2">
+
+                        <c:if test="${not empty sessionScope.correo}">
+                            <span class="navbar-usuario d-none d-lg-inline-flex">${sessionScope.correo}</span>
+                        </c:if>
+
+                        <c:choose>
+                            <c:when test="${esAgente}">
+                                <a class="btn btn-contorno"
+                                   href="${pageContext.request.contextPath}/inmobiliaria/dashboard">
+                                    Mi panel
+                                </a>
+                            </c:when>
+                            <c:when test="${esCliente}">
+                                <a class="btn btn-contorno"
+                                   href="${pageContext.request.contextPath}/cliente/dashboard">
+                                    Mi panel
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <a class="btn btn-contorno"
+                                   href="${pageContext.request.contextPath}/admin/dashboard">
+                                    Mi panel
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+
+                        <a class="btn btn-marca"
+                           href="${pageContext.request.contextPath}/logout">
+                            Cerrar sesión
+                        </a>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="d-flex flex-column flex-lg-row gap-2">
+                        <a class="btn btn-contorno" href="${pageContext.request.contextPath}/login">Ingresar</a>
+                        <a class="btn btn-marca" href="${pageContext.request.contextPath}/registro">Crear cuenta</a>
+                    </div>
+                </c:otherwise>
+            </c:choose>
 
         </div>
     </div>

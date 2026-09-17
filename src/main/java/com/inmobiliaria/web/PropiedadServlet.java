@@ -1,0 +1,180 @@
+package com.inmobiliaria.web;
+
+import com.inmobiliaria.dao.CaracteristicaDAO;
+import com.inmobiliaria.dao.FavoritoDAO;
+import com.inmobiliaria.dao.FiltroPropiedad;
+import com.inmobiliaria.dao.PropiedadDAO;
+import com.inmobiliaria.model.Operacion;
+import com.inmobiliaria.model.Propiedad;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Sirve el catálogo público de propiedades y atiende el buscador
+ * con filtros procedente de la landing (index.jsp).
+ *
+ * GET /propiedades              -> catálogo completo (más recientes primero)
+ * GET /propiedades?operacion=arriendo&ciudad=1&tipo=apartamento&precioMax=2000000
+ *                                -> catálogo filtrado
+ */
+@WebServlet("/propiedades")
+public class PropiedadServlet extends HttpServlet {
+
+    private final PropiedadDAO propiedadDAO = new PropiedadDAO();
+    private final FavoritoDAO favoritoDAO = new FavoritoDAO();
+    private final CaracteristicaDAO caracteristicaDAO = new CaracteristicaDAO();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        // Se calcula AQUÍ, antes del forward hacia catalogo.jsp: dentro de
+        // la JSP, request.getRequestURI() ya no devuelve esta URL sino la
+        // ruta del propio archivo JSP destino (comportamiento normal de
+        // forward() según la especificación Servlet) — usarlo allá había
+        // estado mandando el botón de favorito de vuelta a
+        // "/catalogo.jsp" en crudo, sin pasar por este controlador.
+        String urlActual = request.getRequestURI()
+                + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+        request.setAttribute("urlActual", urlActual);
+
+        FiltroPropiedad filtro = construirFiltroDesde(request);
+
+        try {
+            List<Propiedad> propiedades = propiedadDAO.buscar(filtro);
+            request.setAttribute("propiedades", propiedades);
+            request.setAttribute("filtro", filtro);
+
+            request.setAttribute("favoritosIds", favoritosDelUsuario(request));
+            cargarCaracteristicas(request);
+
+        } catch (SQLException e) {
+            // No se deja pasar la excepción cruda al usuario final:
+            // se registra en el log del servidor y se muestra una
+            // lista vacía con un mensaje entendible en la JSP.
+            getServletContext().log("Error al consultar el catálogo de propiedades", e);
+            request.setAttribute("propiedades", List.of());
+            request.setAttribute("favoritosIds", Set.of());
+            request.setAttribute("errorConsulta",
+                    "No fue posible cargar el catálogo en este momento. Intenta de nuevo en unos minutos.");
+        }
+
+        request.getRequestDispatcher("/catalogo.jsp").forward(request, response);
+    }
+
+    /**
+     * Ids de propiedades marcadas como favoritas por el usuario de
+     * sesión. Sin sesión iniciada la lista queda vacía (los corazones
+     * se pintan sin relleno y un clic redirige al login).
+     */
+    private Set<Integer> favoritosDelUsuario(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            return Set.of();
+        }
+
+        Integer usuarioId = (Integer) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return Set.of();
+        }
+
+        try {
+            return favoritoDAO.listarIdsPropiedadPorUsuario(usuarioId);
+        } catch (SQLException e) {
+            getServletContext().log("Error al cargar favoritos del catálogo", e);
+            return Set.of();
+        }
+    }
+
+    /**
+     * Traduce los parámetros de la URL a un FiltroPropiedad.
+     * Cualquier parámetro ausente, vacío o no parseable se ignora en
+     * vez de lanzar una excepción: un precioMax mal escrito no debe
+     * tumbar la búsqueda completa, solo queda sin aplicar ese filtro.
+     */
+    private FiltroPropiedad construirFiltroDesde(HttpServletRequest request) {
+
+        FiltroPropiedad filtro = new FiltroPropiedad();
+
+        filtro.setOperacion(Operacion.desde(request.getParameter("operacion")));
+
+        String ciudad = request.getParameter("ciudad");
+        if (ciudad != null && !ciudad.isBlank()) {
+            try {
+                filtro.setCiudadId(Integer.valueOf(ciudad.trim()));
+            } catch (NumberFormatException ignorado) {
+                // El <select> de la landing envía el id numérico de la ciudad;
+                // si llega otra cosa, se trata como "sin filtro de ciudad".
+            }
+        }
+
+        String tipo = request.getParameter("tipo");
+        if (tipo != null && !tipo.isBlank()) {
+            filtro.setTipoSlug(tipo.trim());
+        }
+
+        String precioMax = request.getParameter("precioMax");
+        if (precioMax != null && !precioMax.isBlank()) {
+            try {
+                filtro.setPrecioMaximo(new BigDecimal(precioMax.trim()));
+            } catch (NumberFormatException ignorado) {
+                // idem: un precioMax no numérico no rompe la búsqueda.
+            }
+        }
+
+        String texto = request.getParameter("q");
+        if (texto != null && !texto.isBlank()) {
+            filtro.setTexto(texto.trim());
+        }
+
+        /*
+         * Las características llegan como varios parámetros `caracteristicas`
+         * (un checkbox por cada una). Se ignoran los valores no numéricos;
+         * si al final no queda ninguna, el filtro simplemente no se aplica.
+         */
+        String[] caracteristicas = request.getParameterValues("caracteristicas");
+        if (caracteristicas != null && caracteristicas.length > 0) {
+            List<Integer> ids = new ArrayList<>();
+            for (String valor : caracteristicas) {
+                if (valor != null && !valor.isBlank()) {
+                    try {
+                        ids.add(Integer.valueOf(valor.trim()));
+                    } catch (NumberFormatException ignorado) {
+                        // Un id mal formado se descarta; no tumba la búsqueda.
+                    }
+                }
+            }
+            if (!ids.isEmpty()) {
+                filtro.setCaracteristicasIds(ids);
+            }
+        }
+
+        return filtro;
+    }
+
+    /**
+     * Catálogo de características para los checkboxes del filtro.
+     * Si el catálogo no responde se deja sin atributo: la JSP oculta
+     * el bloque y la búsqueda sigue funcionando con los demás filtros.
+     */
+    private void cargarCaracteristicas(HttpServletRequest request) {
+        try {
+            request.setAttribute("caracteristicas", caracteristicaDAO.listarTodas());
+        } catch (SQLException e) {
+            getServletContext().log("Error al cargar características del catálogo", e);
+        }
+    }
+}

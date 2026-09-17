@@ -1,0 +1,165 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Nueva solicitud - Inmobiliaria</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/estilos.css?v=cliente-resto-final-1">
+
+</head>
+
+<body class="cliente-resto-page cliente-solicitud-form-final">
+
+<%@ include file="/WEB-INF/includes/navbar.jspf" %>
+
+<main class="container my-5"
+      style="max-width: 750px;">
+
+    <div class="cabecera-seccion">
+
+        <h1 class="fuente-display mb-1">
+            Nueva solicitud
+        </h1>
+
+        <a href="${pageContext.request.contextPath}/cliente/solicitudes"
+           class="btn btn-volver">
+            Volver
+        </a>
+
+    </div>
+
+    <c:if test="${not empty errores}">
+
+        <div class="alert alert-danger">
+
+            <strong>Revisa lo siguiente:</strong>
+
+            <ul class="mb-0">
+
+                <c:forEach var="mensaje"
+                           items="${errores}">
+
+                    <li>${mensaje}</li>
+
+                </c:forEach>
+
+            </ul>
+
+        </div>
+
+    </c:if>
+
+    <c:if test="${not empty propiedad}">
+
+        <div class="panel mb-4">
+
+                <h3 class="h5 mb-1">
+                    ${propiedad.titulo}
+                </h3>
+
+                <p class="mb-0" style="color: var(--gris); font-size:.9rem;">
+                    Código: ${propiedad.codigo}
+                </p>
+
+                <p class="mb-0">
+                    Propiedad #${propiedad.id}
+                </p>
+
+            </div>
+
+    </c:if>
+
+    <form method="post"
+          action="${pageContext.request.contextPath}/cliente/solicitudes">
+
+        <input type="hidden"
+               name="id"
+               value="${idPropiedad}">
+
+        <input type="hidden"
+               name="idPropiedad"
+               value="${idPropiedad}">
+
+        <div class="mb-3">
+
+            <label for="tipo"
+                   class="form-label">
+
+                Tipo de solicitud
+
+            </label>
+
+            <select id="tipo"
+                    name="tipo"
+                    class="form-select"
+                    required>
+
+                <option value="">
+                    Selecciona una opción
+                </option>
+
+                <option value="COMPRA">
+                    Compra
+                </option>
+
+                <option value="ARRIENDO">
+                    Arriendo
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="mb-4">
+
+            <label for="comentario"
+                   class="form-label">
+
+                Comentario
+
+            </label>
+
+            <textarea id="comentario"
+                      name="comentario"
+                      class="form-control"
+                      rows="5"
+                      maxlength="255"
+                      placeholder="Escribe información adicional...">${solicitud.comentario}</textarea>
+
+        </div>
+
+        <button type="submit"
+                class="btn btn-marca">
+
+            Crear solicitud
+
+        </button>
+
+    </form>
+
+</main>
+
+<%@ include file="/WEB-INF/includes/footer.jspf" %>
+
+</body>
+</html>

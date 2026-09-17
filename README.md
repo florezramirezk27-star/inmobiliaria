@@ -83,6 +83,37 @@ La aplicación contempla procesos relacionados con:
 
 La aplicación fue desarrollada utilizando tecnologías Java Web tradicionales, aplicando conceptos de programación orientada a objetos, JDBC, arquitectura por capas y patrón MVC.
 
+### Módulos implementados
+
+Sistema de inmobiliaria construido con **Maven** (empaquetado **WAR**, desplegable en
+Apache Tomcat), **JDBC** contra **MySQL** y vistas **JSP**. El proyecto está organizado
+en capas: `model` (entidades), `dao` (acceso a datos), `service` (lógica de negocio
+como la autenticación) y `web` (servlets/filtros).
+
+- **Catálogo de propiedades** con búsqueda, filtros y fichas de detalle, respaldado por
+  una vista `v_propiedad_catalogo`.
+- **Página de inicio dinámica**: `IndexServlet` (`/index`, welcome-file del `web.xml`)
+  muestra las 6 propiedades más recientes con marcadores de favoritos de la sesión.
+- **Formulario de propiedades** con creación/edición, asignación de características y
+  subida de imágenes (multipart). Restringido al rol **AGENTE** y validación de
+  pertenencia: solo la inmobiliaria dueña de la propiedad puede editarla.
+- **Autenticación y sesiones** con BCrypt, roles (ADMIN / AGENTE / CLIENTE) y filtros
+  de protección por URL. El cierre de sesión pide confirmación en el servidor
+  (`GET /logout` muestra una página, solo `POST /logout` invalida la sesión).
+- **Filtro por características:** el catálogo combina el buscador (operación, ciudad,
+  tipo, precio máximo, texto) con casillas de características que se exigen *todas*,
+  resuelto con una subconsulta sobre `propiedad_caracteristica` y un
+  `HAVING COUNT(DISTINCT id_caracteristica) = N`. El detalle público solo abre
+  propiedades en estado `PUBLICADA`.
+- **Solicitudes de compra/arriendo**: el cliente crea solicitudes y adjunta/descarga
+  documentos; la inmobiliaria las consulta y aprueba/rechaza.
+- **Citas**: el cliente agenda visitas a propiedades y el agente gestiona su estado.
+- **Reportes de inmobiliaria**: cada agente consulta indicadores de ventas, arriendos,
+  solicitudes y negociaciones aprobadas exclusivamente de su propia inmobiliaria.
+- **Administración**: gestiona usuarios, roles, perfiles, auditoría y siete reportes SQL.
+- **Seguridad**: validación de pertenencia de recursos por usuario/inmobiliaria.
+- **Pruebas unitarias JUnit** sobre los enums de dominio (5 pruebas).
+
 ---
 
 # 🎯 Objetivo del sistema
@@ -467,12 +498,23 @@ inmobiliaria/
 ├── docs/
 │   ├── 01-MER.md
 │   ├── 02-modelo-relacional.md
+│   ├── 03-normalizacion-3FN.md
+│   ├── 04-diccionario-datos.md
 │   ├── 05-casos-de-uso.md
 │   ├── 06-scrum.md
 │   ├── 07-product-backlog.md
 │   ├── 08-pruebas.md
 │   ├── diccionario-datos.docx
+│   ├── scrum/
+│   │   ├── sprint-1.md
+│   │   ├── sprint-2.md
+│   │   └── sprint-3.md
 │   └── imagenes/
+│
+├── database/
+│   ├── ddl.sql
+│   ├── dml.sql
+│   └── consultas.sql
 │
 └── src/
     ├── main/
@@ -548,9 +590,56 @@ db.driver=com.mysql.cj.jdbc.Driver
 
 La clase `ConnectionFactory` centraliza la creación de conexiones para que los DAO no tengan que repetir la configuración.
 
+### Cómo funciona la conexión a la base de datos
+
+Al cargar la clase `ConnectionFactory` (bloque `static`) se lee `db.properties` del
+classpath y se carga el driver. Luego el método estático:
+
+```java
+public static Connection getConnection() throws SQLException {
+    return DriverManager.getConnection(
+            properties.getProperty("db.url"),
+            properties.getProperty("db.username"),
+            properties.getProperty("db.password")
+    );
+}
+```
+
+Los DAO usan `ConnectionFactory.getConnection()` dentro de un `try-with-resources`,
+de modo que la conexión (y el `PreparedStatement`/`ResultSet`) se cierran solos.
+
+Para probar la conexión de forma aislada existe la clase `DatabaseTest`.
+
 ---
 
-# 🔨 Compilación
+# 🔌 Requisitos previos
+
+1. **JDK 21** (o superior compatible) — verificar con `java -version`.
+2. **Maven 3.8+** — verificar con `mvn -version`.
+3. **MySQL Server** corriendo localmente en el puerto 3306 (ej. XAMPP).
+4. **Apache Tomcat 8.5+** — para ejecutar la aplicación web.
+
+---
+
+# 👥 Credenciales de acceso
+
+Los datos de prueba del DML incluyen usuarios con los roles:
+
+| Rol | Correo | Contraseña |
+|-----|--------|------------|
+| **ADMIN** | `admin@inmobiliaria.com` | `admin123` |
+| **AGENTE** (inmobiliaria 1) | `agente.centro@inmobiliaria.com` | `Clave123*` |
+| **AGENTE** (inmobiliaria 2) | `agente.norte@inmobiliaria.com` | `Clave123*` |
+| **CLIENTE** | `maria.rojas@correo.com`, `juan.paez@correo.com`, `laura.gomez@correo.com`, `carlos.diaz@correo.com`, `ana.suarez@correo.com`, `felipe.torres@correo.com` | `Clave123*` |
+
+> **Contraseñas:** el usuario admin usa `admin123`. Los usuarios 2-10 (2 agentes y
+> 7 clientes) usan `Clave123*`. Cada hash BCrypt del DML es único (sal aleatoria
+> por usuario) y corresponde realmente a esa contraseña, por lo que el login
+> funciona sin regenerar nada.
+
+---
+
+# 🔧 Compilación
 
 Ubícate en la carpeta raíz del proyecto:
 
@@ -657,6 +746,73 @@ http://localhost:8080/inmobiliaria/
 ```
 
 El puerto puede variar según la configuración local de Tomcat.
+
+---
+
+# 🔀 Flujos web y controladores
+
+Cada servlet es un controlador mapeado por anotación `@WebServlet`. Los principales:
+
+| URL | Servlet | Descripción |
+|-----|---------|-------------|
+| `/` | `IndexServlet` | Landing dinámica (6 recientes + favoritos de sesión); welcome-file `index` |
+| `/propiedades` | `PropiedadServlet` | Búsqueda/listado del catálogo |
+| `/propiedades/detalle` | `PropiedadDetalleServlet` | Ficha de una propiedad |
+| `/inmobiliaria/propiedades/formulario` | `PropiedadFormServlet` | Crear/editar propiedad + imágenes |
+| `/propiedades/favorito` | `FavoritoServlet` | Alternar favorito (POST server-side) |
+| `/login`, `/registro` | `Login`, `Registro` | Autenticación |
+| `/logout` | `LogoutServlet` | `GET` muestra confirmación; `POST` invalida la sesión |
+| `/cliente/dashboard` | `ClienteDashboardServlet` | Panel del cliente |
+| `/cliente/favoritos` | `FavoritoServlet` | Favoritos del cliente |
+| `/cliente/perfil` | `PerfilServlet` | Perfil del cliente |
+| `/cliente/solicitudes` | `SolicitudServlet` | Solicitudes del cliente |
+| `/cliente/solicitudes/documentos` | `DocumentoServlet` | Subida/descarga de documentos (cliente) |
+| `/inmobiliaria/dashboard` | `InmobiliariaDashboardServlet` | Panel de la inmobiliaria |
+| `/inmobiliaria/solicitudes` | `AgenteSolicitudServlet` | Aprobar/rechazar solicitudes |
+| `/inmobiliaria/reportes` | `AgenteReporteServlet` | Reportes de ventas, arriendos y solicitudes de la inmobiliaria autenticada |
+| `/inmobiliaria/solicitudes/documentos` | `DocumentoServlet` | Revisión, descarga y aprobación/rechazo de documentos de la propia inmobiliaria |
+| `/propiedades/citas`, `/propiedades/citas/estado`, `/citas` | `CitaServlet` | Citas del cliente y gestión del agente |
+| `/admin/dashboard` | `AdminDashboardServlet` | Panel del admin |
+| `/admin/usuarios` | `AdminUsuariosServlet` | Activar/desactivar y cambiar roles |
+| `/admin/usuarios/perfil` | `AdminPerfilServlet` | Edición de perfil por admin |
+| `/admin/auditoria` | `AuditoriaServlet` | Registro de auditoría |
+| `/admin/reportes` | `ReporteServlet` | Siete reportes SQL |
+
+### Protección por URL (AuthFilter)
+
+El filtro `AuthFilter` exige sesión y rol según el prefijo de la URL, con reglas
+explícitas para operaciones concretas:
+
+| Prefijo / ruta | Rol requerido |
+|----------------|---------------|
+| `/admin/*` | ADMIN |
+| `/agente/*`, `/inmobiliaria/*` | AGENTE |
+| `/cliente/*` | CLIENTE |
+| `/propiedades/favorito`, `/favoritos`, `/citas` | CLIENTE |
+| `/propiedades/citas/estado` | AGENTE |
+| `/propiedades/citas` | cualquier usuario autenticado (solo sesión: el cliente agenda y el agente gestiona) |
+| Otros | acceso público |
+
+Además del filtro, el servlet revalida autorización a nivel de recurso: el GET de
+edición de `PropiedadFormServlet` responde `403` si el agente autenticado no es dueño
+de la propiedad editada (por ejemplo, `agente.norte` no puede editar propiedades de la
+inmobiliaria 1). Esta validación es independiente del rol exigido por URL. Y el detalle
+público (`/propiedades/detalle`) bloquea por URL las propiedades `BORRADOR`/`CERRADA`
+salvo para usuarios con rol ADMIN o AGENTE.
+
+---
+
+# 🧭 Despliegue rápido
+
+1. Copia `target/inmobiliaria.war` a la carpeta `webapps` de Tomcat.
+2. Inicia Tomcat y abre:
+   ```
+   http://localhost:8080/inmobiliaria/
+   ```
+3. Verás el catálogo de propiedades (página de inicio).
+
+También es posible ejecutar el proyecto desde una IDE (NetBeans recomendado): abre el
+proyecto, configura un servidor Tomcat y ejecuta.
 
 ---
 
@@ -972,6 +1128,24 @@ y compilar:
 ```bash
 mvn clean package
 ```
+
+---
+
+# 📌 Notas finales
+
+La documentación del proyecto está en `docs/` (`01-MER.md` a `08-pruebas.md`)
+y se mantiene sincronizada con `database/ddl.sql`.
+
+Cierre técnico validado el 16 de septiembre de 2026:
+
+- `mvn clean package`: **BUILD SUCCESS**.
+- 5 pruebas JUnit ejecutadas sin fallos.
+- Regresión integral de roles, permisos, IDOR, documentos y reportes completada.
+- Rama `develop` sincronizada con `origin/develop`.
+
+Evidencia documental incorporada para la entrega:
+
+- Evidencia visual del tablero Scrum disponible en `docs/imagenes/tablero-scrum.png`.
 
 ---
 

@@ -1,0 +1,200 @@
+package com.inmobiliaria.web;
+
+import com.inmobiliaria.dao.CaracteristicaDAO;
+import com.inmobiliaria.dao.FavoritoDAO;
+import com.inmobiliaria.dao.ImagenPropiedadDAO;
+import com.inmobiliaria.dao.InmobiliariaDAO;
+import com.inmobiliaria.dao.PropiedadDAO;
+import com.inmobiliaria.model.Caracteristica;
+import com.inmobiliaria.model.EstadoPropiedad;
+import com.inmobiliaria.model.ImagenPropiedad;
+import com.inmobiliaria.model.Inmobiliaria;
+import com.inmobiliaria.model.Propiedad;
+import com.inmobiliaria.model.Rol;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+/**
+ * Ficha de detalle de una propiedad: galería completa de imágenes,
+ * todos sus datos y sus características agrupadas por categoría.
+ *
+ * GET /propiedades/detalle?id=5
+ */
+@WebServlet("/propiedades/detalle")
+public class PropiedadDetalleServlet extends HttpServlet {
+
+    private final PropiedadDAO propiedadDAO = new PropiedadDAO();
+    private final ImagenPropiedadDAO imagenDAO = new ImagenPropiedadDAO();
+    private final CaracteristicaDAO caracteristicaDAO = new CaracteristicaDAO();
+    private final FavoritoDAO favoritoDAO = new FavoritoDAO();
+    private final InmobiliariaDAO inmobiliariaDAO = new InmobiliariaDAO();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String idParam = request.getParameter("id");
+
+        if (idParam == null || idParam.isBlank()) {
+            request.setAttribute("error", "No se indicó qué propiedad mostrar.");
+            request.getRequestDispatcher("/detalle-propiedad.jsp").forward(request, response);
+            return;
+        }
+
+        int id;
+        try {
+            id = Integer.parseInt(idParam.trim());
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "El identificador de la propiedad no es válido.");
+            request.getRequestDispatcher("/detalle-propiedad.jsp").forward(request, response);
+            return;
+        }
+
+        try {
+            Propiedad propiedad = propiedadDAO.buscarPorId(id);
+
+            if (propiedad == null) {
+                request.setAttribute("error", "No se encontró la propiedad solicitada.");
+            } else if (esPropiedadNoPublica(propiedad)
+                    && !puedeVerPropiedadNoPublica(request, propiedad)) {
+                // Las propiedades en BORRADOR o CERRADA solo las ven los
+                // empleados desde su panel; por URL directa un visitante o
+                // cliente no puede espiarlas.
+                request.setAttribute("error",
+                        "Esta propiedad no está disponible públicamente.");
+            } else {
+                List<ImagenPropiedad> imagenes = imagenDAO.listarPorPropiedad(id);
+                List<Caracteristica> caracteristicas = caracteristicaDAO.listarPorPropiedad(id);
+
+                request.setAttribute("propiedad", propiedad);
+                request.setAttribute("imagenes", imagenes);
+                request.setAttribute("caracteristicas", caracteristicas);
+                request.setAttribute(
+                        "puedeGestionarPropiedad",
+                        puedeGestionarPropiedad(request, propiedad)
+                );
+                request.setAttribute("categoriasCaracteristica",
+                        List.of("INTERIOR", "EXTERIOR", "CONJUNTO", "SEGURIDAD"));
+
+                // La ficha es pública (la ve también el visitante sin
+                // iniciar sesión); si no hay sesión, simplemente no hay
+                // favorito que marcar — nunca se redirige a /login aquí
+                // (eso solo pasa al intentar MARCAR, en FavoritoServlet).
+                Integer usuarioId = idDeSesionONulo(request);
+                boolean esFavorito = usuarioId != null && favoritoDAO.esFavorito(usuarioId, id);
+                request.setAttribute("esFavorito", esFavorito);
+            }
+
+        } catch (SQLException e) {
+            getServletContext().log("Error al consultar el detalle de la propiedad " + id, e);
+            request.setAttribute("error",
+                    "No fue posible cargar esta propiedad en este momento. Intenta de nuevo en unos minutos.");
+        }
+
+        request.getRequestDispatcher("/detalle-propiedad.jsp").forward(request, response);
+    }
+
+    /**
+     * A diferencia de FavoritoServlet.usuarioDeSesion(), esta variante
+     * nunca redirige: la ficha debe seguir mostrándose igual para un
+     * visitante sin sesión, solo que sin el favorito marcado.
+     */
+    private Integer idDeSesionONulo(HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        return (Integer) session.getAttribute("usuarioId");
+    }
+
+    /** Cualquier estado distinto de PUBLICADA se considera no público. */
+    private boolean esPropiedadNoPublica(Propiedad p) {
+        return p.getEstado() != null
+                && p.getEstado() != EstadoPropiedad.PUBLICADA;
+    }
+
+    /**
+     * Una propiedad no publica solo puede verla un administrador o el agente
+     * de la inmobiliaria propietaria.
+     */
+    private boolean puedeVerPropiedadNoPublica(
+            HttpServletRequest request,
+            Propiedad propiedad
+    ) throws SQLException {
+
+        return tieneRol(request, "ADMIN")
+                || puedeGestionarPropiedad(request, propiedad);
+    }
+
+    /**
+     * Determina si el agente autenticado pertenece a la inmobiliaria
+     * propietaria de la propiedad.
+     */
+    private boolean puedeGestionarPropiedad(
+            HttpServletRequest request,
+            Propiedad propiedad
+    ) throws SQLException {
+
+        if (!tieneRol(request, "AGENTE")) {
+            return false;
+        }
+
+        Integer usuarioId =
+                idDeSesionONulo(request);
+
+        if (usuarioId == null) {
+            return false;
+        }
+
+        Inmobiliaria inmobiliaria =
+                inmobiliariaDAO.buscarPorUsuario(usuarioId);
+
+        return inmobiliaria != null
+                && propiedad.getInmobiliariaId()
+                == inmobiliaria.getId();
+    }
+
+    private boolean tieneRol(
+            HttpServletRequest request,
+            String rolBuscado
+    ) {
+
+        HttpSession session =
+                request.getSession(false);
+
+        if (session == null) {
+            return false;
+        }
+
+        Object roles =
+                session.getAttribute("roles");
+
+        if (!(roles instanceof List<?> listaRoles)) {
+            return false;
+        }
+
+        for (Object objeto : listaRoles) {
+
+            if (objeto instanceof Rol rol
+                    && rol.getNombre() != null
+                    && rol.getNombre()
+                    .equalsIgnoreCase(rolBuscado)) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+}
